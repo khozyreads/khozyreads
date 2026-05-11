@@ -1269,7 +1269,12 @@ async function initReader(book, pdfUrl){
 }
 
 /* ========== Screenshot Protection ========== */
+let _lastWarning = 0;
+const WARNING_THROTTLE_MS = 5000;
 function showScreenshotWarning(reason){
+  const now = Date.now();
+  if(now - _lastWarning < WARNING_THROTTLE_MS) return; // throttle
+  _lastWarning = now;
   const overlay = $('#ss-warning');
   const info = $('#ss-info');
   const user = state.profile?.username||'guest';
@@ -1281,19 +1286,69 @@ function showScreenshotWarning(reason){
   }
 }
 $('#ss-dismiss').onclick = ()=>$('#ss-warning').classList.remove('show');
-document.addEventListener('keyup', e=>{ if(e.key==='PrintScreen'){ navigator.clipboard?.writeText('').catch(()=>{}); showScreenshotWarning('PrintScreen'); } });
+
+// Capture triggers
+document.addEventListener('keyup', e=>{
+  if(e.key==='PrintScreen'){ navigator.clipboard?.writeText('').catch(()=>{}); showScreenshotWarning('PrintScreen'); }
+});
 document.addEventListener('keydown', e=>{
   const k=(e.key||'').toLowerCase(); const ctrl=e.ctrlKey||e.metaKey;
-  if(e.shiftKey&&(e.metaKey||e.getModifierState&&e.getModifierState('Meta'))&&k==='s'){ e.preventDefault(); showScreenshotWarning('Win+Shift+S'); }
-  if(e.shiftKey&&e.metaKey&&['3','4','5'].includes(k)){ e.preventDefault(); showScreenshotWarning('Mac screenshot'); }
-  if(ctrl&&e.shiftKey&&k==='s'){ e.preventDefault(); showScreenshotWarning('Ctrl+Shift+S'); }
+  // Screenshot tool shortcuts
+  if(e.shiftKey && (e.metaKey || (e.getModifierState && e.getModifierState('Meta'))) && k==='s'){ e.preventDefault(); showScreenshotWarning('Win+Shift+S'); }
+  if(e.shiftKey && e.metaKey && ['3','4','5'].includes(k)){ e.preventDefault(); showScreenshotWarning('Mac screenshot'); }
+  if(ctrl && e.shiftKey && k==='s'){ e.preventDefault(); showScreenshotWarning('Ctrl+Shift+S'); }
+  // Refresh shortcuts
+  if(e.key==='F5' || (ctrl && (k==='r')) ){ e.preventDefault(); showScreenshotWarning('Refresh attempt (F5 / Ctrl+R)'); }
+  // Save / print / view source
+  if(ctrl && k==='s'){ e.preventDefault(); showScreenshotWarning('Save page (Ctrl+S)'); }
+  if(ctrl && k==='p'){ e.preventDefault(); showScreenshotWarning('Print (Ctrl+P)'); }
+  if(ctrl && k==='u'){ e.preventDefault(); showScreenshotWarning('View source (Ctrl+U)'); }
 });
+
+// DevTools detection (window size delta trick)
 let devtoolsOpen = false;
 setInterval(()=>{
   const open = (window.outerWidth-window.innerWidth>160)||(window.outerHeight-window.innerHeight>160);
   if(open && !devtoolsOpen){ devtoolsOpen=true; showScreenshotWarning('DevTools'); }
   if(!open) devtoolsOpen=false;
 }, 1500);
+
+// Tab switch / visibility change
+let _hiddenAt = 0;
+document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){
+    _hiddenAt = Date.now();
+  } else if(_hiddenAt > 0){
+    const awayMs = Date.now() - _hiddenAt;
+    if(awayMs > 500){
+      showScreenshotWarning(`Tab away ${Math.round(awayMs/1000)}s`);
+    }
+  }
+});
+
+// Window blur / focus
+let _blurredAt = 0;
+window.addEventListener('blur', ()=>{ _blurredAt = Date.now(); });
+window.addEventListener('focus', ()=>{
+  if(_blurredAt === 0) return;
+  const awayMs = Date.now() - _blurredAt;
+  if(awayMs > 800){
+    showScreenshotWarning(`Window unfocused ${Math.round(awayMs/1000)}s`);
+  }
+  _blurredAt = 0;
+});
+
+// Block beforeunload (refresh / close tab) — show browser native confirm
+window.addEventListener('beforeunload', (e)=>{
+  // Only prompt when user is logged in (logged-in user might have content open)
+  if(state.user){
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  }
+});
+
+// Screen capture API block
 if(navigator.mediaDevices?.getDisplayMedia){
   const orig = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
   navigator.mediaDevices.getDisplayMedia = function(){ showScreenshotWarning('Screen capture API'); return Promise.reject(new Error('Blocked')); };
