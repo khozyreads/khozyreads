@@ -516,7 +516,7 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
           <button class="km" data-lang="kh">ខ្មែរ</button>
           <button data-lang="en">EN</button>
         </span>
-        <button id="pwa-install" class="btn btn-gold" style="display:none;padding:8px 14px;min-height:38px;font-size:14px" onclick="if(_pwaPrompt){_pwaPrompt.prompt();_pwaPrompt.userChoice.then(()=>{_pwaPrompt=null;this.style.display='none';});}">
+        <button id="pwa-install" class="btn btn-gold" style="display:none;padding:8px 14px;min-height:38px;font-size:14px" onclick="handlePwaInstall()">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4 L12 16 M6 10 L12 16 L18 10 M4 20 L20 20"/></svg>
           <span data-i18n="pwa.install">Install App</span>
         </button>
@@ -546,6 +546,18 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
     <p data-i18n="ss.body">មិនអនុញ្ញាតិឱ្យថតរូប, ថតវីដេអូ ឬធ្វើការចែកចាយបន្តដោយគ្មានការអនុញ្ញាតិជាលាយលក្ខណ៍អក្សរពីខូហ្ស៊ីរីដ។</p>
     <div class="ss-info" id="ss-info"></div>
     <button class="btn btn-ghost" id="ss-dismiss" data-i18n="ss.dismiss">យល់ព្រម</button>
+  </div>
+</div>
+
+<!-- Install Help Modal (platform-specific instructions) -->
+<div id="install-help" style="display:none;position:fixed;inset:0;z-index:150;background:rgba(20,15,12,.85);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:24px">
+  <div class="ss-card" style="max-width:480px;text-align:left">
+    <svg class="orn" style="margin:0 auto 14px;display:block"><use href="#orn-divider"/></svg>
+    <h3 style="text-align:center" id="ih-title">Install KhozyReads</h3>
+    <div id="ih-body" style="font-family:var(--font-serif);font-size:15px;line-height:1.7;color:var(--fg-soft);margin:16px 0"></div>
+    <div style="display:flex;justify-content:center;margin-top:18px">
+      <button class="btn btn-ghost" onclick="document.getElementById('install-help').style.display='none'">OK</button>
+    </div>
   </div>
 </div>
 
@@ -1414,17 +1426,71 @@ if('serviceWorker' in navigator && location.protocol === 'https:' || location.ho
   });
 }
 let _pwaPrompt = null;
+function isStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function detectPlatform(){
+  const ua = navigator.userAgent || '';
+  if(/iPad|iPhone|iPod/.test(ua) || (/Mac/.test(ua) && navigator.maxTouchPoints > 1)) return 'ios';
+  if(/Android/.test(ua)) return 'android';
+  return 'desktop';
+}
+function showInstallHelp(){
+  const isKh = state.lang === 'kh';
+  const platform = detectPlatform();
+  const t = {
+    ios: {
+      title: isKh ? 'ដំឡើងនៅលើ iPhone / iPad' : 'Install on iPhone / iPad',
+      body: isKh
+        ? '<ol style="padding-left:20px"><li>បើក KhozyReads នៅក្នុង <strong>Safari</strong> (មិនមែន Chrome)</li><li>ចុចលើ <strong>រូបតំណាង Share</strong> (ប្រអប់មានព្រួញគ្រាតលើ) នៅខាងក្រោម</li><li>រំកិលចុះ → ចុច <strong>"Add to Home Screen"</strong></li><li>ចុច <strong>"Add"</strong></li></ol>'
+        : '<ol style="padding-left:20px"><li>Open KhozyReads in <strong>Safari</strong> (not Chrome)</li><li>Tap the <strong>Share icon</strong> (square with up arrow) at bottom</li><li>Scroll down → tap <strong>"Add to Home Screen"</strong></li><li>Tap <strong>"Add"</strong></li></ol>'
+    },
+    android: {
+      title: isKh ? 'ដំឡើងនៅលើ Android' : 'Install on Android',
+      body: isKh
+        ? '<ol style="padding-left:20px"><li>ចុចលើ <strong>មីនុយ 3 ចំណុច</strong> នៅផ្នែកខាងលើស្តាំ</li><li>ចុច <strong>"Install app"</strong> ឬ <strong>"Add to Home screen"</strong></li><li>បញ្ជាក់ → រូបតំណាងលេចឡើងនៅផ្ទាំងដើម</li></ol>'
+        : '<ol style="padding-left:20px"><li>Tap the <strong>3-dot menu</strong> at top right</li><li>Tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong></li><li>Confirm → icon appears on home screen</li></ol>'
+    },
+    desktop: {
+      title: isKh ? 'ដំឡើងនៅលើ PC' : 'Install on PC',
+      body: isKh
+        ? '<ol style="padding-left:20px"><li>នៅក្នុង <strong>Chrome ឬ Edge</strong>, មើល <strong>របាអាស័យដ្ឋាន</strong></li><li>ចុចលើ <strong>រូបតំណាងដំឡើង</strong> (កុំព្យូទ័រមានព្រួញចុះ) នៅខាងស្តាំបង្ហោះ</li><li>ឬ: មីនុយ 3 ចំណុច → <strong>"Install KhozyReads..."</strong></li></ol>'
+        : '<ol style="padding-left:20px"><li>In <strong>Chrome or Edge</strong>, look at the <strong>address bar</strong></li><li>Click the <strong>install icon</strong> (computer with down arrow) on the right side</li><li>Or: 3-dot menu → <strong>"Install KhozyReads..."</strong></li></ol>'
+    }
+  }[platform];
+  document.getElementById('ih-title').textContent = t.title;
+  document.getElementById('ih-body').innerHTML = t.body;
+  document.getElementById('install-help').style.display = 'flex';
+}
+window.handlePwaInstall = function(){
+  if(_pwaPrompt){
+    _pwaPrompt.prompt();
+    _pwaPrompt.userChoice.then((res)=>{
+      if(res.outcome === 'accepted'){
+        _pwaPrompt = null;
+        const btn = document.getElementById('pwa-install');
+        if(btn) btn.style.display = 'none';
+      }
+    });
+  } else {
+    showInstallHelp();
+  }
+};
 window.addEventListener('beforeinstallprompt', (e)=>{
   e.preventDefault();
   _pwaPrompt = e;
-  const btn = document.getElementById('pwa-install');
-  if(btn) btn.style.display = 'inline-flex';
 });
 window.addEventListener('appinstalled', ()=>{
   _pwaPrompt = null;
   const btn = document.getElementById('pwa-install');
   if(btn) btn.style.display = 'none';
 });
+// Show install button on all platforms unless already running as installed app
+(function showInstallBtnIfNeeded(){
+  if(isStandalone()) return; // already installed, hide button
+  const btn = document.getElementById('pwa-install');
+  if(btn) btn.style.display = 'inline-flex';
+})();
 </script>
 </body>
 </html>
