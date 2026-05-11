@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="kh">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Books - KhozyReads</title><link rel="stylesheet" href="assets/style.css"></head>
+<body data-page="admin-books">
+  <header class="site-header seller-header"><a class="brand" href="seller-dashboard.html">KhozyReads Seller</a><nav class="nav"><button class="secondary" data-logout data-i18n="logout">Logout</button><span class="lang-switch"><button data-lang="kh">KH</button><button data-lang="en">EN</button></span></nav></header>
+  <main class="container admin-layout">
+    <aside class="admin-nav panel"><a href="seller-dashboard.html" data-i18n="dashboard">Dashboard</a><a href="admin-books.html" data-i18n="manageBooks">Book Management</a><a href="admin-orders.html" data-i18n="manageOrders">Order Management</a><a href="admin-settings.html" data-i18n="settings">Site Settings</a></aside>
+    <section>
+      <h1 data-i18n="manageBooks">Book Management</h1>
+      <p data-i18n="book_management_help">Add, edit, archive, or control purchase availability for books.</p>
+      <form class="form panel" data-book-form>
+        <input name="id" type="hidden">
+        <label><span data-i18n="title">Title</span><input name="title" placeholder="Title" data-i18n-placeholder="title" required></label>
+        <label><span data-i18n="synopsis">Synopsis</span><textarea name="synopsis" placeholder="Synopsis" data-i18n-placeholder="synopsis"></textarea></label>
+        <label><span data-i18n="creator">Creator</span><input name="creator" placeholder="Creator" data-i18n-placeholder="creator"></label>
+        <label><span data-i18n="price">Price</span><input name="price" type="number" step="0.01" placeholder="Price" data-i18n-placeholder="price" required></label>
+        <label><span data-i18n="currency">Currency</span><input name="currency" value="USD" placeholder="Currency" data-i18n-placeholder="currency"></label>
+        <label><span data-i18n="language">Language</span><input name="language" value="kh" placeholder="Language" data-i18n-placeholder="language"></label>
+        <label><span data-i18n="telegram_group_url">Telegram group URL</span><input name="telegram_group_url" placeholder="Telegram group URL" data-i18n-placeholder="telegram_group_url"></label>
+        <label><span data-i18n="telegram_button_text">Telegram button text</span><input name="telegram_button_text" placeholder="Telegram button text" data-i18n-placeholder="telegram_button_text"></label>
+        <label><span data-i18n="disabled_remark">Disabled remark</span><textarea name="buy_disabled_remark" placeholder="Disabled remark" data-i18n-placeholder="disabled_remark"></textarea></label>
+        <label><span data-i18n="cover_image">Cover image</span><input name="cover" type="file" accept="image/*"></label>
+        <label><input name="is_buy_enabled" type="checkbox" checked> <span data-i18n="buy_enabled">Buy enabled</span></label>
+        <label><span data-i18n="available_from">Available from</span><input name="available_from" type="datetime-local"></label>
+        <label><span data-i18n="available_until">Available until</span><input name="available_until" type="datetime-local"></label>
+        <select name="status"><option value="active">active</option><option value="archived">archived</option></select>
+        <button data-i18n="save">Save</button>
+      </form>
+      <form class="form panel" data-episode-form style="margin-top:16px">
+        <h2 data-i18n="episode_management">Episode Management</h2>
+        <p data-i18n="episode_management_help">Add or edit episodes for each book.</p>
+        <input name="id" type="hidden">
+        <select name="book_id" required></select>
+        <label><span data-i18n="episodes">Episodes</span><input name="episode_number" type="number" min="1" placeholder="Episode number" required></label>
+        <label><span data-i18n="title">Title</span><input name="episode_title" placeholder="Episode title" data-i18n-placeholder="title"></label>
+        <label><span data-i18n="synopsis">Synopsis</span><textarea name="episode_content" placeholder="Episode content"></textarea></label>
+        <select name="status"><option value="published">published</option><option value="draft">draft</option></select>
+        <label><span data-i18n="optional_source_file">Optional PDF/Word source file</span><input name="source_file" type="file" accept=".pdf,.doc,.docx"></label>
+        <button data-i18n="save">Save</button>
+      </form>
+      <p data-message></p>
+      <div class="table-wrap" style="margin-top:16px"><table><thead><tr><th>Title</th><th>Creator</th><th>Price</th><th>Status</th><th>Buy</th><th>Actions</th></tr></thead><tbody data-book-table></tbody></table></div>
+      <div class="table-wrap" style="margin-top:16px"><table><thead><tr><th>Book</th><th>No.</th><th>Episode</th><th>Status</th><th>Actions</th></tr></thead><tbody data-episode-table></tbody></table></div>
+    </section>
+  </main>
+  <script type="module" src="assets/admin.js"></script>
+</body>
+</html>

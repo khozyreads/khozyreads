@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="kh">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Register - KhozyReads</title><link rel="stylesheet" href="assets/style.css"></head>
+<body data-page="register">
+  <header class="site-header">
+    <a class="brand" href="index.html">KhozyReads</a>
+    <nav class="nav"><a href="index.html" data-i18n="home">Home</a><a href="login.html" data-auth-guest data-i18n="login">Login</a><button class="secondary hidden" data-auth-user data-logout data-i18n="logout">Logout</button><span class="lang-switch"><button data-lang="kh">KH</button><button data-lang="en">EN</button></span></nav>
+  </header>
+  <main class="container">
+    <section class="panel">
+      <h1 data-i18n="register">Register</h1>
+      <p data-i18n="register_help">Create an account with a username using name plus number, for example dara123.</p>
+      <form class="form" data-register-form>
+        <label><span data-i18n="username">Username</span><input name="username" pattern="[a-zA-Z]+[0-9]+" required placeholder="dara123" data-i18n-placeholder="username"></label>
+        <label><span data-i18n="password">Password</span><input name="password" type="password" minlength="6" required placeholder="Password" data-i18n-placeholder="password"></label>
+        <button data-i18n="createAccount">Create Account</button>
+      </form>
+      <p data-message></p>
+    </section>
+  </main>
+  <script src="assets/config.js"></script>
+  <script src="assets/nav-state.js"></script>
+  <script src="assets/fallback-auth.js"></script>
+  <script type="module" src="assets/app.js"></script>
+</body>
+</html>

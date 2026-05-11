@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="kh">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Settings - KhozyReads</title><link rel="stylesheet" href="assets/style.css"></head>
+<body data-page="admin-settings">
+  <header class="site-header seller-header"><a class="brand" href="seller-dashboard.html">KhozyReads Seller</a><nav class="nav"><button class="secondary" data-logout data-i18n="logout">Logout</button><span class="lang-switch"><button data-lang="kh">KH</button><button data-lang="en">EN</button></span></nav></header>
+  <main class="container admin-layout">
+    <aside class="admin-nav panel"><a href="seller-dashboard.html" data-i18n="dashboard">Dashboard</a><a href="admin-books.html" data-i18n="manageBooks">Book Management</a><a href="admin-orders.html" data-i18n="manageOrders">Order Management</a><a href="admin-settings.html" data-i18n="settings">Site Settings</a></aside>
+    <section>
+      <h1 data-i18n="settings">Site Settings</h1>
+      <p data-i18n="settings_help">Update website, payment, working hours, and Telegram settings.</p>
+      <form class="form panel" data-settings-form>
+        <label><span data-i18n="website_name">Website name</span><input name="website_name" placeholder="Website name" data-i18n-placeholder="website_name"></label>
+        <label><span data-i18n="website_logo_url">Website logo URL</span><input name="website_logo_url" placeholder="Website logo URL" data-i18n-placeholder="website_logo_url"></label>
+        <label><span data-i18n="upload_logo">Upload logo</span><input name="website_logo_file" type="file" accept="image/*"></label>
+        <label><span data-i18n="default_language">Default language</span><input name="default_language" placeholder="Default language" data-i18n-placeholder="default_language"></label>
+        <label><span data-i18n="workingHours">Working Hours</span><input name="working_hours_start" type="time"></label>
+        <label><span data-i18n="workingHours">Working Hours</span><input name="working_hours_end" type="time"></label>
+        <label><span data-i18n="payment_notice_kh">Payment notice KH</span><textarea name="payment_notice_kh" placeholder="Payment notice KH" data-i18n-placeholder="payment_notice_kh"></textarea></label>
+        <label><span data-i18n="payment_notice_en">Payment notice EN</span><textarea name="payment_notice_en" placeholder="Payment notice EN" data-i18n-placeholder="payment_notice_en"></textarea></label>
+        <label><span data-i18n="aba_qr_image_url">ABA QR image URL</span><input name="aba_qr_image_url" placeholder="ABA QR image URL" data-i18n-placeholder="aba_qr_image_url"></label>
+        <label><span data-i18n="upload_aba_qr">Upload ABA QR</span><input name="aba_qr_file" type="file" accept="image/*"></label>
+        <label><span data-i18n="aba_account_name">ABA account name</span><input name="aba_account_name" placeholder="ABA account name" data-i18n-placeholder="aba_account_name"></label>
+        <label><span data-i18n="aba_account_number">ABA account number</span><input name="aba_account_number" placeholder="ABA account number" data-i18n-placeholder="aba_account_number"></label>
+        <label><span data-i18n="default_currency">Default currency</span><input name="default_currency" placeholder="Default currency" data-i18n-placeholder="default_currency"></label>
+        <label><span data-i18n="default_telegram_group_url">Default Telegram group URL</span><input name="default_telegram_group_url" placeholder="Default Telegram group URL" data-i18n-placeholder="default_telegram_group_url"></label>
+        <label><span data-i18n="default_telegram_button_text">Default Telegram button text</span><input name="default_telegram_button_text" placeholder="Default Telegram button text" data-i18n-placeholder="default_telegram_button_text"></label>
+        <button data-i18n="save">Save</button>
+      </form>
+      <p data-message></p>
+    </section>
+  </main>
+  <script type="module" src="assets/admin.js"></script>
+</body>
+</html>

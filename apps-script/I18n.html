@@ -1,0 +1,226 @@
+<script>
+  // ===== KhozyReads — i18n =====
+  // Default language is Khmer. Falls back to English when a key is missing in KH.
+  window.KR_I18N = {
+    kh: {
+      app_name:               'KhozyReads',
+      home:                   'ហាង',
+      library:                'បណ្ណាល័យរបស់ខ្ញុំ',
+      login:                  'ចូលគណនី',
+      register:                'បង្កើតគណនី',
+      logout:                 'ចាកចេញ',
+      admin:                  'ផ្ទាំងអ្នកគ្រប់គ្រង',
+      lang_kh:                'KH',
+      lang_en:                'EN',
+
+      footer:                 '© KhozyReads — សៀវភៅឌីជីថលខ្មែរ',
+
+      store_title:            'សៀវភៅឌីជីថលខ្មែរ',
+      store_subtitle:         'រកឃើញរឿង​ និង​ សៀវភៅដែលអ្នកចូលចិត្ត',
+      no_books:               'មិនទាន់មានសៀវភៅទេឥឡូវ។',
+
+      buy_now:                'ទិញឥឡូវ',
+      read_book:              'អានសៀវភៅ',
+      pending_verification:   'កំពុងផ្ទៀងផ្ទាត់',
+      login_to_buy:           'ចូលគណនីដើម្បីទិញ',
+      buy_again:              'ទិញម្តងទៀត / បង្ហោះបង្កាន់ដៃថ្មី',
+      back:                   'ត្រឡប់',
+      submit:                 'បញ្ជូន',
+      save:                   'រក្សាទុក',
+      cancel:                 'បោះបង់',
+
+      synopsis:               'សង្ខេប',
+      creator:                'អ្នកនិពន្ធ',
+      price:                  'តម្លៃ',
+      currency:               'រូបិយប័ណ្ណ',
+
+      register_title:         'បង្កើតគណនី',
+      login_title:            'ចូលគណនី',
+      username:               'ឈ្មោះអ្នកប្រើ',
+      password:               'ពាក្យសម្ងាត់',
+      have_account:           'មានគណនីហើយ?',
+      no_account:             'មិនទាន់មានគណនី?',
+
+      payment_title:          'ការទូទាត់',
+      aba_account_name:       'ឈ្មោះគណនី ABA',
+      aba_account_number:     'លេខគណនី ABA',
+      working_hours:          'ម៉ោងធ្វើការ',
+      upload_proof:           'បង្ហោះបង្កាន់ដៃ',
+      upload:                 'បង្ហោះ',
+      proof_uploaded:         'បង្ហោះរួចរាល់។ សូមរង់ចាំការអនុម័ត។',
+
+      library_orders:         'ការកម្ម៉ង់របស់ខ្ញុំ',
+      library_books:          'សៀវភៅរបស់ខ្ញុំ',
+      no_orders:              'មិនទាន់មានកម្ម៉ង់ទេ។',
+      status_pending:         'រង់ចាំ',
+      status_approved:        'អនុម័ត',
+      status_rejected:        'បដិសេធ',
+      status_active:          'សកម្ម',
+      status_disabled:        'បិទ',
+
+      reader_warning:         'មាតិកាការពារ — ហាមថត, ថតចំលង, ឬផ្សព្វផ្សាយឡើងវិញ',
+      reader_focus_warning:   'ផ្ទាំងបានបាត់ — បានព្រិលដើម្បីការពារមាតិកា',
+
+      admin_title:            'ផ្ទាំងអ្នកគ្រប់គ្រង',
+      tab_orders:             'កម្ម៉ង់',
+      tab_books:              'សៀវភៅ',
+      tab_settings:           'ការកំណត់',
+      tab_logs:               'កំណត់ហេតុ',
+      tab_users:              'អ្នកប្រើប្រាស់',
+
+      add_book:               'បន្ថែមសៀវភៅថ្មី',
+      title:                  'ចំណងជើង',
+      cover_image:            'រូបគម្រប',
+      pdf_file:               'ឯកសារ PDF',
+      buy_enabled:            'អាចទិញបាន',
+      disabled_remark:        'ហេតុផលបិទ',
+      archive:                'ទុកក្នុងបណ្ណសារ',
+
+      approve:                'អនុម័ត',
+      reject:                 'បដិសេធ',
+      reason:                 'ហេតុផល',
+      view_proof:             'មើលបង្កាន់ដៃ',
+
+      settings_website_name:  'ឈ្មោះគេហទំព័រ',
+      settings_qr:            'រូបភាព ABA QR',
+      settings_account_name:  'ឈ្មោះគណនី',
+      settings_account_number:'លេខគណនី',
+      settings_hours_start:   'ម៉ោងចាប់ផ្តើម',
+      settings_hours_end:     'ម៉ោងបញ្ចប់',
+      settings_notice_kh:     'សារពេលទូទាត់ (ខ្មែរ)',
+      settings_notice_en:     'សារពេលទូទាត់ (អង់គ្លេស)',
+      settings_telegram_link: 'តំណ Telegram',
+      settings_telegram_btn:  'អត្ថបទប៊ូតុង Telegram',
+
+      err_book_not_found:     'រកមិនឃើញសៀវភៅទេ។',
+      err_login_first:        'សូមចូលគណនីជាមុនសិន។',
+      err_purchase_first:     'អ្នកត្រូវតែទិញសៀវភៅមុនពេលអាន។',
+      err_payment_not_set:    'ការកំណត់ការទូទាត់មិនទាន់ត្រូវបានកំណត់នៅឡើយ។',
+      err_upload_failed:      'បង្ហោះមិនបានសម្រេច។ សូមព្យាយាមម្តងទៀត។',
+
+      yes: 'បាទ/ចាស', no: 'ទេ'
+    },
+    en: {
+      app_name:               'KhozyReads',
+      home:                   'Store',
+      library:                'My Library',
+      login:                  'Login',
+      register:                'Register',
+      logout:                 'Logout',
+      admin:                  'Admin',
+
+      footer:                 '© KhozyReads — Khmer digital books',
+
+      store_title:            'Khmer Digital Books',
+      store_subtitle:         'Discover stories and books you will love',
+      no_books:               'No books yet.',
+
+      buy_now:                'Buy Now',
+      read_book:              'Read Book',
+      pending_verification:   'Pending Verification',
+      login_to_buy:           'Login to Buy',
+      buy_again:              'Buy Again / Upload New Proof',
+      back:                   'Back',
+      submit:                 'Submit',
+      save:                   'Save',
+      cancel:                 'Cancel',
+
+      synopsis:               'Synopsis',
+      creator:                'Creator',
+      price:                  'Price',
+      currency:               'Currency',
+
+      register_title:         'Create your account',
+      login_title:            'Welcome back',
+      username:               'Username',
+      password:               'Password',
+      have_account:           'Already have an account?',
+      no_account:             'No account yet?',
+
+      payment_title:          'Payment',
+      aba_account_name:       'ABA Account Name',
+      aba_account_number:     'ABA Account Number',
+      working_hours:          'Working hours',
+      upload_proof:           'Upload payment proof',
+      upload:                 'Upload',
+      proof_uploaded:         'Uploaded! Please wait for admin approval.',
+
+      library_orders:         'My Orders',
+      library_books:          'My Books',
+      no_orders:              'No orders yet.',
+      status_pending:         'Pending',
+      status_approved:        'Approved',
+      status_rejected:        'Rejected',
+      status_active:          'Active',
+      status_disabled:        'Disabled',
+
+      reader_warning:         'Protected content — no screenshot, recording, or redistribution.',
+      reader_focus_warning:   'Window lost focus — content blurred to protect copyright.',
+
+      admin_title:            'Admin Dashboard',
+      tab_orders:             'Orders',
+      tab_books:              'Books',
+      tab_settings:           'Settings',
+      tab_logs:               'Logs',
+      tab_users:              'Users',
+
+      add_book:               'Add new book',
+      title:                  'Title',
+      cover_image:            'Cover image',
+      pdf_file:               'PDF file',
+      buy_enabled:            'Available to buy',
+      disabled_remark:        'Disabled remark',
+      archive:                'Archive',
+
+      approve:                'Approve',
+      reject:                 'Reject',
+      reason:                 'Reason',
+      view_proof:             'View proof',
+
+      settings_website_name:  'Website name',
+      settings_qr:            'ABA QR image',
+      settings_account_name:  'Account name',
+      settings_account_number:'Account number',
+      settings_hours_start:   'Hours start',
+      settings_hours_end:     'Hours end',
+      settings_notice_kh:     'Payment notice (KH)',
+      settings_notice_en:     'Payment notice (EN)',
+      settings_telegram_link: 'Telegram link',
+      settings_telegram_btn:  'Telegram button text',
+
+      err_book_not_found:     'Book not found.',
+      err_login_first:        'Please login first.',
+      err_purchase_first:     'You need to purchase this book before reading.',
+      err_payment_not_set:    'Payment settings are not configured yet.',
+      err_upload_failed:      'Upload failed. Please try again.',
+
+      yes: 'Yes', no: 'No'
+    }
+  };
+
+  window.KR_LANG = (function () {
+    try {
+      const saved = localStorage.getItem('kr_lang');
+      if (saved === 'kh' || saved === 'en') return saved;
+    } catch (_) {}
+    return 'kh';
+  })();
+
+  window.t = function (key) {
+    const lang = window.KR_LANG;
+    const dict = window.KR_I18N[lang] || {};
+    if (dict[key]) return dict[key];
+    // Fallback to English
+    const en = window.KR_I18N.en[key];
+    if (en) return en;
+    // Never return blank — fallback to a humanised key
+    return key.replace(/_/g, ' ');
+  };
+
+  window.setLang = function (lang) {
+    if (lang !== 'kh' && lang !== 'en') return;
+    window.KR_LANG = lang;
+    try { localStorage.setItem('kr_lang', lang); } catch (_) {}
+    if (typeof window.KR_RENDER === 'function') window.KR_RENDER();
+  };
+</script>

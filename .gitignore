@@ -1,0 +1,23 @@
+# NOTE: config.js IS safe to commit
+# It contains only the public anon key (designed to be exposed).
+# The service_role key is ONLY in Supabase Edge Function secrets.
+
+# Logs
+*.log
+server.err.log
+server.out.log
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Node
+node_modules/
+.npm-cache/
+
+# Supabase local
+.supabase/
+supabase/.temp/
+supabase/.branches/

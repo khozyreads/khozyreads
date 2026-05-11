@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <title>KhozyReads</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Khmer:wght@400;600;700&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <?!= include_('Style') ?>
+  <?!= include_('I18n') ?>
+</head>
+<body>
+  <div class="kr-shell">
+    <header class="kr-header">
+      <div class="kr-header-row">
+        <div class="kr-logo" data-route="store">📚 KhozyReads</div>
+        <nav class="kr-nav" id="krNav"></nav>
+        <div class="kr-lang">
+          <button id="krLangKh" onclick="setLang('kh')">KH</button>
+          <button id="krLangEn" onclick="setLang('en')">EN</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="kr-main" id="krView">
+      <div class="kr-card kr-center kr-pad"><div class="kr-spinner" style="margin: 0 auto"></div></div>
+    </main>
+
+    <div class="kr-footer" id="krFooter"></div>
+  </div>
+
+  <div id="krToast" class="kr-toast"></div>
+
+  <script>
+    // `bootstrap` is injected as a JSON object literal by Code.gs/renderApp_.
+    window.KR_BOOTSTRAP = <?!= bootstrap ?>;
+  </script>
+  <?!= include_('Script') ?>
+</body>
+</html>

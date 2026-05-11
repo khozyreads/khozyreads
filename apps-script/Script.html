@@ -1,0 +1,967 @@
+<script>
+  // ====================================================================
+  // KhozyReads — SPA client
+  // ====================================================================
+
+  const APP_URL = (window.KR_BOOTSTRAP && window.KR_BOOTSTRAP.appUrl) || '';
+  let SETTINGS = (window.KR_BOOTSTRAP && window.KR_BOOTSTRAP.settings) || {};
+  let CURRENT_USER = null;
+  let CURRENT_ROUTE = { name: 'store', params: {} };
+
+  // ---- Token storage ----
+  function getToken() {
+    try { return localStorage.getItem('kr_token') || ''; } catch (_) { return ''; }
+  }
+  function setToken(t) {
+    try {
+      if (t) localStorage.setItem('kr_token', t);
+      else localStorage.removeItem('kr_token');
+    } catch (_) {}
+  }
+
+  // ---- Toast ----
+  function toast(msg) {
+    const el = document.getElementById('krToast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(function () { el.classList.remove('show'); }, 2400);
+  }
+
+  // ---- API client (uses google.script.run when available, falls back to fetch) ----
+  function api(action, payload) {
+    const body = Object.assign({ action: action, token: getToken() }, payload || {});
+    return new Promise(function (resolve, reject) {
+      // Prefer google.script.run since the SPA is hosted by HtmlService
+      if (window.google && google.script && google.script.run) {
+        const runner = google.script.run
+          .withSuccessHandler(function (raw) {
+            // raw might be the JSON we already serialised — handle either
+            try {
+              const data = (typeof raw === 'string') ? JSON.parse(raw) : raw;
+              if (data && data.ok === false) reject(new Error(data.error || 'Request failed.'));
+              else resolve(data);
+            } catch (e) { reject(e); }
+          })
+          .withFailureHandler(function (err) { reject(err); });
+        runner.runApi(body);
+      } else if (APP_URL) {
+        fetch(APP_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(body)
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (data) {
+            if (data && data.ok === false) reject(new Error(data.error || 'Request failed.'));
+            else resolve(data);
+          })
+          .catch(reject);
+      } else {
+        reject(new Error('App URL not configured.'));
+      }
+    });
+  }
+
+  // ---- File helpers ----
+  function fileToObj(file) {
+    return new Promise(function (resolve, reject) {
+      const reader = new FileReader();
+      reader.onload = function () {
+        const result = String(reader.result || '');
+        const base64 = result.indexOf(',') >= 0 ? result.split(',')[1] : result;
+        resolve({ base64: base64, mimeType: file.type || 'application/octet-stream', fileName: file.name });
+      };
+      reader.onerror = function () { reject(new Error(t('err_upload_failed'))); };
+      reader.readAsDataURL(file);
+    });
+  }
+  window.loadQrFallback = function (img) {
+    const fileId = img && img.getAttribute('data-file-id');
+    if (!img || !fileId || img.getAttribute('data-fallback-loading') === '1') return;
+    img.setAttribute('data-fallback-loading', '1');
+    api('streamBase64', { kind: 'image', id: fileId }).then(function (res) {
+      img.src = 'data:' + res.mime + ';base64,' + res.base64;
+      img.removeAttribute('data-fallback-loading');
+    }).catch(function (err) {
+      img.replaceWith(document.createTextNode('QR image failed to load: ' + err.message));
+    });
+  };
+
+  // ---- Renderer ----
+  window.KR_RENDER = function () {
+    document.title = (SETTINGS.website_name || 'KhozyReads');
+    document.getElementById('krLangKh').classList.toggle('active', window.KR_LANG === 'kh');
+    document.getElementById('krLangEn').classList.toggle('active', window.KR_LANG === 'en');
+    document.getElementById('krFooter').textContent = t('footer');
+    renderNav();
+    routes[CURRENT_ROUTE.name](CURRENT_ROUTE.params);
+  };
+
+  function go(name, params) {
+    CURRENT_ROUTE = { name: name, params: params || {} };
+    window.scrollTo(0, 0);
+    KR_RENDER();
+  }
+
+  function renderNav() {
+    const nav = document.getElementById('krNav');
+    nav.innerHTML = '';
+    addNav(nav, 'home', 'store');
+    if (CURRENT_USER) addNav(nav, 'library', 'library');
+    if (CURRENT_USER && CURRENT_USER.role === 'admin') addNav(nav, 'admin', 'admin');
+    if (CURRENT_USER) {
+      const span = document.createElement('span');
+      span.className = 'kr-muted';
+      span.style.padding = '0 8px';
+      span.textContent = '@' + CURRENT_USER.username;
+      nav.appendChild(span);
+      addNav(nav, 'logout', null, function () {
+        api('logout', {}).then(function () {
+          setToken(''); CURRENT_USER = null; toast(t('logout')); go('store');
+        });
+      });
+    } else {
+      addNav(nav, 'login', 'login');
+      addNav(nav, 'register', 'register');
+    }
+  }
+  function addNav(nav, key, route, onClick) {
+    const b = document.createElement('button');
+    b.textContent = t(key);
+    if (route && CURRENT_ROUTE.name === route) b.classList.add('active');
+    b.onclick = onClick || function () { go(route); };
+    nav.appendChild(b);
+  }
+
+  document.addEventListener('click', function (e) {
+    const r = e.target.getAttribute && e.target.getAttribute('data-route');
+    if (r) go(r);
+  });
+
+  // ---- Bootstrap ----
+  function boot() {
+    api('bootstrap', {}).then(function (res) {
+      SETTINGS = res.settings || SETTINGS;
+      CURRENT_USER = res.user || null;
+      KR_RENDER();
+    }).catch(function () { KR_RENDER(); });
+  }
+
+  // ====================================================================
+  // Pages
+  // ====================================================================
+
+  const routes = {};
+
+  // ----- Store / Home -----
+  routes.store = function () {
+    const view = document.getElementById('krView');
+    view.innerHTML = '<div class="kr-card kr-center kr-pad"><div class="kr-spinner" style="margin: 0 auto"></div></div>';
+    api('listBooks', {}).then(function (res) {
+      const books = res.books || [];
+      view.innerHTML = '';
+      const hero = document.createElement('div');
+      hero.className = 'kr-card';
+      hero.innerHTML =
+        '<h1 class="kr-h1">' + esc(t('store_title')) + '</h1>' +
+        '<div class="kr-muted">' + esc(t('store_subtitle')) + '</div>';
+      view.appendChild(hero);
+
+      if (!books.length) {
+        const empty = document.createElement('div');
+        empty.className = 'kr-card kr-center kr-pad kr-muted';
+        empty.textContent = t('no_books');
+        view.appendChild(empty);
+        return;
+      }
+      const grid = document.createElement('div');
+      grid.className = 'kr-grid kr-books';
+      grid.style.marginTop = '14px';
+      books.forEach(function (book) { grid.appendChild(bookCard(book)); });
+      view.appendChild(grid);
+    });
+  };
+
+  function bookCard(book) {
+    const wrap = document.createElement('div');
+    wrap.className = 'kr-book';
+    wrap.onclick = function () { go('book', { id: book.book_id }); };
+
+    const cover = document.createElement('div');
+    cover.className = 'kr-cover';
+    if (book.cover_url) {
+      cover.style.backgroundImage = 'url(' + book.cover_url + ')';
+    } else {
+      cover.textContent = '📖';
+      cover.style.fontSize = '40px';
+    }
+    wrap.appendChild(cover);
+
+    const body = document.createElement('div');
+    body.className = 'kr-book-body';
+    const title = document.createElement('div');
+    title.className = 'kr-book-title';
+    title.textContent = book.title || '';
+    const creator = document.createElement('div');
+    creator.className = 'kr-book-creator';
+    creator.textContent = book.creator || '';
+    const price = document.createElement('div');
+    price.className = 'kr-price';
+    price.textContent = (book.price || 0) + ' ' + (book.currency || 'USD');
+    body.appendChild(title); body.appendChild(creator); body.appendChild(price);
+    wrap.appendChild(body);
+    return wrap;
+  }
+
+  // ----- Book detail -----
+  routes.book = function (params) {
+    const view = document.getElementById('krView');
+    view.innerHTML = '<div class="kr-card"><div class="kr-spinner" style="margin: 0 auto"></div></div>';
+    api('getBookState', { book_id: params.id }).then(function (res) {
+      const book = res.book;
+      view.innerHTML = '';
+      const card = document.createElement('div');
+      card.className = 'kr-card';
+      card.innerHTML =
+        '<button class="kr-btn secondary" onclick="history.back()">← ' + esc(t('back')) + '</button>' +
+        '<div style="display:grid;grid-template-columns:200px 1fr;gap:24px;margin-top:16px;align-items:start" class="kr-book-detail">' +
+          '<div class="kr-cover" style="aspect-ratio:3/4;border-radius:12px;border:1px solid var(--kr-line);' +
+              (book.cover_url ? ('background-image:url(' + book.cover_url + ')') : '') + '"></div>' +
+          '<div>' +
+            '<h1 class="kr-h1">' + esc(book.title) + '</h1>' +
+            '<div class="kr-muted" style="margin-bottom:8px">' + esc(book.creator || '') + '</div>' +
+            '<div style="font-size:18px;font-weight:700;color:var(--kr-accent-d);margin-bottom:14px">' + esc(book.price + ' ' + (book.currency || 'USD')) + '</div>' +
+            '<div style="margin-bottom:16px;white-space:pre-wrap">' + esc(book.synopsis || '') + '</div>' +
+            '<div id="krBookCta"></div>' +
+          '</div>' +
+        '</div>';
+      view.appendChild(card);
+
+      const cta = card.querySelector('#krBookCta');
+      cta.appendChild(buildBookCta(book, res));
+    }).catch(function (err) {
+      view.innerHTML = '<div class="kr-card kr-center kr-pad">' + esc(err.message || t('err_book_not_found')) + '</div>';
+    });
+  };
+
+  function buildBookCta(book, state) {
+    const wrap = document.createElement('div');
+    wrap.className = 'kr-stack';
+
+    if (!state.isLoggedIn) {
+      const b = btn(t('login_to_buy'), function () { go('login'); });
+      wrap.appendChild(b);
+      return wrap;
+    }
+    if (state.hasAccess) {
+      const b = btn(t('read_book'), function () { go('reader', { id: book.book_id }); });
+      wrap.appendChild(b);
+      return wrap;
+    }
+    if (state.lastOrder && state.lastOrder.status === 'pending') {
+      const span = document.createElement('span');
+      span.className = 'kr-badge pending';
+      span.textContent = t('pending_verification');
+      wrap.appendChild(span);
+      return wrap;
+    }
+    if (state.lastOrder && state.lastOrder.status === 'rejected') {
+      const reason = document.createElement('div');
+      reason.className = 'kr-banner';
+      reason.textContent = state.lastOrder.reject_reason || '';
+      wrap.appendChild(reason);
+      const b = btn(t('buy_again'), function () { startBuy(book.book_id); });
+      wrap.appendChild(b);
+      return wrap;
+    }
+    if (!book.buy_enabled) {
+      const span = document.createElement('span');
+      span.className = 'kr-badge disabled';
+      span.textContent = book.disabled_remark || t('status_disabled');
+      wrap.appendChild(span);
+      return wrap;
+    }
+    const b = btn(t('buy_now'), function () { startBuy(book.book_id); });
+    wrap.appendChild(b);
+    return wrap;
+  }
+
+  function startBuy(bookId) {
+    api('createOrder', { book_id: bookId }).then(function (res) {
+      if (res.alreadyOwned) { go('library'); return; }
+      go('payment', { orderId: res.order.order_id, bookId: bookId });
+    }).catch(function (err) { toast(err.message); });
+  }
+
+  // ----- Login / Register -----
+  routes.login = function () {
+    document.getElementById('krView').innerHTML =
+      '<div class="kr-card" style="max-width:420px;margin:30px auto">' +
+        '<h2 class="kr-h2">' + esc(t('login_title')) + '</h2>' +
+        '<div class="kr-field"><label>' + esc(t('username')) + '</label><input class="kr-input" id="krLoginUser" autocomplete="username"></div>' +
+        '<div class="kr-field"><label>' + esc(t('password')) + '</label><input class="kr-input" id="krLoginPass" type="password" autocomplete="current-password"></div>' +
+        '<button class="kr-btn block" onclick="doLogin()">' + esc(t('login')) + '</button>' +
+        '<div class="kr-muted kr-center" style="margin-top:14px">' +
+          esc(t('no_account')) + ' <a href="#" onclick="go(\'register\');return false;">' + esc(t('register')) + '</a>' +
+        '</div>' +
+      '</div>';
+  };
+  window.doLogin = function () {
+    const u = document.getElementById('krLoginUser').value.trim();
+    const p = document.getElementById('krLoginPass').value;
+    api('login', { username: u, password: p }).then(function (res) {
+      setToken(res.token); CURRENT_USER = res.user; toast(t('login'));
+      go(res.user.role === 'admin' ? 'admin' : 'store');
+    }).catch(function (err) { toast(err.message); });
+  };
+
+  routes.register = function () {
+    document.getElementById('krView').innerHTML =
+      '<div class="kr-card" style="max-width:420px;margin:30px auto">' +
+        '<h2 class="kr-h2">' + esc(t('register_title')) + '</h2>' +
+        '<div class="kr-field"><label>' + esc(t('username')) + '</label><input class="kr-input" id="krRegUser" autocomplete="username"></div>' +
+        '<div class="kr-field"><label>' + esc(t('password')) + '</label><input class="kr-input" id="krRegPass" type="password" autocomplete="new-password"></div>' +
+        '<button class="kr-btn block" onclick="doRegister()">' + esc(t('register')) + '</button>' +
+        '<div class="kr-muted kr-center" style="margin-top:14px">' +
+          esc(t('have_account')) + ' <a href="#" onclick="go(\'login\');return false;">' + esc(t('login')) + '</a>' +
+        '</div>' +
+      '</div>';
+  };
+  window.doRegister = function () {
+    const u = document.getElementById('krRegUser').value.trim();
+    const p = document.getElementById('krRegPass').value;
+    api('register', { username: u, password: p }).then(function (res) {
+      setToken(res.token); CURRENT_USER = res.user; toast(t('register'));
+      go(res.user.role === 'admin' ? 'admin' : 'store');
+    }).catch(function (err) { toast(err.message); });
+  };
+
+  // ----- Payment -----
+  routes.payment = function (params) {
+    if (!CURRENT_USER) { go('login'); return; }
+    const view = document.getElementById('krView');
+    api('getBookState', { book_id: params.bookId }).then(function (state) {
+      const s = SETTINGS;
+      const notice = (window.KR_LANG === 'kh' ? s.payment_notice_kh : s.payment_notice_en) || s.payment_notice_en || '';
+      const notConfigured = !s.aba_account_name && !s.aba_account_number && !s.aba_qr_url;
+      view.innerHTML =
+        '<div class="kr-card">' +
+          '<button class="kr-btn secondary" onclick="go(\'book\',{id:\'' + esc(params.bookId) + '\'})">← ' + esc(t('back')) + '</button>' +
+          '<h2 class="kr-h2" style="margin-top:14px">' + esc(t('payment_title')) + ' — ' + esc(state.book.title) + '</h2>' +
+          '<div class="kr-banner">' + esc(notice) + '</div>' +
+          (notConfigured ? '<div class="kr-banner" style="background:var(--kr-bad-l);color:var(--kr-bad)">' + esc(t('err_payment_not_set')) + '</div>' : '') +
+          '<div style="display:grid;grid-template-columns:1fr 1fr;gap:18px" class="kr-row">' +
+            '<div>' +
+              (s.aba_qr_file_id ? '<img src="' + esc(s.aba_qr_url || 'x-qr-fallback') + '" data-file-id="' + esc(s.aba_qr_file_id) + '" onerror="loadQrFallback(this)" style="width:100%;max-width:280px;border-radius:12px;border:1px solid var(--kr-line)">' : '<div class="kr-muted">' + esc(t('settings_qr')) + ' —</div>') +
+            '</div>' +
+            '<div>' +
+              '<div><strong>' + esc(t('aba_account_name')) + ':</strong> ' + esc(s.aba_account_name || '—') + '</div>' +
+              '<div style="margin-top:6px"><strong>' + esc(t('aba_account_number')) + ':</strong> ' + esc(s.aba_account_number || '—') + '</div>' +
+              '<div style="margin-top:6px"><strong>' + esc(t('working_hours')) + ':</strong> ' + esc((s.working_hours_start || '') + ' – ' + (s.working_hours_end || '')) + '</div>' +
+              '<div style="margin-top:6px"><strong>' + esc(t('price')) + ':</strong> ' + esc(state.book.price + ' ' + (state.book.currency || 'USD')) + '</div>' +
+            '</div>' +
+          '</div>' +
+          '<hr style="border:0;border-top:1px solid var(--kr-line);margin:18px 0">' +
+          '<div class="kr-field"><label>' + esc(t('upload_proof')) + '</label>' +
+            '<input class="kr-file" id="krProofFile" type="file" accept="image/*,application/pdf"></div>' +
+          '<button class="kr-btn block" onclick="doUploadProof(\'' + esc(params.orderId) + '\')">' + esc(t('upload')) + '</button>' +
+        '</div>';
+    });
+  };
+
+  window.doUploadProof = function (orderId) {
+    const input = document.getElementById('krProofFile');
+    if (!input.files || !input.files[0]) { toast(t('err_upload_failed')); return; }
+    fileToObj(input.files[0]).then(function (f) {
+      return api('uploadPaymentProof', { order_id: orderId, file: f });
+    }).then(function () {
+      toast(t('proof_uploaded')); go('library');
+    }).catch(function (err) { toast(err.message); });
+  };
+
+  // ----- Library -----
+  routes.library = function () {
+    if (!CURRENT_USER) { go('login'); return; }
+    const view = document.getElementById('krView');
+    view.innerHTML = '<div class="kr-card kr-center kr-pad"><div class="kr-spinner" style="margin: 0 auto"></div></div>';
+
+    api('myLibrary', {}).then(function (res) {
+      view.innerHTML = '';
+      const orders = res.orders || [];
+      const owned = res.ownedBooks || [];
+
+      const booksCard = document.createElement('div');
+      booksCard.className = 'kr-card';
+      booksCard.innerHTML = '<h2 class="kr-h2">' + esc(t('library_books')) + '</h2>';
+      if (!owned.length) {
+        booksCard.innerHTML += '<div class="kr-muted">' + esc(t('no_orders')) + '</div>';
+      } else {
+        const grid = document.createElement('div');
+        grid.className = 'kr-grid kr-books';
+        owned.forEach(function (book) {
+          const card = bookCard(book);
+          card.onclick = function () { go('reader', { id: book.book_id }); };
+          grid.appendChild(card);
+        });
+        booksCard.appendChild(grid);
+      }
+      view.appendChild(booksCard);
+
+      const ordersCard = document.createElement('div');
+      ordersCard.className = 'kr-card';
+      ordersCard.innerHTML = '<h2 class="kr-h2">' + esc(t('library_orders')) + '</h2>';
+      if (!orders.length) {
+        ordersCard.innerHTML += '<div class="kr-muted">' + esc(t('no_orders')) + '</div>';
+      } else {
+        const tbl = document.createElement('table');
+        tbl.className = 'kr-table';
+        tbl.innerHTML = '<thead><tr><th>' + esc(t('title')) + '</th><th>' + esc(t('price')) + '</th><th>Status</th><th></th></tr></thead>';
+        const tbody = document.createElement('tbody');
+        orders.forEach(function (o) {
+          const tr = document.createElement('tr');
+          tr.innerHTML =
+            '<td>' + esc((o.book && o.book.title) || o.book_title || '—') + '</td>' +
+            '<td>' + esc((o.amount || 0) + ' ' + (o.currency || '')) + '</td>' +
+            '<td><span class="kr-badge ' + esc(o.status) + '">' + esc(t('status_' + o.status)) + '</span>' +
+              (o.status === 'rejected' && o.reject_reason ? '<div class="kr-muted" style="font-size:12px;margin-top:4px">' + esc(o.reject_reason) + '</div>' : '') +
+            '</td>' +
+            '<td></td>';
+          const actionTd = tr.lastElementChild;
+          if (o.status === 'approved' && o.book) {
+            const b = btn(t('read_book'), function () { go('reader', { id: o.book.book_id }); });
+            b.classList.add('secondary');
+            actionTd.appendChild(b);
+          } else if (o.status === 'rejected' && o.book) {
+            const b = btn(t('buy_again'), function () { startBuy(o.book.book_id); });
+            b.classList.add('secondary');
+            actionTd.appendChild(b);
+          }
+          tbody.appendChild(tr);
+        });
+        tbl.appendChild(tbody);
+        ordersCard.appendChild(tbl);
+      }
+      view.appendChild(ordersCard);
+    });
+  };
+
+  // ----- Reader -----
+  routes.reader = function (params) {
+    if (!CURRENT_USER) { go('login'); return; }
+    const view = document.getElementById('krView');
+    view.innerHTML = '<div class="kr-card kr-center kr-pad"><div class="kr-spinner" style="margin: 0 auto"></div></div>';
+
+    api('openReader', { book_id: params.id }).then(function (res) {
+      if (!res.hasAccess) {
+        view.innerHTML =
+          '<div class="kr-card kr-center kr-pad">' +
+            '<div class="kr-h2">' + esc(t('err_purchase_first')) + '</div>' +
+            '<button class="kr-btn" onclick="go(\'book\',{id:\'' + esc(params.id) + '\'})">' + esc(t('buy_now')) + '</button>' +
+          '</div>';
+        return;
+      }
+      mountReader(res);
+    }).catch(function (err) {
+      view.innerHTML = '<div class="kr-card kr-center kr-pad">' + esc(err.message) + '</div>';
+    });
+  };
+
+  function mountReader(payload) {
+    // Pull PDF binary as base64 to avoid exposing stream URL outside this page
+    api('streamBase64', { kind: 'pdf', book: payload.book.book_id }).then(function (file) {
+      const view = document.getElementById('krView');
+      view.innerHTML = '';
+      const shell = document.createElement('div');
+      shell.className = 'kr-reader-shell';
+      shell.innerHTML =
+        '<div class="kr-reader-bar">' +
+          '<button class="kr-btn secondary" onclick="closeReader()">← ' + esc(t('back')) + '</button>' +
+          '<div style="font-weight:600">' + esc(payload.book.title) + '</div>' +
+          '<div style="margin-left:auto;font-size:13px;opacity:.8">' + esc(t('reader_warning')) + '</div>' +
+        '</div>' +
+        '<div class="kr-reader-stage" id="krReaderStage">' +
+          '<canvas id="krReaderCanvas" class="kr-reader-canvas"></canvas>' +
+          '<div class="kr-watermark" id="krWatermark"></div>' +
+          '<div class="kr-reader-warn" id="krReaderWarn">' + esc(t('reader_focus_warning')) + '</div>' +
+        '</div>';
+      document.body.appendChild(shell);
+
+      installReaderProtection(payload.reader.watermark);
+      renderPdf(file.base64);
+      window._krReaderShell = shell;
+    }).catch(function (err) { toast(err.message); });
+  }
+
+  window.closeReader = function () {
+    if (window._krReaderShell) {
+      try { document.body.removeChild(window._krReaderShell); } catch (_) {}
+      window._krReaderShell = null;
+    }
+    uninstallReaderProtection();
+    go('library');
+  };
+
+  // ---- PDF rendering via PDF.js (CDN) ----
+  function renderPdf(base64) {
+    loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js')
+      .then(function () {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+          'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const bin = atob(base64);
+        const data = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) data[i] = bin.charCodeAt(i);
+        return window.pdfjsLib.getDocument({ data: data }).promise;
+      })
+      .then(function (doc) {
+        const stage = document.getElementById('krReaderStage');
+        const canvas = document.getElementById('krReaderCanvas');
+        canvas.remove();
+        // Render every page into a stack of canvases
+        const container = document.createElement('div');
+        container.style.cssText = 'overflow:auto;height:100%;width:100%;padding:20px;display:flex;flex-direction:column;align-items:center;gap:14px';
+        stage.insertBefore(container, stage.firstChild);
+
+        function renderPage(num) {
+          return doc.getPage(num).then(function (page) {
+            const viewport = page.getViewport({ scale: 1.4 });
+            const c = document.createElement('canvas');
+            c.width = viewport.width; c.height = viewport.height;
+            c.style.maxWidth = '100%'; c.style.boxShadow = '0 4px 16px rgba(0,0,0,.25)';
+            container.appendChild(c);
+            return page.render({ canvasContext: c.getContext('2d'), viewport: viewport }).promise;
+          });
+        }
+        let p = Promise.resolve();
+        for (let i = 1; i <= doc.numPages; i++) {
+          (function (n) { p = p.then(function () { return renderPage(n); }); })(i);
+        }
+        return p;
+      })
+      .catch(function (err) { console.error(err); toast('PDF load failed.'); });
+  }
+
+  function loadScript(src) {
+    return new Promise(function (res, rej) {
+      const s = document.createElement('script'); s.src = src;
+      s.onload = res; s.onerror = function () { rej(new Error('script load failed')); };
+      document.head.appendChild(s);
+    });
+  }
+
+  // ---- Reader protection ----
+  let _readerHandlers = null;
+  function installReaderProtection(wm) {
+    drawWatermark(wm);
+    const blur = function (on) {
+      if (window._krReaderShell) window._krReaderShell.classList.toggle('kr-reader-blur', !!on);
+    };
+    const onBlur = function () { blur(true); };
+    const onFocus = function () { blur(false); };
+    const onVis = function () { blur(document.hidden); };
+    const onCtx = function (e) { e.preventDefault(); return false; };
+    const onSel = function (e) { e.preventDefault(); return false; };
+    const onCopy = function (e) { e.preventDefault(); toast(t('reader_warning')); };
+    const onKey = function (e) {
+      const k = (e.key || '').toLowerCase();
+      const ctrl = e.ctrlKey || e.metaKey;
+      const block =
+        (ctrl && ['c', 'x', 's', 'p', 'u', 'a'].indexOf(k) >= 0) ||
+        (ctrl && e.shiftKey && k === 'i') ||
+        k === 'f12';
+      if (block) {
+        e.preventDefault();
+        toast(t('reader_warning'));
+      }
+    };
+    window.addEventListener('blur', onBlur);
+    window.addEventListener('focus', onFocus);
+    document.addEventListener('visibilitychange', onVis);
+    document.addEventListener('contextmenu', onCtx);
+    document.addEventListener('selectstart', onSel);
+    document.addEventListener('copy', onCopy);
+    document.addEventListener('cut', onCopy);
+    document.addEventListener('keydown', onKey, true);
+
+    // Watermark drift
+    const driftId = setInterval(function () { drawWatermark(wm, true); }, 4000);
+
+    _readerHandlers = { onBlur, onFocus, onVis, onCtx, onSel, onCopy, onKey, driftId };
+  }
+  function uninstallReaderProtection() {
+    if (!_readerHandlers) return;
+    window.removeEventListener('blur', _readerHandlers.onBlur);
+    window.removeEventListener('focus', _readerHandlers.onFocus);
+    document.removeEventListener('visibilitychange', _readerHandlers.onVis);
+    document.removeEventListener('contextmenu', _readerHandlers.onCtx);
+    document.removeEventListener('selectstart', _readerHandlers.onSel);
+    document.removeEventListener('copy', _readerHandlers.onCopy);
+    document.removeEventListener('cut', _readerHandlers.onCopy);
+    document.removeEventListener('keydown', _readerHandlers.onKey, true);
+    clearInterval(_readerHandlers.driftId);
+    _readerHandlers = null;
+  }
+  function drawWatermark(wm, isDrift) {
+    const root = document.getElementById('krWatermark');
+    if (!root) return;
+    root.innerHTML = '';
+    const text = '@' + (wm.username || '') + ' • ' + (wm.user_id || '').substring(0, 8) +
+                 ' • book:' + (wm.book_id || '').substring(0, 8) +
+                 ' • ' + new Date().toLocaleString();
+    const cols = 4, rows = 6;
+    for (let y = 0; y < rows; y++) {
+      for (let x = 0; x < cols; x++) {
+        const s = document.createElement('span');
+        s.textContent = text;
+        const offset = isDrift ? Math.floor(Math.random() * 30) : 0;
+        s.style.left  = ((x * (100 / cols)) + (offset / 30)) + '%';
+        s.style.top   = ((y * (100 / rows)) + (offset / 40)) + '%';
+        root.appendChild(s);
+      }
+    }
+  }
+
+  // ====================================================================
+  // Admin
+  // ====================================================================
+  routes.admin = function () {
+    if (!CURRENT_USER || CURRENT_USER.role !== 'admin') { go('login'); return; }
+    const view = document.getElementById('krView');
+    const tab = (CURRENT_ROUTE.params && CURRENT_ROUTE.params.tab) || 'orders';
+    view.innerHTML =
+      '<div class="kr-card">' +
+        '<h1 class="kr-h1">' + esc(t('admin_title')) + '</h1>' +
+        '<div class="kr-tabs">' +
+          tabBtn('orders', tab) + tabBtn('books', tab) + tabBtn('settings', tab) + tabBtn('users', tab) + tabBtn('logs', tab) +
+        '</div>' +
+        '<div id="krAdminPanel"></div>' +
+      '</div>';
+    if (tab === 'orders')   adminOrders();
+    if (tab === 'books')    adminBooks();
+    if (tab === 'settings') adminSettings();
+    if (tab === 'users')    adminUsers();
+    if (tab === 'logs')     adminLogs();
+  };
+  function tabBtn(name, current) {
+    return '<div class="kr-tab ' + (name === current ? 'active' : '') + '" onclick="go(\'admin\',{tab:\'' + name + '\'})">' + esc(t('tab_' + name)) + '</div>';
+  }
+
+  function adminOrders() {
+    const panel = document.getElementById('krAdminPanel');
+    panel.innerHTML = '<div class="kr-spinner" style="margin: 12px auto"></div>';
+    api('adminListOrders', {}).then(function (res) {
+      const orders = res.orders || [];
+      if (!orders.length) { panel.innerHTML = '<div class="kr-muted">' + esc(t('no_orders')) + '</div>'; return; }
+      const tbl = document.createElement('table'); tbl.className = 'kr-table';
+      tbl.innerHTML = '<thead><tr><th>Buyer</th><th>Book</th><th>Amount</th><th>Status</th><th>Proof</th><th>Action</th></tr></thead>';
+      const tbody = document.createElement('tbody');
+      orders.forEach(function (o) {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + esc(o.username || '—') + '<div class="kr-muted" style="font-size:12px">' + esc((o.created_at || '').substring(0,16)) + '</div></td>' +
+          '<td>' + esc(o.book_title || '—') + '</td>' +
+          '<td>' + esc((o.amount || 0) + ' ' + (o.currency || '')) + '</td>' +
+          '<td><span class="kr-badge ' + esc(o.status) + '">' + esc(t('status_' + o.status)) + '</span>' +
+            (o.reject_reason ? '<div class="kr-muted" style="font-size:12px">' + esc(o.reject_reason) + '</div>' : '') +
+          '</td>' +
+          '<td>' + (o.payment_proof_file_id ? '<button class="kr-btn secondary" onclick="adminViewProof(\'' + esc(o.payment_proof_file_id) + '\')">' + esc(t('view_proof')) + '</button>' : '—') + '</td>' +
+          '<td></td>';
+        const actions = tr.lastElementChild;
+        if (o.status === 'pending') {
+          const a = btn(t('approve'), function () {
+            api('approveOrder', { order_id: o.order_id }).then(function () { toast(t('approve')); adminOrders(); }).catch(function (err) { toast(err.message); });
+          });
+          a.style.marginRight = '6px';
+          actions.appendChild(a);
+          const r = btn(t('reject'), function () {
+            const reason = prompt(t('reason'));
+            if (!reason) return;
+            api('rejectOrder', { order_id: o.order_id, reason: reason }).then(function () { toast(t('reject')); adminOrders(); }).catch(function (err) { toast(err.message); });
+          });
+          r.classList.add('danger');
+          actions.appendChild(r);
+        }
+        tbody.appendChild(tr);
+      });
+      tbl.appendChild(tbody);
+      panel.innerHTML = ''; panel.appendChild(tbl);
+    });
+  }
+
+  window.adminViewProof = function (fileId) {
+    api('streamBase64', { kind: 'proof', id: fileId }).then(function (file) {
+      const url = 'data:' + file.mime + ';base64,' + file.base64;
+      const w = window.open('', '_blank', 'noopener,noreferrer,width=900,height=700');
+      if (!w) { toast('Popup blocked'); return; }
+      const safeName = esc(file.name || 'proof');
+      if ((file.mime || '').indexOf('pdf') >= 0) {
+        w.document.write('<title>' + safeName + '</title><iframe src="' + url + '" style="border:0;width:100%;height:100vh"></iframe>');
+      } else {
+        w.document.write('<title>' + safeName + '</title><img src="' + url + '" style="max-width:100%;height:auto;display:block;margin:auto">');
+      }
+    }).catch(function (err) { toast(err.message); });
+  };
+
+  function adminBooks() {
+    const panel = document.getElementById('krAdminPanel');
+    panel.innerHTML = '<div class="kr-spinner" style="margin: 12px auto"></div>';
+    api('adminListBooks', {}).then(function (res) {
+      const books = res.books || [];
+      panel.innerHTML = '';
+      const addBtn = btn(t('add_book'), function () { showBookForm(null); });
+      panel.appendChild(addBtn);
+      if (!books.length) {
+        panel.appendChild(document.createElement('div')).className = 'kr-muted';
+        return;
+      }
+      const tbl = document.createElement('table'); tbl.className = 'kr-table'; tbl.style.marginTop = '14px';
+      tbl.innerHTML = '<thead><tr><th>' + esc(t('title')) + '</th><th>' + esc(t('price')) + '</th><th>' + esc(t('buy_enabled')) + '</th><th>Status</th><th></th></tr></thead>';
+      const tbody = document.createElement('tbody');
+      books.forEach(function (b) {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + esc(b.title) + '<div class="kr-muted" style="font-size:12px">' + esc(b.creator || '') + '</div></td>' +
+          '<td>' + esc((b.price || 0) + ' ' + (b.currency || '')) + '</td>' +
+          '<td>' + (String(b.buy_enabled) !== 'false' ? '<span class="kr-badge active">' + esc(t('status_active')) + '</span>' : '<span class="kr-badge disabled">' + esc(t('status_disabled')) + '</span>') + '</td>' +
+          '<td>' + esc(b.status) + '</td>' +
+          '<td></td>';
+        const ed = btn('Edit', function () { showBookForm(b); });
+        ed.classList.add('secondary'); ed.style.marginRight = '6px';
+        const ar = btn(t('archive'), function () {
+          if (!confirm(t('archive') + '?')) return;
+          api('archiveBook', { book_id: b.book_id }).then(function () { adminBooks(); }).catch(function (err) { toast(err.message); });
+        });
+        ar.classList.add('danger');
+        tr.lastElementChild.appendChild(ed);
+        tr.lastElementChild.appendChild(ar);
+        tbody.appendChild(tr);
+      });
+      tbl.appendChild(tbody);
+      panel.appendChild(tbl);
+    });
+  }
+
+  function showBookForm(book) {
+    const isNew = !book;
+    const html =
+      '<div class="kr-card" style="margin-top:14px">' +
+        '<h2 class="kr-h2">' + esc(isNew ? t('add_book') : t('title')) + '</h2>' +
+        '<div class="kr-field"><label>' + esc(t('title')) + '</label><input class="kr-input" id="bf_title" value="' + esc(book ? book.title : '') + '"></div>' +
+        '<div class="kr-field"><label>' + esc(t('creator')) + '</label><input class="kr-input" id="bf_creator" value="' + esc(book ? book.creator : '') + '"></div>' +
+        '<div class="kr-field"><label>' + esc(t('synopsis')) + '</label><textarea class="kr-textarea" id="bf_synopsis">' + esc(book ? book.synopsis : '') + '</textarea></div>' +
+        '<div class="kr-row">' +
+          '<div class="kr-field"><label>' + esc(t('price')) + '</label><input class="kr-input" id="bf_price" type="number" step="0.01" min="0" value="' + esc(book ? book.price : '0') + '"></div>' +
+          '<div class="kr-field"><label>' + esc(t('currency')) + '</label><input class="kr-input" id="bf_currency" value="' + esc(book ? (book.currency || '') : (SETTINGS.default_currency || 'USD')) + '"></div>' +
+        '</div>' +
+        '<div class="kr-field"><label>' + esc(t('cover_image')) + '</label><input class="kr-file" id="bf_cover" type="file" accept="image/*"></div>' +
+        '<div class="kr-field"><label>' + esc(t('pdf_file')) + (isNew ? ' *' : '') + '</label><input class="kr-file" id="bf_pdf" type="file" accept="application/pdf"></div>' +
+        '<div class="kr-field"><label>' + esc(t('buy_enabled')) + '</label>' +
+          '<select class="kr-select" id="bf_enabled"><option value="true"' + (book && String(book.buy_enabled) === 'false' ? '' : ' selected') + '>' + esc(t('yes')) + '</option><option value="false"' + (book && String(book.buy_enabled) === 'false' ? ' selected' : '') + '>' + esc(t('no')) + '</option></select></div>' +
+        '<div class="kr-field"><label>' + esc(t('disabled_remark')) + '</label><input class="kr-input" id="bf_remark" value="' + esc(book ? (book.disabled_remark || '') : '') + '"></div>' +
+        '<button class="kr-btn" id="bf_save">' + esc(t('save')) + '</button> ' +
+        '<button class="kr-btn secondary" onclick="adminBooks()">' + esc(t('cancel')) + '</button>' +
+      '</div>';
+    const panel = document.getElementById('krAdminPanel');
+    panel.innerHTML = html;
+    document.getElementById('bf_save').onclick = function () { saveBookForm(book); };
+  }
+  function saveBookForm(existing) {
+    const id = existing ? existing.book_id : null;
+    const v = function (q) { return document.getElementById(q).value; };
+    const data = {
+      book_id: id,
+      title: v('bf_title'), creator: v('bf_creator'), synopsis: v('bf_synopsis'),
+      price: Number(v('bf_price') || 0), currency: v('bf_currency'),
+      buy_enabled: v('bf_enabled') === 'true',
+      disabled_remark: v('bf_remark')
+    };
+    const cover = document.getElementById('bf_cover').files[0];
+    const pdf = document.getElementById('bf_pdf').files[0];
+    const tasks = [];
+    if (cover) tasks.push(fileToObj(cover).then(function (f) { data.coverFile = f; }));
+    if (pdf)   tasks.push(fileToObj(pdf).then(function (f) { data.pdfFile = f; }));
+    Promise.all(tasks).then(function () {
+      return api('saveBook', { book: data });
+    }).then(function () {
+      toast(t('save')); adminBooks();
+    }).catch(function (err) { toast(err.message); });
+  }
+
+  function adminSettings() {
+    const panel = document.getElementById('krAdminPanel');
+    renderAdminSettingsForm(SETTINGS || {});
+    api('getSettings', {}).then(function (res) {
+      SETTINGS = Object.assign({}, SETTINGS, res.settings || {});
+      renderAdminSettingsForm(SETTINGS);
+    }).catch(function (err) { toast(err.message); });
+  }
+  function renderAdminSettingsForm(s) {
+    const panel = document.getElementById('krAdminPanel');
+    panel.innerHTML =
+      '<div class="kr-card" style="margin-bottom:12px">' +
+        '<div style="font-weight:700;margin-bottom:4px">Site Settings</div>' +
+        '<div class="kr-muted" style="font-size:13px">Edit payment and website info here. Saving is now batched so it should feel faster.</div>' +
+      '</div>' +
+      '<div class="kr-row">' +
+        field('website_name', s.website_name) +
+        field('default_currency', s.default_currency) +
+      '</div>' +
+      '<div class="kr-row">' +
+        field('aba_account_name', s.aba_account_name) +
+        field('aba_account_number', s.aba_account_number) +
+      '</div>' +
+      '<div class="kr-row">' +
+        field('working_hours_start', s.working_hours_start) +
+        field('working_hours_end', s.working_hours_end) +
+      '</div>' +
+      '<div class="kr-field"><label>' + esc(t('settings_notice_kh')) + '</label><textarea class="kr-textarea" id="st_payment_notice_kh">' + esc(s.payment_notice_kh || '') + '</textarea></div>' +
+      '<div class="kr-field"><label>' + esc(t('settings_notice_en')) + '</label><textarea class="kr-textarea" id="st_payment_notice_en">' + esc(s.payment_notice_en || '') + '</textarea></div>' +
+      '<div class="kr-row">' +
+        field('telegram_group_link', s.telegram_group_link) +
+        field('telegram_button_text', s.telegram_button_text) +
+      '</div>' +
+      '<div class="kr-field"><label>' + esc(t('settings_qr')) + '</label><input class="kr-file" id="st_qr" type="file" accept="image/*">' +
+        (s.aba_qr_file_id ? '<div class="kr-muted" style="font-size:12px;margin-top:4px">QR is set</div>' : '') +
+      '</div>' +
+      '<div class="kr-row" style="align-items:center">' +
+        '<button class="kr-btn" id="krSaveSettingsBtn" onclick="saveAdminSettings()">' + esc(t('save')) + '</button>' +
+        '<button class="kr-btn secondary" type="button" onclick="adminTestTelegram()">Test Telegram</button>' +
+      '</div>';
+  }
+  function field(key, val) {
+    return '<div class="kr-field"><label>' + esc(t('settings_' + key) || t(key)) + '</label><input class="kr-input" id="st_' + esc(key) + '" value="' + esc(val || '') + '"></div>';
+  }
+  window.saveAdminSettings = function () {
+    const keys = ['website_name','default_currency','aba_account_name','aba_account_number',
+                  'working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en',
+                  'telegram_group_link','telegram_button_text'];
+    const settings = {};
+    keys.forEach(function (k) { settings[k] = document.getElementById('st_' + k).value; });
+    const qrFile = document.getElementById('st_qr').files[0];
+    const finish = function (extra) {
+      const saveBtn = document.getElementById('krSaveSettingsBtn');
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
+      const payload = Object.assign({ settings: settings }, extra || {});
+      api('saveSettings', payload).then(function (res) {
+        SETTINGS = Object.assign({}, SETTINGS, res.settings || {});
+        toast(t('save'));
+        renderAdminSettingsForm(SETTINGS);
+      }).catch(function (err) {
+        toast(err.message);
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = t('save'); }
+      });
+    };
+    if (qrFile) fileToObj(qrFile).then(function (f) { finish({ aba_qr_file: f }); });
+    else finish({});
+  };
+  window.adminTestTelegram = function () {
+    api('adminTestTelegram', {}).then(function () {
+      toast('Telegram test sent');
+    }).catch(function (err) { toast(err.message); });
+  };
+
+  function adminUsers() {
+    const panel = document.getElementById('krAdminPanel');
+    panel.innerHTML = '<div class="kr-spinner" style="margin: 12px auto"></div>';
+    api('adminListUsers', {}).then(function (res) {
+      const users = res.users || [];
+      panel.innerHTML =
+        '<div class="kr-card" style="margin-bottom:14px">' +
+          '<div style="font-weight:700;margin-bottom:10px">Add User</div>' +
+          '<div class="kr-row">' +
+            '<div class="kr-field"><label>Username</label><input class="kr-input" id="adm_new_username" placeholder="dara123"></div>' +
+            '<div class="kr-field"><label>Password</label><input class="kr-input" id="adm_new_password" type="password" placeholder="min. 6 characters"></div>' +
+            '<div class="kr-field"><label>Role</label>' + adminSelectHtml('adm_new_role', 'buyer', ['buyer','seller','admin']) + '</div>' +
+            '<div class="kr-field"><label>Status</label>' + adminSelectHtml('adm_new_status', 'active', ['active','disabled']) + '</div>' +
+          '</div>' +
+          '<button class="kr-btn" onclick="adminCreateUser()">Add User</button>' +
+        '</div>';
+
+      const tbl = document.createElement('table'); tbl.className = 'kr-table';
+      tbl.innerHTML = '<thead><tr><th>Username</th><th>Role</th><th>Status</th><th>Created</th><th>Last login</th><th>Actions</th></tr></thead>';
+      const tbody = document.createElement('tbody');
+      users.forEach(function (u) {
+        const tr = document.createElement('tr');
+        const safeId = esc(u.user_id);
+        const isSelf = CURRENT_USER && CURRENT_USER.user_id === u.user_id;
+        tr.innerHTML =
+          '<td>' + esc(u.username) + '</td>' +
+          '<td>' + adminSelectHtml('adm_role_' + safeId, u.role || 'buyer', ['buyer','seller','admin']) + '</td>' +
+          '<td>' + adminSelectHtml('adm_status_' + safeId, u.status || 'active', ['active','disabled']) + '</td>' +
+          '<td>' + esc((u.created_at || '').substring(0, 19).replace('T', ' ')) + '</td>' +
+          '<td>' + esc((u.last_login || '').substring(0, 19).replace('T', ' ')) + '</td>' +
+          '<td><div class="kr-row" style="gap:6px;flex-wrap:nowrap">' +
+            '<button class="kr-btn secondary" style="padding:7px 10px" onclick="adminUpdateUser(\'' + safeId + '\')">Save</button>' +
+            '<button class="kr-btn danger" style="padding:7px 10px" ' + (isSelf ? 'disabled title="Cannot delete current admin"' : '') + ' onclick="adminDeleteUser(\'' + safeId + '\')">Delete</button>' +
+          '</div></td>';
+        tbody.appendChild(tr);
+      });
+      tbl.appendChild(tbody);
+      panel.appendChild(tbl);
+    }).catch(function (err) { panel.innerHTML = '<div class="kr-empty">' + esc(err.message) + '</div>'; });
+  }
+  function adminSelectHtml(id, current, options) {
+    return '<select class="kr-select" id="' + esc(id) + '">' + options.map(function (opt) {
+      return '<option value="' + esc(opt) + '"' + (opt === current ? ' selected' : '') + '>' + esc(opt) + '</option>';
+    }).join('') + '</select>';
+  }
+  window.adminCreateUser = function () {
+    const user = {
+      username: document.getElementById('adm_new_username').value,
+      password: document.getElementById('adm_new_password').value,
+      role: document.getElementById('adm_new_role').value,
+      status: document.getElementById('adm_new_status').value
+    };
+    api('adminCreateUser', { user: user }).then(function () {
+      toast('User added');
+      adminUsers();
+    }).catch(function (err) { toast(err.message); });
+  };
+  window.adminUpdateUser = function (userId) {
+    const user = {
+      user_id: userId,
+      role: document.getElementById('adm_role_' + userId).value,
+      status: document.getElementById('adm_status_' + userId).value
+    };
+    api('adminUpdateUser', { user: user }).then(function () {
+      toast('User saved');
+      adminUsers();
+    }).catch(function (err) { toast(err.message); });
+  };
+  window.adminDeleteUser = function (userId) {
+    if (!confirm('Delete this user? If the user has orders or library access, the account will be disabled instead.')) return;
+    api('adminDeleteUser', { user_id: userId }).then(function (res) {
+      toast(res.disabled ? 'User has history, so it was disabled' : 'User deleted');
+      adminUsers();
+    }).catch(function (err) { toast(err.message); });
+  };
+
+  function adminLogs() {
+    const panel = document.getElementById('krAdminPanel');
+    panel.innerHTML = '<div class="kr-spinner" style="margin: 12px auto"></div>';
+    api('adminListLogs', {}).then(function (res) {
+      const logs = res.logs || [];
+      const tbl = document.createElement('table'); tbl.className = 'kr-table';
+      tbl.innerHTML = '<thead><tr><th>Time</th><th>Action</th><th>By</th><th>Details</th></tr></thead>';
+      const tbody = document.createElement('tbody');
+      logs.forEach(function (l) {
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td>' + esc((l.created_at || '').substring(0, 19).replace('T', ' ')) + '</td>' +
+          '<td>' + esc(l.action) + '</td>' +
+          '<td>' + esc(l.actor_username || '—') + '</td>' +
+          '<td><pre style="margin:0;white-space:pre-wrap;font-size:12px">' + esc(l.details || '') + '</pre></td>';
+        tbody.appendChild(tr);
+      });
+      tbl.appendChild(tbody);
+      panel.innerHTML = ''; panel.appendChild(tbl);
+    });
+  }
+
+  // ====================================================================
+  // Helpers
+  // ====================================================================
+  function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
+  function btn(label, onClick) { const b = document.createElement('button'); b.className = 'kr-btn'; b.textContent = label; b.onclick = onClick; return b; }
+
+  boot();
+</script>

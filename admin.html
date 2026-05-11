@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
+<title>KhozyReads · Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700&family=Lora:wght@400;500;600&family=Noto+Serif+Khmer:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAF5E9; --bg-elevated:#FFFDF7; --bg-deep:#F2E9D2;
+  --fg:#1E2A3A; --fg-soft:#4A5568; --muted:#8B7E66;
+  --border:#E5DCC5; --border-strong:#C9B98E;
+  --primary:#7B2D26; --primary-deep:#5C1F1A;
+  --accent:#D4A574; --accent-deep:#B8854A;
+  --secondary:#3D5B49; --danger:#C53030; --success:#38A169; --warning:#DD6B20; --info:#3D5B49;
+  --soft-rose:#E8C5BC;
+  --radius:8px; --radius-lg:14px;
+  --shadow-sm:0 1px 2px rgba(30,42,58,.05),0 1px 1px rgba(30,42,58,.03);
+  --shadow-md:0 8px 24px rgba(30,42,58,.08);
+  --font-display:'Cormorant Garamond','Noto Serif Khmer',serif;
+  --font-serif:'Crimson Pro','Noto Serif Khmer',serif;
+  --font-body:'Lora','Noto Serif Khmer',Georgia,serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--font-body);font-size:15px;line-height:1.6;color:var(--fg);background:var(--bg);-webkit-font-smoothing:antialiased}
+a{color:var(--primary);text-decoration:none}
+a:hover{color:var(--primary-deep)}
+button{font-family:inherit;font-size:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+
+.topbar{background:var(--bg-elevated);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:30}
+.topbar::after{content:"";display:block;height:2px;background:linear-gradient(90deg,transparent 0,transparent 6%,var(--accent) 14%,var(--primary) 50%,var(--accent) 86%,transparent 94%);opacity:.4}
+.topbar-inner{max-width:1320px;margin:0 auto;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;gap:12px;color:var(--fg)}
+.brand-mark{width:34px;height:34px;color:var(--primary)}
+.brand-name{font-family:var(--font-display);font-size:22px;font-weight:600;line-height:1}
+.brand-sub{font-family:var(--font-serif);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+nav.top-nav{display:flex;align-items:center;gap:4px}
+.nav-link{position:relative;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;border-radius:6px;font-size:14px;color:var(--fg-soft);letter-spacing:.04em;transition:background .2s,color .2s;cursor:pointer}
+.nav-link:hover{background:var(--bg-deep);color:var(--primary)}
+.nav-link.active{color:var(--primary);background:transparent}
+.nav-link.active::after{content:"";position:absolute;left:14px;right:14px;bottom:-15px;height:2px;background:var(--primary)}
+.user-chip{display:inline-flex;align-items:center;gap:10px;padding:5px 12px 5px 5px;border:1px solid var(--border-strong);border-radius:999px;font-size:13px;color:var(--fg-soft);background:var(--bg)}
+.user-chip .avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent-deep));color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-weight:600;font-size:13px}
+
+.shell{max-width:1320px;margin:0 auto;padding:36px 28px 80px}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding-bottom:20px;margin-bottom:28px;border-bottom:1px solid var(--border)}
+.page-head .eyebrow{font-family:var(--font-serif);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--accent-deep);font-weight:500;margin-bottom:8px}
+.page-head h1{margin:0;font-family:var(--font-display);font-size:42px;font-weight:600;line-height:1.05;color:var(--fg)}
+.page-head .right{display:flex;gap:10px;align-items:center}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;min-height:42px;border-radius:7px;font-family:var(--font-serif);font-weight:500;font-size:14px;letter-spacing:.04em;border:1px solid transparent;transition:transform .15s,box-shadow .2s,background .2s,color .2s,border-color .2s;cursor:pointer}
+.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-primary:hover{background:var(--primary-deep);box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--fg-soft);border-color:var(--border-strong)}
+.btn-ghost:hover{color:var(--primary);border-color:var(--accent-deep);background:var(--bg-deep)}
+.btn-sm{padding:6px 12px;min-height:32px;font-size:13px}
+.btn-success{background:var(--success);color:#fff;border-color:var(--success)}
+.btn-success:hover{background:#2f8a59;color:#fff}
+.btn-danger{background:var(--danger);color:#fff;border-color:var(--danger)}
+.btn-danger:hover{background:#a52424}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:36px}
+@media (max-width:900px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+.stat-card{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px 24px 20px;position:relative;overflow:hidden;transition:border-color .2s,box-shadow .2s,transform .2s}
+.stat-card:hover{border-color:var(--border-strong);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.stat-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+.stat-card.primary::before{background:var(--primary)}
+.stat-card.success::before{background:var(--success)}
+.stat-card.warn::before{background:var(--warning)}
+.stat-card .label{display:block;font-family:var(--font-serif);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);font-weight:500;margin-bottom:14px}
+.stat-card .value{font-family:var(--font-display);font-size:48px;font-weight:600;line-height:1;color:var(--fg)}
+.stat-card .delta{margin-top:8px;font-size:13px;color:var(--muted)}
+
+.panel{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:24px}
+.panel-head{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.panel-head h2{margin:0;font-family:var(--font-display);font-size:24px;font-weight:600;color:var(--fg)}
+.panel-head .meta{color:var(--muted);font-family:var(--font-serif);font-size:13px;letter-spacing:.06em}
+.panel-body{padding:8px 0;overflow:auto}
+
+.table{width:100%;border-collapse:collapse}
+.table th{text-align:left;font-family:var(--font-serif);font-weight:500;font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);padding:14px 24px;border-bottom:1px solid var(--border);background:var(--bg-deep);white-space:nowrap}
+.table td{padding:18px 24px;border-bottom:1px solid var(--border);font-size:15px;color:var(--fg-soft);vertical-align:middle}
+.table tr:last-child td{border-bottom:0}
+.table tr:hover td{background:rgba(212,165,116,.06)}
+.cell-title{font-family:var(--font-display);font-weight:600;font-size:18px;color:var(--fg);line-height:1.25}
+.cell-mono{font-family:var(--font-mono);font-size:13px;color:var(--fg-soft);white-space:nowrap}
+.thumb{width:48px;height:64px;border-radius:4px;background:linear-gradient(135deg,#7B2D26,#3D5B49);border:1px solid var(--border-strong);position:relative;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.thumb::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(135deg,transparent 0 8px,rgba(255,255,255,.08) 8px 9px);pointer-events:none}
+.thumb img + ::after{display:none}
+
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;letter-spacing:.06em;font-family:var(--font-serif);font-weight:500;border:1px solid}
+.badge .dot{width:6px;height:6px;border-radius:50%}
+.b-active{color:var(--success);border-color:rgba(56,161,105,.3);background:rgba(56,161,105,.08)}
+.b-active .dot{background:var(--success)}
+.b-pending{color:var(--warning);border-color:rgba(221,107,32,.3);background:rgba(221,107,32,.08)}
+.b-pending .dot{background:var(--warning)}
+.b-approved{color:var(--success);border-color:rgba(56,161,105,.3);background:rgba(56,161,105,.08)}
+.b-approved .dot{background:var(--success)}
+.b-rejected{color:var(--danger);border-color:rgba(197,48,48,.3);background:rgba(197,48,48,.08)}
+.b-rejected .dot{background:var(--danger)}
+.b-info{color:var(--info);border-color:rgba(61,91,73,.3);background:rgba(61,91,73,.08)}
+.b-info .dot{background:var(--info)}
+.b-archived{color:var(--muted);border-color:rgba(139,126,102,.3);background:rgba(139,126,102,.08)}
+.b-archived .dot{background:var(--muted)}
+
+.tag{display:inline-block;padding:3px 9px;border-radius:4px;font-family:var(--font-mono);font-size:12px;background:var(--bg-deep);color:var(--fg-soft);border:1px solid var(--border)}
+
+.tabs{display:flex;gap:4px;padding:8px;background:var(--bg-deep);border-radius:10px;border:1px solid var(--border);width:fit-content}
+.tabs button{padding:8px 18px;border-radius:6px;font-family:var(--font-serif);font-size:14px;color:var(--fg-soft);transition:all .2s}
+.tabs button.active{background:var(--primary);color:#fff;box-shadow:var(--shadow-sm)}
+.tabs button:not(.active):hover{color:var(--primary)}
+
+.form-section{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;margin-bottom:24px}
+.form-section h3{margin:0 0 6px;font-family:var(--font-display);font-size:24px;font-weight:600;color:var(--fg)}
+.form-section .section-desc{margin:0 0 24px;color:var(--muted);font-family:var(--font-serif);font-style:italic}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media (max-width:720px){.form-grid{grid-template-columns:1fr}}
+.field{display:flex;flex-direction:column;gap:8px;margin-bottom:0}
+.field label{font-family:var(--font-serif);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.field .hint{font-size:12px;color:var(--muted)}
+.input,select.input,textarea.input{width:100%;padding:11px 14px;background:var(--bg);border:1px solid var(--border-strong);border-radius:6px;font-size:15px;color:var(--fg);transition:border-color .2s,box-shadow .2s}
+textarea.input{min-height:80px;font-family:inherit;line-height:1.6}
+.input:focus,select.input:focus,textarea.input:focus{outline:0;border-color:var(--primary);box-shadow:0 0 0 3px rgba(123,45,38,.1)}
+.upload-box{border:1px dashed var(--border-strong);border-radius:8px;padding:18px;display:flex;align-items:center;gap:18px;background:var(--bg)}
+.upload-box img{max-width:120px;max-height:120px;flex:0 0 auto;border-radius:6px;border:1px solid var(--border)}
+.upload-box .meta{flex:1}
+.upload-box .meta .name{font-family:var(--font-serif);font-weight:500;color:var(--fg)}
+.upload-box .meta .sz{color:var(--muted);font-size:13px}
+
+.logs-table td{padding:14px 24px;font-size:14px}
+.logs-table .time{font-family:var(--font-mono);font-size:12px;color:var(--muted);white-space:nowrap}
+.logs-table .actor{color:var(--primary);font-weight:500}
+details.row-details summary{list-style:none;color:var(--muted);cursor:pointer;font-size:13px;font-family:var(--font-serif);font-style:italic}
+details.row-details summary::before{content:"▸ ";color:var(--accent-deep)}
+details.row-details[open] summary::before{content:"▾ "}
+details.row-details .detail-body{margin-top:8px;padding:12px;background:var(--bg-deep);border-radius:6px;font-family:var(--font-mono);font-size:12px;color:var(--fg-soft);white-space:pre-wrap;max-width:400px;overflow:auto}
+
+.empty{padding:48px 24px;text-align:center;color:var(--muted);font-family:var(--font-serif);font-style:italic}
+.divider-orn{display:flex;align-items:center;gap:14px;color:var(--accent-deep);margin:8px 0}
+.divider-orn::before,.divider-orn::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border-strong),transparent)}
+.divider-orn svg{width:48px;height:18px;color:var(--accent)}
+
+.alert{padding:12px 16px;border-radius:8px;margin-bottom:14px;font-family:var(--font-serif);font-size:14px;border:1px solid}
+.alert-error{background:rgba(197,48,48,.08);color:var(--danger);border-color:rgba(197,48,48,.3)}
+.alert-success{background:rgba(56,161,105,.08);color:var(--success);border-color:rgba(56,161,105,.3)}
+
+.route{animation:fadein .2s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+@media (max-width:760px){
+  .topbar-inner{padding:12px 14px;gap:12px;flex-wrap:wrap}
+  .brand-name{font-size:18px}.brand-sub{display:none}
+  nav.top-nav{width:100%;order:3;justify-content:space-between;overflow-x:auto;border-top:1px solid var(--border);padding-top:8px;margin-top:4px;gap:0}
+  .nav-link{padding:8px 10px;font-size:13px;white-space:nowrap}
+  .nav-link.active::after{bottom:-9px}
+  .shell{padding:24px 14px 60px}
+  .page-head{flex-direction:column;align-items:flex-start;gap:14px}
+  .page-head h1{font-size:30px}
+  .page-head .right{flex-wrap:wrap}
+  .stat-grid{grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px}
+  .stat-card{padding:16px 18px 14px}
+  .stat-card .value{font-size:34px}
+  .panel-head{padding:14px 16px;flex-direction:column;align-items:flex-start;gap:10px}
+  .panel-head h2{font-size:20px}
+  .panel-body{overflow-x:auto}
+  .table th,.table td{padding:12px 14px;font-size:13px}
+  .cell-title{font-size:15px}
+  .form-section{padding:22px 16px}
+  .form-section h3{font-size:20px}
+  .upload-box{flex-direction:column;align-items:flex-start;gap:12px}
+  .upload-box img{max-width:80px;max-height:80px}
+  .modal-body{padding:24px 18px}
+}
+
+/* Modal */
+#modal{position:fixed;inset:0;background:rgba(20,15,12,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:100;padding:24px}
+#modal.open{display:flex}
+.modal-body{background:var(--bg-elevated);border:1px solid var(--border);border-radius:var(--radius-lg);padding:32px;max-width:560px;width:100%;max-height:90vh;overflow:auto;box-shadow:var(--shadow-md)}
+.modal-body h2{margin:0 0 18px;font-family:var(--font-display);font-size:28px;font-weight:600}
+.modal-body .field{margin-bottom:16px}
+
+/* Lotus spinner */
+.lotus-loader{display:inline-flex;width:48px;height:48px;color:var(--primary)}
+.lotus-loader svg{width:100%;height:100%;animation:lotus-spin 6s linear infinite}
+.lotus-loader .petal{transform-origin:32px 32px;animation:lotus-bloom 2.4s ease-in-out infinite}
+.lotus-loader .petal:nth-child(2){animation-delay:.15s}.lotus-loader .petal:nth-child(3){animation-delay:.3s}
+.lotus-loader .petal:nth-child(4){animation-delay:.45s}.lotus-loader .petal:nth-child(5){animation-delay:.6s}
+.lotus-loader .petal:nth-child(6){animation-delay:.75s}.lotus-loader .petal:nth-child(7){animation-delay:.9s}
+.lotus-loader .petal:nth-child(8){animation-delay:1.05s}
+@keyframes lotus-spin{to{transform:rotate(360deg)}}
+@keyframes lotus-bloom{0%,100%{transform:scale(.85);opacity:.6}50%{transform:scale(1.08);opacity:1}}
+.muted{color:var(--muted)}
+.center{text-align:center}
+.hide{display:none !important}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="brand-mark" viewBox="0 0 42 42">
+    <g fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round">
+      <path d="M6 32 C 14 28, 28 28, 36 32 L 36 12 C 28 8, 14 8, 6 12 Z" fill="currentColor" opacity=".1"/>
+      <path d="M6 32 C 14 28, 28 28, 36 32 L 36 12 C 28 8, 14 8, 6 12 Z"/>
+      <path d="M21 12 L21 32"/>
+      <path d="M21 22 C 17 18, 14 16, 12 16 M21 22 C 25 18, 28 16, 30 16" stroke-width="1.2"/>
+      <circle cx="21" cy="22" r="1.5" fill="currentColor"/>
+    </g>
+  </symbol>
+  <symbol id="orn-divider" viewBox="0 0 48 18">
+    <g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round">
+      <path d="M0 9 L18 9 M30 9 L48 9"/>
+      <circle cx="24" cy="9" r="2" fill="currentColor"/>
+      <path d="M24 2 C 20 5, 20 7, 24 9 C 28 7, 28 5, 24 2 Z" fill="currentColor"/>
+      <path d="M24 16 C 20 13, 20 11, 24 9 C 28 11, 28 13, 24 16 Z" fill="currentColor"/>
+    </g>
+  </symbol>
+  <symbol id="orn-lotus" viewBox="0 0 64 64">
+    <g fill="currentColor">
+      <g class="petal"><path d="M32 32 C 24 22, 24 12, 32 4 C 40 12, 40 22 32 32 Z" opacity=".9"/></g>
+      <g class="petal" style="transform:rotate(45deg);transform-origin:32px 32px"><path d="M32 32 C 24 22, 24 12, 32 4 C 40 12, 40 22 32 32 Z" opacity=".75"/></g>
+      <g class="petal" style="transform:rotate(90deg);transform-origin:32px 32px"><path d="M32 32 C 24 22, 24 12, 32 4 C 40 12, 40 22 32 32 Z" opacity=".9"/></g>
+      <g class="petal" style="transform:rotate(135deg);transform-origin:32px 32px"><path d="M32 32 C 24 22, 24 12, 32 4 C 40 12, 40 22 32 32 Z" opacity=".75"/></g>
+      <g class="petal" style="transform:rotate(180deg);transform-origin:32px 32px"><path d="M32 32 C 24 22, 24 12, 32 4 C 40 12, 40 22 32 32 Z" opacity=".9"/></g>
+      <g class="petal" style="transform:rotate(225deg);transform-origin:32px 32px"><path d="M32 32 C 24 22, 24 12, 32 4 C 40 12, 40 22 32 32 Z" opacity=".75"/></g>
+      <g class="petal" style="transform:rotate(270deg);transform-origin:32px 32px"><path d="M32 32 C 24 22, 24 12, 32 4 C 40 12, 40 22 32 32 Z" opacity=".9"/></g>
+      <g class="petal" style="transform:rotate(315deg);transform-origin:32px 32px"><path d="M32 32 C 24 22, 24 12, 32 4 C 40 12, 40 22 32 32 Z" opacity=".75"/></g>
+      <circle cx="32" cy="32" r="4" fill="currentColor"/>
+    </g>
+  </symbol>
+</defs></svg>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a href="#/dashboard" class="brand">
+      <svg class="brand-mark"><use href="#brand-mark"/></svg>
+      <div>
+        <div class="brand-name">KhozyReads</div>
+        <div class="brand-sub">Admin Console</div>
+      </div>
+    </a>
+    <nav class="top-nav" id="top-nav"></nav>
+    <div id="user-nav" style="display:flex;align-items:center;gap:14px"></div>
+  </div>
+</header>
+
+<main id="route-outlet" class="shell"><div class="center" style="padding:80px"><span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span></div></main>
+
+<div id="modal"><div class="modal-body" id="modal-body"></div></div>
+
+<!-- Templates -->
+<template id="tpl-dashboard">
+<section class="route">
+  <div class="page-head"><div><div class="eyebrow" id="d-date"></div><h1 id="d-greeting">Dashboard</h1></div></div>
+  <div class="stat-grid">
+    <div class="stat-card primary"><span class="label">Total books</span><div class="value" id="s-books">—</div></div>
+    <div class="stat-card warn"><span class="label">Pending orders</span><div class="value" id="s-pending">—</div></div>
+    <div class="stat-card success"><span class="label">Approved</span><div class="value" id="s-approved">—</div></div>
+    <div class="stat-card"><span class="label">Total readers</span><div class="value" id="s-users">—</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div><h2>Recent orders</h2><div class="meta">Latest activity</div></div><a class="btn btn-ghost btn-sm" href="#/orders">View all</a></div>
+    <div class="panel-body"><table class="table"><thead><tr><th>Time</th><th>Reader</th><th>Book</th><th>Amount</th><th>Status</th></tr></thead><tbody id="recent-body"></tbody></table></div>
+  </div>
+</section>
+</template>
+
+<template id="tpl-books">
+<section class="route">
+  <div class="page-head"><div><div class="eyebrow">Catalogue</div><h1>Books</h1></div><div class="right"><button class="btn btn-primary" id="new-book-btn">+ New book</button></div></div>
+  <div class="panel">
+    <div class="panel-head"><div><h2>All titles</h2><div class="meta" id="books-meta">—</div></div></div>
+    <div class="panel-body"><table class="table"><thead><tr><th>Cover</th><th>Title</th><th>Creator</th><th>Price</th><th>Buy</th><th>Status</th><th></th></tr></thead><tbody id="books-body"></tbody></table></div>
+  </div>
+</section>
+</template>
+
+<template id="tpl-orders">
+<section class="route">
+  <div class="page-head"><div><div class="eyebrow">Reader purchases</div><h1>Orders</h1></div></div>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;flex-wrap:wrap">
+    <div class="tabs" id="order-tabs">
+      <button class="active" data-tab="pending">Pending</button>
+      <button data-tab="approved">Approved</button>
+      <button data-tab="rejected">Rejected</button>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div><h2 id="orders-title">Pending orders</h2><div class="meta">Awaiting verification</div></div></div>
+    <div class="panel-body"><table class="table"><thead><tr><th>Time</th><th>Reader</th><th>Book</th><th>Amount</th><th>Proof</th><th>Status</th><th></th></tr></thead><tbody id="orders-body"></tbody></table></div>
+  </div>
+</section>
+</template>
+
+<template id="tpl-users">
+<section class="route">
+  <div class="page-head"><div><div class="eyebrow">Members</div><h1>Users</h1></div></div>
+  <div id="users-msg"></div>
+  <div class="panel">
+    <div class="panel-head"><div><h2>All members</h2><div class="meta" id="users-meta">—</div></div></div>
+    <div class="panel-body"><table class="table"><thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th><th>Last sign-in</th><th>Actions</th></tr></thead><tbody id="users-body"></tbody></table></div>
+  </div>
+</section>
+</template>
+
+<template id="tpl-settings">
+<section class="route">
+  <div class="page-head"><div><div class="eyebrow">Configuration</div><h1>Settings</h1></div><div class="right"><button class="btn btn-primary" id="save-settings">Save changes</button></div></div>
+  <div id="settings-msg"></div>
+  <form id="settings-form">
+    <div class="form-section">
+      <h3>Site</h3>
+      <p class="section-desc">How readers see and find your store.</p>
+      <div class="form-grid">
+        <div class="field"><label>Website name</label><input class="input" name="website_name"/></div>
+        <div class="field"><label>Default currency</label><select class="input" name="default_currency"><option>USD</option><option>KHR</option></select></div>
+        <div class="field"><label>Default language</label><select class="input" name="default_language"><option value="kh">ខ្មែរ — Khmer</option><option value="en">English</option></select></div>
+        <div class="field"><label>Working hours start</label><input class="input" name="working_hours_start" type="time"/></div>
+        <div class="field"><label>Working hours end</label><input class="input" name="working_hours_end" type="time"/></div>
+      </div>
+    </div>
+    <div class="form-section">
+      <h3>ABA · KHQR Payment</h3>
+      <p class="section-desc">Buyers will scan or transfer to this account.</p>
+      <div class="form-grid">
+        <div class="field"><label>Account name</label><input class="input" name="aba_account_name"/></div>
+        <div class="field"><label>Account number</label><input class="input" name="aba_account_number"/></div>
+      </div>
+      <div class="field" style="margin-top:20px">
+        <label>QR Code image</label>
+        <div class="upload-box" id="qr-upload-box"></div>
+        <input type="file" name="aba_qr" accept="image/jpeg,image/png,image/webp" style="margin-top:10px"/>
+        <div class="hint">JPG or PNG · recommended 600×600px</div>
+      </div>
+    </div>
+    <div class="form-section">
+      <h3>Payment notice</h3>
+      <p class="section-desc">Shown on payment page (both Khmer & English).</p>
+      <div class="field" style="margin-bottom:16px"><label>Khmer</label><textarea class="input" name="payment_notice_kh"></textarea></div>
+      <div class="field"><label>English</label><textarea class="input" name="payment_notice_en"></textarea></div>
+    </div>
+    <div class="form-section">
+      <h3>Telegram (notifications only)</h3>
+      <p class="section-desc">Get bot token from <a href="https://t.me/BotFather" target="_blank">@BotFather</a>.</p>
+      <div class="form-grid">
+        <div class="field"><label>Bot token (leave empty to keep)</label><input class="input" name="telegram_bot_token" type="password" placeholder="••••••••"/></div>
+        <div class="field"><label>Admin chat ID</label><input class="input" name="telegram_admin_chat_id"/></div>
+        <div class="field"><label>Group link</label><input class="input" name="telegram_group_link" placeholder="https://t.me/..."/></div>
+        <div class="field"><label>Button text</label><input class="input" name="telegram_button_text"/></div>
+      </div>
+    </div>
+  </form>
+</section>
+</template>
+
+<template id="tpl-logs">
+<section class="route">
+  <div class="page-head"><div><div class="eyebrow">Audit trail · latest 200</div><h1>Activity logs</h1></div></div>
+  <div class="panel"><div class="panel-body"><table class="table logs-table"><thead><tr><th>Time</th><th>Action</th><th>Actor</th><th>Target</th><th>Details</th></tr></thead><tbody id="logs-body"></tbody></table></div></div>
+</section>
+</template>
+
+<template id="tpl-login">
+<section class="route" style="max-width:440px;margin:80px auto 0">
+  <form class="form-section" id="admin-login" style="padding:48px 40px;position:relative">
+    <div style="text-align:center;color:var(--accent);margin-bottom:10px"><svg style="width:50px;height:18px"><use href="#orn-divider"/></svg></div>
+    <div style="text-align:center;font-family:var(--font-serif);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Restricted area</div>
+    <h3 style="text-align:center;margin-bottom:6px;font-family:var(--font-display);font-size:24px;font-weight:600">Admin sign in</h3>
+    <p class="section-desc" style="text-align:center">Use your admin credentials to continue</p>
+    <div id="login-error"></div>
+    <div class="field" style="margin-bottom:14px"><label>Email</label><input class="input" type="email" name="email" required autocomplete="email"/></div>
+    <div class="field" style="margin-bottom:18px"><label>Password</label><input type="password" class="input" name="password" required/></div>
+    <button class="btn btn-primary" style="width:100%" type="submit">Sign in</button>
+  </form>
+</section>
+</template>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+"use strict";
+const CFG = window.KHOZY_CONFIG || {};
+if(!CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY){
+  document.getElementById('route-outlet').innerHTML='<div class="alert alert-error">Config missing. Edit <code>config.js</code></div>';
+  throw new Error('Config missing');
+}
+const sb = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, { auth:{persistSession:true,autoRefreshToken:true,storageKey:'khozy-admin-auth'} });
+
+const state = { user:null, profile:null };
+
+const $ = (s,c=document)=>c.querySelector(s);
+const $$ = (s,c=document)=>c.querySelectorAll(s);
+const esc = s => s==null?'':String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtMoney = (a,c)=>`${Number(a||0).toFixed(2)} ${c||'USD'}`;
+const fmtDate = s => s?new Date(s).toLocaleString():'';
+const fmtDateShort = s => s?new Date(s).toLocaleString([], {month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
+function alertBox(m,type='error'){ return `<div class="alert alert-${type}">${esc(m)}</div>`; }
+function openModal(html){ $('#modal-body').innerHTML=html; $('#modal').classList.add('open'); }
+function closeModal(){ $('#modal').classList.remove('open'); }
+
+async function loadAuth(){
+  const { data:{session} } = await sb.auth.getSession();
+  state.user = session?.user || null;
+  state.profile = null;
+  if(state.user){ const {data} = await sb.from('users_profile').select('*').eq('auth_user_id',state.user.id).maybeSingle(); state.profile = data; }
+  renderTopNav();
+}
+function renderTopNav(){
+  const nav = $('#top-nav'); const userNav = $('#user-nav');
+  if(!state.user || state.profile?.role!=='admin'){ nav.innerHTML=''; userNav.innerHTML=''; return; }
+  const cur = (location.hash.replace(/^#\/?/,'').split('/')[0])||'dashboard';
+  const link = (h,label)=>`<a class="nav-link ${cur===h?'active':''}" href="#/${h}" data-route="${h}">${label}</a>`;
+  nav.innerHTML = link('dashboard','Dashboard')+link('books','Books')+link('orders','Orders')+link('users','Users')+link('settings','Settings')+link('logs','Logs');
+  const u = state.profile.username||'';
+  userNav.innerHTML = `<span class="user-chip"><span class="avatar">${esc(u.charAt(0).toUpperCase()||'A')}</span>@${esc(u)}</span><a class="btn btn-ghost btn-sm" href="#" id="logout-btn">Logout</a>`;
+  $('#logout-btn').onclick = e=>{ e.preventDefault(); doLogout(); };
+}
+async function doLogout(){
+  try{ await sb.auth.signOut(); }catch(e){}
+  state.user=null; state.profile=null;
+  renderTopNav();
+  if(location.hash==='#/login') route(); else location.hash='#/login';
+}
+
+let _routeToken=0, _spinnerTimer=null;
+function showTemplate(id){ const tpl=document.getElementById(id); const node=tpl.content.cloneNode(true); const outlet=$('#route-outlet'); outlet.innerHTML=''; outlet.appendChild(node); }
+function route(){
+  const token=++_routeToken; const isStale=()=>token!==_routeToken;
+  if(!state.user || state.profile?.role!=='admin'){ return renderLogin(); }
+  if(_spinnerTimer) clearTimeout(_spinnerTimer);
+  _spinnerTimer = setTimeout(()=>{ if(!isStale()) $('#route-outlet').innerHTML=`<div class="center" style="padding:80px"><span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span></div>`; }, 150);
+  const hash = location.hash.replace(/^#\/?/,'');
+  const [page] = hash.split('/');
+  const handlers = {'':renderDashboard, 'dashboard':renderDashboard, 'books':renderBooks, 'orders':renderOrders, 'users':renderUsers, 'settings':renderSettings, 'logs':renderLogs, 'login':renderLogin};
+  const h = handlers[page] || renderDashboard;
+  Promise.resolve(h()).catch(err=>{ if(isStale()) return; console.error(err); $('#route-outlet').innerHTML=`<div>${alertBox(err.message||String(err))}</div>`; }).finally(()=>{ if(_spinnerTimer){clearTimeout(_spinnerTimer);_spinnerTimer=null;} renderTopNav(); window.scrollTo(0,0); });
+}
+window.addEventListener('hashchange', route);
+
+async function renderLogin(){
+  if(state.user && state.profile?.role==='admin'){ location.hash='#/dashboard'; return; }
+  showTemplate('tpl-login');
+  $('#admin-login').onsubmit = async e=>{
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const btn = e.target.querySelector('button[type=submit]'); btn.disabled=true;
+    const { error } = await sb.auth.signInWithPassword({ email:fd.get('email'), password:fd.get('password') });
+    btn.disabled=false;
+    if(error){ $('#login-error').innerHTML = alertBox(error.message); return; }
+    await loadAuth();
+    if(state.profile?.role!=='admin'){
+      $('#login-error').innerHTML = alertBox('Not an admin account.');
+      await sb.auth.signOut(); await loadAuth();
+      return;
+    }
+    location.hash='#/dashboard';
+  };
+}
+
+async function renderDashboard(){
+  const [{count:bookCount},{count:pendingCount},{count:approvedCount},{count:userCount}] = await Promise.all([
+    sb.from('books').select('id',{count:'exact',head:true}),
+    sb.from('orders').select('id',{count:'exact',head:true}).eq('status','pending'),
+    sb.from('orders').select('id',{count:'exact',head:true}).eq('status','approved'),
+    sb.from('users_profile').select('id',{count:'exact',head:true}),
+  ]);
+  const { data:recent } = await sb.from('admin_orders_view').select('*').order('created_at',{ascending:false}).limit(8);
+  showTemplate('tpl-dashboard');
+  const now = new Date();
+  $('#d-date').textContent = now.toLocaleDateString('en-US',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  $('#d-greeting').textContent = `Welcome back, ${state.profile?.username||'admin'}`;
+  $('#s-books').textContent = bookCount||0;
+  $('#s-pending').textContent = pendingCount||0;
+  $('#s-approved').textContent = approvedCount||0;
+  $('#s-users').textContent = userCount||0;
+  $('#recent-body').innerHTML = (recent||[]).map(o=>`<tr><td class="cell-mono">${esc(fmtDateShort(o.created_at))}</td><td><strong>@${esc(o.username||'-')}</strong></td><td><div class="cell-title">${esc(o.book_title||'-')}</div></td><td>${fmtMoney(o.amount,o.currency)}</td><td><span class="badge b-${o.status}"><span class="dot"></span>${esc(o.status)}</span></td></tr>`).join('') || `<tr><td colspan="5" class="empty">No orders yet</td></tr>`;
+}
+
+async function renderBooks(){
+  const { data:books } = await sb.from('books').select('*').order('created_at',{ascending:false});
+  showTemplate('tpl-books');
+  const active = (books||[]).filter(b=>b.status==='active').length;
+  const archived = (books||[]).filter(b=>b.status==='archived').length;
+  $('#books-meta').textContent = `${active} active · ${archived} archived`;
+  $('#books-body').innerHTML = (books||[]).map(b=>`<tr><td><div class="thumb">${b.cover_url?`<img src="${esc(b.cover_url)}"/>`:''}</div></td><td><div class="cell-title">${esc(b.title)}</div><div style="font-size:12px;color:var(--muted);margin-top:4px">${b.pdf_path?`<span class="tag">📄 PDF uploaded</span>`:`<span class="tag" style="color:var(--danger)">⚠ No PDF</span>`}</div></td><td>${esc(b.creator||'-')}</td><td>${fmtMoney(b.price,b.currency)}</td><td>${b.is_buy_enabled?'<span style="color:var(--success)">✓ Enabled</span>':'<span class="muted">— Disabled</span>'}</td><td><span class="badge b-${b.status==='active'?'active':'archived'}"><span class="dot"></span>${esc(b.status)}</span></td><td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" data-edit="${b.id}">Edit</button><button class="btn btn-ghost btn-sm" data-archive="${b.id}">${b.status==='active'?'Archive':'Restore'}</button></div></td></tr>`).join('') || `<tr><td colspan="7" class="empty">No books yet</td></tr>`;
+  $('#new-book-btn').onclick = ()=>openBookForm(null);
+  $$('[data-edit]').forEach(b=>b.onclick=()=>openBookForm(b.dataset.edit));
+  $$('[data-archive]').forEach(b=>b.onclick=async ()=>{
+    const id = b.dataset.archive;
+    const cur = books.find(x=>x.id===id);
+    const newStatus = cur.status==='active'?'archived':'active';
+    await sb.from('books').update({status:newStatus}).eq('id',id);
+    renderBooks();
+  });
+}
+
+async function openBookForm(id){
+  let book = { title:'',synopsis:'',creator:'',price:0,currency:'USD',is_buy_enabled:true,buy_disabled_remark:'',cover_url:'',pdf_path:'',pdf_filename:'',status:'active' };
+  if(id){ const {data} = await sb.from('books').select('*').eq('id',id).single(); book = data; }
+  openModal(`
+    <h2>${id?'Edit Book':'New Book'}</h2>
+    <form id="bf">
+      <div class="field"><label>Title *</label><input class="input" name="title" value="${esc(book.title)}" required/></div>
+      <div class="field"><label>Creator</label><input class="input" name="creator" value="${esc(book.creator||'')}"/></div>
+      <div class="field"><label>Synopsis</label><textarea class="input" name="synopsis">${esc(book.synopsis||'')}</textarea></div>
+      <div class="form-grid">
+        <div class="field"><label>Price *</label><input class="input" name="price" type="number" step="0.01" min="0" value="${book.price||0}" required/></div>
+        <div class="field"><label>Currency</label><select class="input" name="currency"><option ${book.currency==='USD'?'selected':''}>USD</option><option ${book.currency==='KHR'?'selected':''}>KHR</option></select></div>
+      </div>
+      <div class="field"><label>Cover (jpg/png/webp)</label>${book.cover_url?`<img src="${esc(book.cover_url)}" style="max-width:100px;margin-bottom:8px;border-radius:4px"/>`:''}<input type="file" name="cover" accept="image/jpeg,image/png,image/webp"/></div>
+      <div class="field"><label>PDF ${id?'(leave empty to keep)':'*'}</label>${book.pdf_path?`<div class="hint muted">Current: ${esc(book.pdf_filename||book.pdf_path)}</div>`:''}<input type="file" name="pdf" accept="application/pdf" ${id?'':'required'}/></div>
+      <div class="field"><label><input type="checkbox" name="buy_enabled" ${book.is_buy_enabled?'checked':''} style="width:auto;margin-right:8px"/>Buy enabled</label></div>
+      <div class="field"><label>Disabled remark</label><input class="input" name="remark" value="${esc(book.buy_disabled_remark||'')}"/></div>
+      <div id="bf-msg"></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+        <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary" type="submit">Save</button>
+      </div>
+    </form>
+  `);
+  $('#bf').onsubmit = async e=>{
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const btn = e.target.querySelector('button[type=submit]'); btn.disabled=true;
+    try{
+      const payload = { title:fd.get('title').trim(), creator:fd.get('creator').trim()||null, synopsis:fd.get('synopsis').trim()||null, price:Number(fd.get('price')), currency:fd.get('currency'), is_buy_enabled:!!fd.get('buy_enabled'), buy_disabled_remark:fd.get('remark').trim()||null, status:book.status||'active' };
+      let bookId = id;
+      if(!bookId){ const {data,error} = await sb.from('books').insert(payload).select('id').single(); if(error) throw error; bookId = data.id; }
+      else { const {error} = await sb.from('books').update(payload).eq('id',bookId); if(error) throw error; }
+      const coverFile = fd.get('cover');
+      if(coverFile && coverFile.size){
+        const ext = (coverFile.name.split('.').pop()||'jpg').toLowerCase();
+        const path = `cover_${bookId}_${Date.now()}.${ext}`;
+        const {error:e1} = await sb.storage.from('book-covers').upload(path,coverFile,{upsert:true,contentType:coverFile.type});
+        if(e1) throw e1;
+        const {data:pu} = sb.storage.from('book-covers').getPublicUrl(path);
+        await sb.from('books').update({cover_url:pu.publicUrl}).eq('id',bookId);
+      }
+      const pdfFile = fd.get('pdf');
+      if(pdfFile && pdfFile.size){
+        if(pdfFile.type !== 'application/pdf') throw new Error('PDF only');
+        const path = `book_${bookId}_${Date.now()}.pdf`;
+        const {error:e2} = await sb.storage.from('book-pdfs').upload(path,pdfFile,{upsert:false,contentType:'application/pdf'});
+        if(e2) throw e2;
+        if(book.pdf_path) sb.storage.from('book-pdfs').remove([book.pdf_path]).catch(()=>{});
+        await sb.from('books').update({pdf_path:path,pdf_filename:pdfFile.name,pdf_size_bytes:pdfFile.size}).eq('id',bookId);
+      }
+      sb.from('activity_logs').insert({action:id?'book.update':'book.create', actor_user_id:state.profile.id, actor_username:state.profile.username, target_type:'book', target_id:bookId, details:{title:payload.title}}).then(()=>{}).catch(()=>{});
+      closeModal();
+      renderBooks();
+    }catch(err){ console.error(err); $('#bf-msg').innerHTML = alertBox(err.message); btn.disabled=false; }
+  };
+}
+
+async function renderOrders(){
+  const filter = (new URLSearchParams(location.hash.split('?')[1]||'')).get('filter')||'pending';
+  showTemplate('tpl-orders');
+  $('#orders-title').textContent = filter.charAt(0).toUpperCase()+filter.slice(1)+' orders';
+  $$('#order-tabs button').forEach(b=>{ b.classList.toggle('active', b.dataset.tab===filter); b.onclick=()=>{ location.hash = '#/orders?filter='+b.dataset.tab; }; });
+  const { data:orders } = await sb.from('admin_orders_view').select('*').eq('status',filter).order('created_at',{ascending:false});
+  $('#orders-body').innerHTML = (orders||[]).map(o=>`<tr><td class="cell-mono">${esc(fmtDateShort(o.created_at))}</td><td><strong>@${esc(o.username||'-')}</strong></td><td><div class="cell-title">${esc(o.book_title||'-')}</div><div style="font-size:12px;color:var(--muted)">Order <span class="tag">${esc(o.order_id.slice(0,8))}</span></div></td><td>${fmtMoney(o.amount,o.currency)}</td><td>${o.proof_url?`<a href="${esc(o.proof_url)}" target="_blank" rel="noopener">View receipt</a>`:'<span class="muted">—</span>'}</td><td><span class="badge b-${o.status}"><span class="dot"></span>${esc(o.status)}</span>${o.reject_reason?`<div style="font-size:11px;color:var(--muted);margin-top:4px">${esc(o.reject_reason)}</div>`:''}</td><td>${o.status==='pending'?`<div style="display:flex;gap:6px"><button class="btn btn-success btn-sm" data-approve="${o.order_id}">Approve</button><button class="btn btn-danger btn-sm" data-reject="${o.order_id}">Reject</button></div>`:''}</td></tr>`).join('') || `<tr><td colspan="7" class="empty">No ${filter} orders</td></tr>`;
+  $$('[data-approve]').forEach(b=>b.onclick=async ()=>{
+    if(!confirm('Approve this order? Buyer will get access to the book.')) return;
+    b.disabled=true;
+    const {error} = await sb.rpc('admin_approve_order',{p_order_id:b.dataset.approve});
+    if(error){ alert(error.message); b.disabled=false; return; }
+    renderOrders();
+  });
+  $$('[data-reject]').forEach(b=>b.onclick=async ()=>{
+    const reason = prompt('Reject reason (optional):', '');
+    if(reason===null) return;
+    b.disabled=true;
+    const {error} = await sb.rpc('admin_reject_order',{p_order_id:b.dataset.reject, p_reason:reason||null});
+    if(error){ alert(error.message); b.disabled=false; return; }
+    renderOrders();
+  });
+}
+
+async function renderUsers(){
+  const { data:users } = await sb.from('admin_users_view').select('*').order('created_at',{ascending:false});
+  showTemplate('tpl-users');
+  $('#users-meta').textContent = `${(users||[]).length} total · ${(users||[]).filter(u=>u.status==='active').length} active`;
+  $('#users-body').innerHTML = (users||[]).map(u=>{
+    const isMe = u.auth_user_id === state.user?.id;
+    const banned = u.banned_until && new Date(u.banned_until) > new Date();
+    const status = u.status || 'active';
+    const statusBadge = status==='disabled' || banned
+      ? `<span class="badge b-rejected"><span class="dot"></span>Disabled</span>`
+      : `<span class="badge b-active"><span class="dot"></span>Active</span>`;
+    const roleBadge = u.role==='admin'
+      ? `<span class="badge b-info"><span class="dot"></span>Admin</span>`
+      : `<span class="muted">buyer</span>`;
+    const actions = isMe
+      ? `<span class="muted" style="font-size:12px;font-style:italic">(you)</span>`
+      : `<div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" data-reset="${u.id}" data-uname="${esc(u.username)}">Reset password</button>
+          ${status==='disabled' || banned
+            ? `<button class="btn btn-success btn-sm" data-enable="${u.id}" data-uname="${esc(u.username)}">Enable</button>`
+            : (u.role !== 'admin' ? `<button class="btn btn-danger btn-sm" data-disable="${u.id}" data-uname="${esc(u.username)}">Disable</button>` : '')}
+        </div>`;
+    return `<tr>
+      <td><strong>@${esc(u.username)}</strong></td>
+      <td class="cell-mono">${esc(u.email||'-')}</td>
+      <td>${roleBadge}</td>
+      <td>${statusBadge}</td>
+      <td class="cell-mono">${esc(fmtDateShort(u.created_at))}</td>
+      <td class="cell-mono">${u.last_sign_in_at?esc(fmtDateShort(u.last_sign_in_at)):'<span class="muted">never</span>'}</td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join('') || `<tr><td colspan="7" class="empty">No users yet</td></tr>`;
+
+  $$('[data-reset]').forEach(b=>b.onclick = async ()=>{
+    const username = b.dataset.uname;
+    if(!confirm(`Reset password for @${username}? They will need to use the new password.`)) return;
+    b.disabled = true;
+    try{
+      const { data, error } = await sb.functions.invoke('admin-user-action',{ body:{ action:'reset_password', user_id: b.dataset.reset } });
+      if(error || data?.error) throw new Error(data?.error || error.message);
+      openModal(`
+        <h2>Password reset</h2>
+        <p class="muted" style="margin-bottom:18px">New password for <strong>@${esc(data.username)}</strong>. Share this with the user via Telegram or another secure channel. <strong>This is the only time it will be shown.</strong></p>
+        <div style="background:var(--bg-deep);border:1px solid var(--border-strong);border-radius:8px;padding:18px;text-align:center">
+          <div class="muted" style="font-size:12px;letter-spacing:.18em;text-transform:uppercase;margin-bottom:10px">New password</div>
+          <div style="font-family:var(--font-mono);font-size:22px;letter-spacing:.08em;color:var(--primary);user-select:all">${esc(data.password)}</div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
+          <button class="btn btn-ghost" onclick="navigator.clipboard.writeText('${esc(data.password)}').then(()=>alert('Copied'))">Copy</button>
+          <button class="btn btn-primary" onclick="closeModal()">Close</button>
+        </div>
+      `);
+    }catch(err){ alert(err.message); }
+    finally{ b.disabled = false; }
+  });
+
+  $$('[data-disable]').forEach(b=>b.onclick = async ()=>{
+    const username = b.dataset.uname;
+    if(!confirm(`Disable @${username}? They will not be able to log in.`)) return;
+    b.disabled = true;
+    try{
+      const { data, error } = await sb.functions.invoke('admin-user-action',{ body:{ action:'disable_user', user_id: b.dataset.disable } });
+      if(error || data?.error) throw new Error(data?.error || error.message);
+      renderUsers();
+    }catch(err){ alert(err.message); b.disabled = false; }
+  });
+
+  $$('[data-enable]').forEach(b=>b.onclick = async ()=>{
+    const username = b.dataset.uname;
+    if(!confirm(`Enable @${username}? They will be able to log in again.`)) return;
+    b.disabled = true;
+    try{
+      const { data, error } = await sb.functions.invoke('admin-user-action',{ body:{ action:'enable_user', user_id: b.dataset.enable } });
+      if(error || data?.error) throw new Error(data?.error || error.message);
+      renderUsers();
+    }catch(err){ alert(err.message); b.disabled = false; }
+  });
+}
+
+async function renderSettings(){
+  const { data:rows } = await sb.from('site_settings').select('*');
+  const map = Object.fromEntries((rows||[]).map(r=>[r.setting_key,r.setting_value]));
+  showTemplate('tpl-settings');
+  const form = $('#settings-form');
+  // populate fields
+  ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text'].forEach(k=>{
+    const el = form.elements[k]; if(el!=null) el.value = map[k]||'';
+  });
+  // QR preview
+  if(map.aba_qr_path){
+    const { data } = sb.storage.from('site-assets').getPublicUrl(map.aba_qr_path);
+    $('#qr-upload-box').innerHTML = `<img src="${esc(data.publicUrl)}" alt="QR"/><div class="meta"><div class="name">QR Code</div><div class="sz">Currently uploaded</div></div>`;
+  } else {
+    $('#qr-upload-box').innerHTML = `<div style="width:120px;height:120px;background:var(--bg-deep);border:1px dashed var(--border-strong);display:flex;align-items:center;justify-content:center;color:var(--muted)">No QR</div><div class="meta"><div class="name">Upload your ABA QR</div><div class="sz">Required for buyer payment page</div></div>`;
+  }
+  $('#save-settings').onclick = ()=>form.requestSubmit();
+  form.onsubmit = async e=>{
+    e.preventDefault();
+    const fd = new FormData(form);
+    try{
+      const qrFile = fd.get('aba_qr');
+      if(qrFile && qrFile.size){
+        const ext = (qrFile.name.split('.').pop()||'png').toLowerCase();
+        const path = `aba_qr_${Date.now()}.${ext}`;
+        const {error} = await sb.storage.from('site-assets').upload(path,qrFile,{upsert:true,contentType:qrFile.type});
+        if(error) throw error;
+        await sb.from('site_settings').upsert({setting_key:'aba_qr_path',setting_value:path}, {onConflict:'setting_key'});
+      }
+      const keys = ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text'];
+      const updates = keys.map(k=>({setting_key:k,setting_value:String(fd.get(k)||'')}));
+      const tok = fd.get('telegram_bot_token');
+      if(tok && String(tok).trim()) updates.push({setting_key:'telegram_bot_token',setting_value:String(tok).trim()});
+      const {error} = await sb.from('site_settings').upsert(updates, {onConflict:'setting_key'});
+      if(error) throw error;
+      $('#settings-msg').innerHTML = alertBox('Saved!','success');
+      sb.from('activity_logs').insert({action:'settings.update', actor_user_id:state.profile.id, actor_username:state.profile.username, target_type:'settings'}).then(()=>{}).catch(()=>{});
+      setTimeout(renderSettings, 800);
+    }catch(err){ console.error(err); $('#settings-msg').innerHTML = alertBox(err.message); }
+  };
+}
+
+function actionClass(a){
+  if(a.endsWith('.create')) return 'b-info';
+  if(a.endsWith('.proof_uploaded')) return 'b-pending';
+  if(a.endsWith('.approve')) return 'b-approved';
+  if(a.endsWith('.reject')||a.endsWith('.triggered')) return 'b-rejected';
+  return 'b-info';
+}
+async function renderLogs(){
+  const { data:logs } = await sb.from('activity_logs').select('*').order('created_at',{ascending:false}).limit(200);
+  showTemplate('tpl-logs');
+  $('#logs-body').innerHTML = (logs||[]).map(l=>`<tr><td class="time">${esc(fmtDate(l.created_at))}</td><td><span class="badge ${actionClass(l.action)}"><span class="dot"></span>${esc(l.action)}</span></td><td class="actor">@${esc(l.actor_username||'-')}</td><td><span class="tag">${esc(l.target_type||'')} ${l.target_id?String(l.target_id).slice(0,8):''}</span></td><td><details class="row-details"><summary>view</summary><div class="detail-body">${esc(JSON.stringify(l.details||{},null,2))}</div></details></td></tr>`).join('') || `<tr><td colspan="5" class="empty">No logs yet</td></tr>`;
+}
+
+let _authReady=false;
+sb.auth.onAuthStateChange(async (event)=>{ if(!_authReady) return; if(['SIGNED_IN','SIGNED_OUT'].includes(event)){ await loadAuth(); route(); } });
+(async()=>{ await loadAuth(); route(); _authReady=true; })();
+</script>
+</body>
+</html>

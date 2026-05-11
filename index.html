@@ -1,0 +1,1303 @@
+<!doctype html>
+<html lang="km">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex,nofollow">
+<title>KhozyReads · ហាងសៀវភៅឌីជីថល</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+Khmer:wght@400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAF5E9; --bg-elevated:#FFFDF7; --bg-deep:#F2E9D2;
+  --fg:#1E2A3A; --fg-soft:#4A5568; --muted:#8B7E66;
+  --border:#E5DCC5; --border-strong:#C9B98E;
+  --primary:#7B2D26; --primary-deep:#5C1F1A; --primary-fg:#FFFFFF;
+  --accent:#D4A574; --accent-deep:#B8854A;
+  --secondary:#3D5B49; --danger:#C53030; --success:#38A169; --warning:#DD6B20;
+  --soft-rose:#E8C5BC;
+  --radius:8px; --radius-lg:18px; --gap:16px; --maxw:1180px;
+  --shadow-sm:0 2px 8px rgba(123,45,38,.08);
+  --shadow-md:0 12px 32px rgba(30,42,58,.10);
+  --shadow-lg:0 24px 60px rgba(30,42,58,.14);
+  --font-display:'Cormorant Garamond','Noto Serif Khmer',serif;
+  --font-serif:'Crimson Pro','Noto Serif Khmer',serif;
+  --font-body:'Lora','Noto Serif Khmer',Georgia,serif;
+  --font-khmer:'Noto Serif Khmer',serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--font-body);font-size:17px;line-height:1.7;color:var(--fg);background:var(--bg);letter-spacing:.01em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+html[lang="km"] body{font-family:var(--font-khmer);letter-spacing:0}
+img{max-width:100%;display:block}
+a{color:var(--primary);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s,color .2s}
+a:hover{color:var(--primary-deep);border-bottom-color:var(--accent)}
+button{font-family:inherit;font-size:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+
+.eyebrow{font-family:var(--font-serif);font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--accent-deep);font-weight:500}
+html[lang="km"] .eyebrow{font-family:var(--font-khmer);letter-spacing:.18em;font-size:13px}
+.display{font-family:var(--font-display);font-weight:500;line-height:1.1;letter-spacing:-.01em;color:var(--fg);margin:0}
+html[lang="km"] .display{font-family:var(--font-khmer);font-weight:600;line-height:1.35}
+.display-1{font-size:clamp(46px,7vw,84px);font-style:italic}
+.display-2{font-size:clamp(34px,4.6vw,56px)}
+.display-3{font-size:clamp(26px,3.2vw,38px)}
+.serif{font-family:var(--font-serif);font-weight:500}
+html[lang="km"] .serif{font-family:var(--font-khmer)}
+.lede{font-family:var(--font-serif);font-style:italic;font-size:21px;line-height:1.55;color:var(--fg-soft)}
+html[lang="km"] .lede{font-family:var(--font-khmer);font-style:normal;font-size:18px}
+
+.ornament{display:block;color:var(--accent);pointer-events:none}
+.ornament svg{display:block;width:100%;height:100%;overflow:visible}
+.divider-orn{display:flex;align-items:center;gap:18px;color:var(--accent-deep);margin:36px 0}
+.divider-orn::before,.divider-orn::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border-strong),transparent)}
+.divider-orn svg{width:64px;height:24px;color:var(--accent)}
+
+#app{min-height:100vh;display:flex;flex-direction:column}
+.site-header{position:relative;background:var(--bg);border-bottom:1px solid var(--border)}
+.site-header::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;background:linear-gradient(90deg,transparent 0,transparent 8%,var(--accent) 18%,var(--primary) 50%,var(--accent) 82%,transparent 92%,transparent 100%);opacity:.35}
+.header-top{max-width:var(--maxw);margin:0 auto;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;gap:14px;text-decoration:none;border:0;color:var(--fg)}
+.brand:hover{color:var(--primary);border:0}
+.brand-mark{width:42px;height:42px;color:var(--primary)}
+.brand-name{font-family:var(--font-display);font-size:30px;font-weight:600;letter-spacing:.01em;line-height:1}
+.brand-tag{display:block;font-family:var(--font-khmer);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.header-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.nav-link{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:6px;font-size:15px;color:var(--fg);border:0;transition:background .2s,color .2s}
+.nav-link:hover{background:var(--bg-deep);color:var(--primary);border:0}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 22px;min-height:48px;border-radius:var(--radius);font-family:var(--font-serif);font-weight:500;font-size:16px;letter-spacing:.02em;border:1px solid transparent;transition:transform .15s,box-shadow .2s,background .2s,color .2s;cursor:pointer}
+html[lang="km"] .btn{font-family:var(--font-khmer);font-weight:500}
+.btn-primary{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.btn-primary:hover{background:var(--primary-deep);box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--primary);border-color:var(--border-strong)}
+.btn-ghost:hover{background:var(--bg-deep);border-color:var(--accent-deep)}
+.btn-gold{background:var(--accent);color:#3a2410;border-color:var(--accent)}
+.btn-gold:hover{background:var(--accent-deep);color:#fff}
+.btn-lg{padding:16px 30px;min-height:56px;font-size:17px}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+
+#lang-switcher{display:inline-flex;align-items:center;border:1px solid var(--border-strong);border-radius:999px;padding:3px;background:var(--bg-elevated)}
+#lang-switcher button{font-family:var(--font-serif);padding:6px 14px;border-radius:999px;font-size:13px;letter-spacing:.08em;color:var(--muted);transition:all .2s}
+#lang-switcher button.active{background:var(--primary);color:#fff}
+#lang-switcher .km{font-family:var(--font-khmer);letter-spacing:0}
+
+.user-chip{display:inline-flex;align-items:center;gap:10px;padding:6px 6px 6px 12px;border:1px solid var(--border-strong);border-radius:999px;background:var(--bg-elevated);font-size:14px;color:var(--fg-soft)}
+.user-chip .avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent-deep));color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:14px;font-weight:600}
+
+.site-footer{margin-top:auto;padding:60px 28px 40px;border-top:1px solid var(--border);background:var(--bg-deep);color:var(--fg-soft);text-align:center}
+.site-footer .divider-orn{margin:0 auto 20px;max-width:380px}
+.site-footer p{margin:6px 0;font-size:14px}
+.site-footer .brand-name{font-size:22px;color:var(--fg)}
+
+.container{max-width:var(--maxw);margin:0 auto;padding:0 28px}
+.hero{position:relative;padding:80px 0 60px;text-align:center;overflow:hidden}
+.hero-orn-top,.hero-orn-bot{position:absolute;left:50%;transform:translateX(-50%);color:var(--accent)}
+.hero-orn-top{top:30px;width:120px;height:36px}
+.hero-orn-bot{bottom:18px;width:90px;height:30px}
+.hero-orn-side{position:absolute;top:50%;transform:translateY(-50%);width:64px;height:140px;color:var(--accent);opacity:.55}
+.hero-orn-side.left{left:18px}
+.hero-orn-side.right{right:18px;transform:translateY(-50%) scaleX(-1)}
+.hero h1{margin:18px 0 14px}
+.hero .lede{max-width:640px;margin:0 auto}
+.hero-meta{margin-top:28px;display:inline-flex;gap:36px;flex-wrap:wrap;justify-content:center;color:var(--muted);font-family:var(--font-serif);font-size:14px;letter-spacing:.16em;text-transform:uppercase}
+html[lang="km"] .hero-meta{font-family:var(--font-khmer);font-size:13px;letter-spacing:.1em}
+.hero-meta span{display:inline-flex;align-items:center;gap:10px}
+.hero-meta span::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent)}
+
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding-bottom:18px;border-bottom:1px solid var(--border);margin:48px 0 36px}
+.section-head .left .eyebrow{margin-bottom:8px;display:block}
+.section-head h2{margin:0}
+.section-head .right{display:flex;align-items:center;gap:14px;color:var(--muted);font-size:14px}
+
+.featured{display:grid;grid-template-columns:1.05fr 1fr;gap:48px;align-items:center;padding:48px 0}
+.featured-cover{position:relative;aspect-ratio:3/4;border-radius:2px;overflow:hidden}
+.featured-cover .frame{position:absolute;inset:-14px;border:1px solid var(--border-strong);pointer-events:none}
+.featured-cover .frame::before,.featured-cover .frame::after{content:"";position:absolute;width:28px;height:28px;border:1px solid var(--accent-deep)}
+.featured-cover .frame::before{top:-7px;left:-7px;border-right:0;border-bottom:0}
+.featured-cover .frame::after{bottom:-7px;right:-7px;border-left:0;border-top:0}
+.featured-info .eyebrow{margin-bottom:14px;display:block}
+.featured-info h3{margin:0 0 14px;font-family:var(--font-display);font-size:46px;font-weight:500;line-height:1.1;color:var(--fg)}
+html[lang="km"] .featured-info h3{font-family:var(--font-khmer);font-weight:600;font-size:34px;line-height:1.35}
+.featured-info .author{font-family:var(--font-serif);font-style:italic;color:var(--muted);margin-bottom:18px}
+html[lang="km"] .featured-info .author{font-family:var(--font-khmer);font-style:normal}
+.featured-info .excerpt{color:var(--fg-soft);max-width:48ch}
+.featured-info .price{margin:24px 0;font-family:var(--font-display);font-size:32px;color:var(--primary);font-weight:500}
+.featured-cta{display:flex;gap:12px;flex-wrap:wrap}
+
+.book-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:48px 36px}
+@media (max-width:960px){.book-grid{grid-template-columns:repeat(2,1fr)}.featured{grid-template-columns:1fr;gap:32px}}
+@media (max-width:540px){.book-grid{grid-template-columns:repeat(2,1fr);gap:32px 18px}}
+.book-card{display:flex;flex-direction:column;gap:14px;text-decoration:none;color:var(--fg);border:0;transition:transform .25s ease;cursor:pointer}
+.book-card:hover{transform:translateY(-4px);border:0;color:var(--fg)}
+.book-cover{position:relative;aspect-ratio:3/4;background:linear-gradient(135deg,var(--bg-deep) 0%,#E8DCC0 100%);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow-sm);transition:box-shadow .25s}
+.book-card:hover .book-cover{box-shadow:var(--shadow-md)}
+.book-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.book-cover .placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--font-serif);font-size:13px;letter-spacing:.18em;text-transform:uppercase;background:repeating-linear-gradient(135deg, transparent 0 18px, rgba(123,45,38,.04) 18px 19px)}
+.book-cover .corner-orn{position:absolute;width:34px;height:34px;color:var(--accent);opacity:.85}
+.book-cover .corner-orn.tl{top:6px;left:6px}
+.book-cover .corner-orn.br{bottom:6px;right:6px;transform:rotate(180deg)}
+.book-meta{padding:0 2px}
+.book-title{font-family:var(--font-display);font-size:22px;font-weight:500;line-height:1.25;margin:0 0 4px;color:var(--fg)}
+html[lang="km"] .book-title{font-family:var(--font-khmer);font-weight:600;font-size:18px;line-height:1.4}
+.book-author{font-family:var(--font-serif);font-style:italic;color:var(--muted);font-size:14px;margin:0 0 8px}
+html[lang="km"] .book-author{font-family:var(--font-khmer);font-style:normal;font-size:13px}
+.book-price{font-family:var(--font-display);font-size:18px;color:var(--primary);font-weight:500}
+
+.progress-pill{position:absolute;left:10px;bottom:10px;display:inline-flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(30,42,58,.85);color:#FAF5E9;border-radius:999px;font-size:12px;letter-spacing:.06em;backdrop-filter:blur(4px)}
+.progress-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+html[lang="km"] .progress-pill{font-family:var(--font-khmer)}
+
+.breadcrumbs{padding:24px 0 8px;font-family:var(--font-serif);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+html[lang="km"] .breadcrumbs{font-family:var(--font-khmer);letter-spacing:.06em;font-size:13px}
+.breadcrumbs a{color:var(--muted);border:0}
+.breadcrumbs a:hover{color:var(--primary)}
+.breadcrumbs .sep{margin:0 10px;color:var(--accent)}
+.book-detail{display:grid;grid-template-columns:minmax(280px,420px) 1fr;gap:64px;padding:32px 0 64px}
+@media (max-width:860px){.book-detail{grid-template-columns:1fr}}
+.detail-cover{position:relative}
+.detail-cover .cover-img{aspect-ratio:3/4;background:linear-gradient(135deg,var(--bg-deep) 0%,#E8DCC0 100%);border:1px solid var(--border);box-shadow:var(--shadow-md);position:relative;overflow:hidden}
+.detail-cover .cover-img img{width:100%;height:100%;object-fit:cover;display:block}
+.detail-cover .frame{position:absolute;inset:-16px;border:1px solid var(--border-strong);pointer-events:none}
+.detail-cover .frame::before,.detail-cover .frame::after{content:"";position:absolute;width:36px;height:36px;border:1px solid var(--accent-deep)}
+.detail-cover .frame::before{top:-9px;left:-9px;border-right:0;border-bottom:0}
+.detail-cover .frame::after{bottom:-9px;right:-9px;border-left:0;border-top:0}
+.detail-info .eyebrow{display:block;margin-bottom:14px}
+.detail-info h1{margin:0 0 12px;font-family:var(--font-display);font-size:54px;font-weight:500;line-height:1.05;color:var(--fg)}
+html[lang="km"] .detail-info h1{font-family:var(--font-khmer);font-weight:600;font-size:40px;line-height:1.3}
+.detail-info .author{font-family:var(--font-serif);font-style:italic;color:var(--fg-soft);font-size:19px;margin:0 0 28px}
+html[lang="km"] .detail-info .author{font-family:var(--font-khmer);font-style:normal;font-size:17px}
+.detail-info .price-row{display:flex;align-items:baseline;gap:18px;padding:18px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:32px}
+.detail-info .price-row .price{font-family:var(--font-display);font-size:40px;color:var(--primary);font-weight:500;line-height:1}
+.detail-info .price-row .price-note{color:var(--muted);font-family:var(--font-serif);font-style:italic;font-size:14px}
+html[lang="km"] .detail-info .price-row .price-note{font-family:var(--font-khmer);font-style:normal}
+.synopsis-head{display:flex;align-items:center;gap:14px;margin:32px 0 16px;color:var(--accent-deep)}
+.synopsis-head .eyebrow{display:block}
+.synopsis-head::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--border-strong),transparent)}
+.synopsis p{font-size:17px;line-height:1.8;color:var(--fg-soft);max-width:62ch;white-space:pre-wrap}
+.cta-row{display:flex;gap:14px;margin-top:36px;flex-wrap:wrap}
+
+.auth-wrap{display:flex;align-items:center;justify-content:center;padding:64px 28px;min-height:calc(100vh - 140px)}
+.auth-card{width:100%;max-width:480px;background:var(--bg-elevated);border:1px solid var(--border);padding:56px 48px 48px;position:relative;box-shadow:var(--shadow-md)}
+.auth-card::before,.auth-card::after{content:"";position:absolute;width:36px;height:36px;border:1px solid var(--accent-deep)}
+.auth-card::before{top:-1px;left:-1px;border-right:0;border-bottom:0}
+.auth-card::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+.auth-orn-top{position:absolute;top:-22px;left:50%;transform:translateX(-50%);width:80px;height:30px;color:var(--accent);background:var(--bg);padding:0 10px}
+.auth-orn-top svg{width:60px;height:24px}
+.auth-card h2{text-align:center;margin:0 0 8px}
+.auth-card .sub{text-align:center;color:var(--muted);font-family:var(--font-serif);font-style:italic;margin:0 0 36px}
+html[lang="km"] .auth-card .sub{font-family:var(--font-khmer);font-style:normal}
+.field{margin-bottom:20px}
+.field label{display:block;font-family:var(--font-serif);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+html[lang="km"] .field label{font-family:var(--font-khmer);letter-spacing:.06em;font-size:13px}
+.field input,.field textarea,.field select{width:100%;padding:14px 16px;background:var(--bg);border:1px solid var(--border-strong);border-radius:6px;font-size:17px;color:var(--fg);transition:border-color .2s,box-shadow .2s}
+.field input:focus,.field textarea:focus,.field select:focus{outline:0;border-color:var(--primary);box-shadow:0 0 0 3px rgba(123,45,38,.1)}
+.auth-card .btn{width:100%;margin-top:12px}
+.auth-foot{margin-top:28px;text-align:center;color:var(--muted);font-size:15px}
+
+.pay-wrap{padding:48px 0 80px;display:grid;grid-template-columns:1.1fr 1fr;gap:64px}
+@media (max-width:860px){.pay-wrap{grid-template-columns:1fr}}
+.pay-card{background:var(--bg-elevated);border:1px solid var(--border);padding:40px;position:relative;box-shadow:var(--shadow-md)}
+.qr-frame{background:#fff;border:1px solid var(--border);padding:28px;display:flex;flex-direction:column;align-items:center;gap:18px;position:relative}
+.qr-frame .orn{width:100px;height:32px;color:var(--accent)}
+.qr-frame img{max-width:240px;display:block}
+.qr-placeholder-fallback{width:240px;height:240px;background:linear-gradient(45deg,transparent 48%,#1E2A3A 48% 52%,transparent 52%) 0 0/12px 12px,linear-gradient(-45deg,transparent 48%,#1E2A3A 48% 52%,transparent 52%) 0 0/12px 12px,#fff;position:relative}
+.qr-label{font-family:var(--font-serif);letter-spacing:.18em;text-transform:uppercase;font-size:13px;color:var(--muted)}
+html[lang="km"] .qr-label{font-family:var(--font-khmer);letter-spacing:.06em}
+.steps{margin-top:24px}
+.step{display:flex;gap:18px;padding:18px 0;border-bottom:1px solid var(--border)}
+.step:last-child{border-bottom:0}
+.step .n{width:36px;height:36px;border-radius:50%;flex:0 0 36px;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-weight:600}
+.step h4{margin:0 0 4px;font-family:var(--font-display);font-weight:500;font-size:20px}
+html[lang="km"] .step h4{font-family:var(--font-khmer);font-weight:600;font-size:17px}
+.step p{margin:0;color:var(--fg-soft);font-size:15px}
+.upload-zone{margin-top:24px;padding:32px;border:2px dashed var(--border-strong);text-align:center;border-radius:var(--radius);background:var(--bg);transition:border-color .2s,background .2s;cursor:pointer}
+.upload-zone:hover{border-color:var(--accent-deep);background:var(--bg-deep)}
+.upload-zone .ic{width:40px;height:40px;margin:0 auto 12px;color:var(--accent-deep)}
+.upload-zone input[type=file]{display:none}
+
+#reader-frame{position:fixed;inset:0;z-index:60;background:var(--bg);color:var(--fg);display:flex;flex-direction:column}
+.reader-progress{height:3px;background:var(--border);position:relative;overflow:hidden}
+.reader-progress .bar{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--primary),var(--accent));transition:width .3s}
+#reader-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--bg-elevated);transition:transform .3s,opacity .3s}
+#reader-toolbar.hidden{transform:translateY(-100%);opacity:0;pointer-events:none}
+.reader-title{font-family:var(--font-display);font-size:22px;font-weight:500;color:var(--fg);max-width:40vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+html[lang="km"] .reader-title{font-family:var(--font-khmer);font-weight:600;font-size:18px}
+.reader-tool-group{display:flex;align-items:center;gap:6px}
+.tool-btn{width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border-radius:8px;color:var(--fg-soft);transition:background .2s,color .2s;border:0;cursor:pointer;background:transparent}
+.tool-btn:hover{background:var(--bg-deep);color:var(--primary)}
+.tool-btn.active{background:var(--primary);color:#fff}
+.tool-sep{width:1px;height:24px;background:var(--border);margin:0 6px}
+#reader-canvas-wrap{flex:1;overflow:auto;padding:36px 24px;display:flex;justify-content:center;align-items:flex-start;position:relative;transition:filter .3s}
+#reader-canvas-wrap.blurred{filter:blur(20px)}
+.reader-page{width:min(820px,100%);background:var(--bg-elevated);padding:40px;box-shadow:var(--shadow-lg);position:relative;border:1px solid var(--border)}
+.reader-page canvas{display:block;max-width:100%;height:auto;-webkit-user-select:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.reader-page .loading{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;padding:60px;color:var(--muted)}
+.reader-disclaimer{position:sticky;top:0;z-index:20;background:linear-gradient(90deg,rgba(123,45,38,.95),rgba(184,133,74,.95));color:#fff;padding:8px 18px;font-family:var(--font-serif);font-size:13px;letter-spacing:.08em;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;border-bottom:1px solid var(--accent)}
+html[lang="km"] .reader-disclaimer{font-family:var(--font-khmer);letter-spacing:0;font-size:13px}
+.reader-disclaimer svg{width:16px;height:16px;flex-shrink:0}
+.reader-foot{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:18px 24px;background:var(--bg-elevated);border-top:1px solid var(--border);transition:transform .3s,opacity .3s}
+.reader-foot.hidden{transform:translateY(100%);opacity:0;pointer-events:none}
+.page-nav-big{width:64px;height:64px;border-radius:50%;background:var(--bg-deep);color:var(--primary);display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--border-strong);transition:transform .15s,background .2s,box-shadow .2s;flex:0 0 64px;cursor:pointer}
+.page-nav-big:hover{background:var(--primary);color:#fff;transform:scale(1.05);box-shadow:var(--shadow-md)}
+.page-nav-big:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.page-center{flex:1;display:flex;flex-direction:column;gap:8px;align-items:center;max-width:560px;margin:0 auto}
+.page-count{font-family:var(--font-display);font-size:24px;color:var(--fg);font-weight:500}
+.page-count .of{color:var(--muted);margin:0 4px}
+.page-count .num{color:var(--primary)}
+.page-slider{width:100%;-webkit-appearance:none;appearance:none;height:6px;background:linear-gradient(90deg,var(--primary) var(--p,0%),var(--border) var(--p,0%));border-radius:999px;outline:0}
+.page-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);border:3px solid var(--bg-elevated);box-shadow:0 2px 6px rgba(0,0,0,.2);cursor:pointer}
+.page-slider::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--accent);border:3px solid var(--bg-elevated);cursor:pointer}
+
+.reader-dark{--bg:#141B26;--bg-elevated:#1E2A3A;--bg-deep:#222F42;--fg:#F2E7CE;--fg-soft:#C8C0A8;--muted:#8B95A1;--border:#2F3D52;--border-strong:#4A5A72;--accent:#D4A574;--accent-deep:#B8854A;--primary:#E8C5BC;--primary-deep:#D4A8A0;--primary-fg:#1E2A3A}
+.reader-dark .reader-page{background:var(--bg-elevated);color:var(--fg)}
+.reader-dark .page-nav-big{background:var(--bg-deep);color:var(--accent);border-color:var(--border-strong)}
+.reader-dark .page-nav-big:hover{background:var(--accent);color:#1E2A3A}
+.reader-sepia{--bg:#E8D9B5;--bg-elevated:#F0E4C8;--bg-deep:#DCC89C;--fg:#4A3520;--fg-soft:#6B4E2E;--muted:#8B6F4A;--border:#C9B98E;--border-strong:#B09872;--primary:#7B2D26}
+.reader-sepia .reader-page{background:var(--bg-elevated);color:var(--fg)}
+
+#tg-bubble{position:fixed;right:24px;bottom:24px;z-index:40;width:60px;height:60px;border-radius:50%;background:var(--primary);color:#fff;display:none;align-items:center;justify-content:center;box-shadow:0 12px 30px rgba(123,45,38,.4);transition:transform .2s,box-shadow .2s;border:0;cursor:pointer;text-decoration:none}
+#tg-bubble.show{display:flex}
+#tg-bubble:hover{transform:translateY(-3px) scale(1.05);box-shadow:0 16px 36px rgba(123,45,38,.5);text-decoration:none;border:0}
+#tg-bubble svg{width:26px;height:26px;fill:currentColor}
+#tg-bubble::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:1px solid var(--accent);opacity:.5;animation:tg-pulse 3s ease-out infinite}
+@keyframes tg-pulse{0%{transform:scale(.95);opacity:.5}70%{transform:scale(1.15);opacity:0}100%{transform:scale(1.15);opacity:0}}
+
+#ss-warning{display:none;position:fixed;inset:0;z-index:200;background:rgba(20,15,12,.94);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:24px;text-align:center}
+#ss-warning.show{display:flex}
+.ss-card{max-width:520px;padding:60px 48px;background:var(--bg-elevated);border:1px solid var(--accent);position:relative;color:var(--fg)}
+.ss-card .orn{color:var(--accent);width:120px;height:36px;margin:0 auto 20px;display:block}
+.ss-card h3{font-family:var(--font-display);font-size:32px;margin:0 0 12px;color:var(--primary)}
+html[lang="km"] .ss-card h3{font-family:var(--font-khmer);font-size:26px}
+.ss-card p{color:var(--fg-soft);font-family:var(--font-serif);font-style:italic}
+html[lang="km"] .ss-card p{font-family:var(--font-khmer);font-style:normal}
+.ss-info{font-size:12px;font-family:var(--font-serif);color:var(--muted);margin:14px 0 18px}
+
+.lotus-loader{display:inline-flex;width:64px;height:64px;color:var(--primary);position:relative}
+.lotus-loader svg{width:100%;height:100%;animation:lotus-spin 6s linear infinite}
+.lotus-loader .petal{transform-origin:32px 32px;animation:lotus-bloom 2.4s ease-in-out infinite}
+.lotus-loader .petal:nth-child(2){animation-delay:.15s}
+.lotus-loader .petal:nth-child(3){animation-delay:.3s}
+.lotus-loader .petal:nth-child(4){animation-delay:.45s}
+.lotus-loader .petal:nth-child(5){animation-delay:.6s}
+.lotus-loader .petal:nth-child(6){animation-delay:.75s}
+.lotus-loader .petal:nth-child(7){animation-delay:.9s}
+.lotus-loader .petal:nth-child(8){animation-delay:1.05s}
+@keyframes lotus-spin{to{transform:rotate(360deg)}}
+@keyframes lotus-bloom{0%,100%{transform:scale(.85);opacity:.6}50%{transform:scale(1.08);opacity:1}}
+
+.route{animation:fadein .25s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ============ MOBILE RESPONSIVE ============ */
+@media (max-width:760px){
+  body{font-size:16px}
+  .container{padding:0 16px}
+  .header-top{padding:14px 16px;gap:12px;flex-wrap:wrap}
+  .brand-mark{width:36px;height:36px}
+  .brand-name{font-size:24px}
+  .brand-tag{font-size:10px;letter-spacing:.12em}
+  .header-nav{gap:6px;width:100%;justify-content:space-between;order:3;border-top:1px solid var(--border);padding-top:10px;margin-top:6px}
+  .nav-link{padding:8px 10px;font-size:14px}
+  #lang-switcher button{padding:4px 10px;font-size:12px}
+  .user-chip{padding:4px 8px 4px 4px;font-size:13px}
+  .user-chip .avatar{width:26px;height:26px;font-size:12px}
+  #auth-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  #auth-nav .btn{padding:8px 14px;min-height:38px;font-size:14px}
+
+  .hero{padding:48px 0 32px}
+  .hero-orn-side{display:none}
+  .hero-orn-top{top:18px;width:90px;height:28px}
+  .hero h1{margin:14px 0 10px}
+  .hero .lede{font-size:16px;padding:0 8px}
+  .hero-meta{gap:16px;margin-top:18px;font-size:11px}
+  .display-1{font-size:36px !important}
+  .display-2{font-size:30px !important}
+  .display-3{font-size:24px !important}
+  html[lang="km"] .display-1{font-size:30px !important}
+  html[lang="km"] .display-2{font-size:26px !important}
+  html[lang="km"] .display-3{font-size:22px !important}
+
+  .section-head{margin:32px 0 22px;padding-bottom:14px;flex-direction:column;align-items:flex-start;gap:10px}
+  .section-head .right{font-size:13px}
+  .book-grid{gap:24px 14px}
+  .book-title{font-size:17px}
+  html[lang="km"] .book-title{font-size:16px}
+  .book-author{font-size:13px}
+  .book-price{font-size:16px}
+
+  .book-detail{padding:18px 0 40px;gap:28px}
+  .detail-cover{max-width:260px;margin:0 auto}
+  .detail-info h1{font-size:32px}
+  html[lang="km"] .detail-info h1{font-size:26px}
+  .detail-info .author{font-size:16px;margin-bottom:18px}
+  .detail-info .price-row{padding:12px 0;margin-bottom:20px;flex-wrap:wrap;gap:8px}
+  .detail-info .price-row .price{font-size:30px}
+  .synopsis p{font-size:16px;line-height:1.7}
+  .cta-row{flex-direction:column;align-items:stretch;gap:10px;margin-top:24px}
+  .cta-row .btn{width:100%}
+
+  .auth-wrap{padding:32px 16px;min-height:auto}
+  .auth-card{padding:42px 24px 32px}
+
+  .pay-wrap{padding:24px 0 60px;gap:24px}
+  .pay-card{padding:22px}
+  .qr-frame{padding:18px}
+  .qr-frame img,.qr-placeholder-fallback{max-width:200px;width:200px;height:auto}
+  .step{padding:14px 0;gap:14px}
+  .step .n{width:32px;height:32px;flex:0 0 32px;font-size:14px}
+  .step h4{font-size:17px}
+  .step p{font-size:14px}
+  .upload-zone{padding:24px 16px}
+
+  .site-footer{padding:40px 20px 28px}
+
+  /* Reader on mobile */
+  #reader-toolbar{padding:10px 12px;gap:8px;flex-wrap:wrap}
+  .reader-title{max-width:50vw;font-size:16px}
+  .tool-btn{width:38px;height:38px}
+  .tool-sep{margin:0 2px}
+  #reader-canvas-wrap{padding:14px 8px}
+  .reader-page{padding:14px}
+  .reader-foot{padding:12px 14px;gap:12px}
+  .page-nav-big{width:52px;height:52px;flex:0 0 52px}
+  .page-count{font-size:18px}
+  .reader-disclaimer{font-size:11px;padding:6px 12px;letter-spacing:.04em}
+
+  #ss-warning{padding:16px}
+  .ss-card{padding:36px 24px}
+  .ss-card h3{font-size:24px}
+
+  #tg-bubble{right:16px;bottom:16px;width:52px;height:52px}
+  #tg-bubble svg{width:22px;height:22px}
+}
+
+/* Extra small phones */
+@media (max-width:380px){
+  .header-top{gap:8px}
+  .brand-name{font-size:20px}
+  .brand-tag{display:none}
+  .nav-link{padding:6px 8px;font-size:13px}
+  .display-1{font-size:30px !important}
+  .reader-tool-group{gap:2px}
+  .tool-btn{width:34px;height:34px}
+}
+
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.grow{flex:1}
+.muted{color:var(--muted)}
+.center{text-align:center}
+.hide{display:none !important}
+
+.alert{padding:14px 18px;border-radius:var(--radius);margin-bottom:16px;font-family:var(--font-serif);font-size:15px;border:1px solid}
+html[lang="km"] .alert{font-family:var(--font-khmer)}
+.alert-error{background:rgba(197,48,48,.08);color:var(--danger);border-color:rgba(197,48,48,.3)}
+.alert-success{background:rgba(56,161,105,.08);color:var(--success);border-color:rgba(56,161,105,.3)}
+.alert-info{background:rgba(61,91,73,.08);color:var(--secondary);border-color:rgba(61,91,73,.3)}
+
+.badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:12px;letter-spacing:.06em;font-family:var(--font-serif);font-weight:500;border:1px solid}
+html[lang="km"] .badge{font-family:var(--font-khmer)}
+.badge .dot{width:6px;height:6px;border-radius:50%}
+.b-pending{color:var(--warning);border-color:rgba(221,107,32,.3);background:rgba(221,107,32,.08)}
+.b-pending .dot{background:var(--warning)}
+.b-approved{color:var(--success);border-color:rgba(56,161,105,.3);background:rgba(56,161,105,.08)}
+.b-approved .dot{background:var(--success)}
+.b-rejected{color:var(--danger);border-color:rgba(197,48,48,.3);background:rgba(197,48,48,.08)}
+.b-rejected .dot{background:var(--danger)}
+</style>
+</head>
+<body>
+
+<!-- ORNAMENT SVG SYMBOLS -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="orn-divider" viewBox="0 0 120 30">
+      <g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+        <path d="M0 15 L40 15"/><path d="M80 15 L120 15"/>
+        <circle cx="60" cy="15" r="4" fill="currentColor"/>
+        <path d="M60 4 C 55 9, 55 11, 60 15 C 65 11, 65 9, 60 4 Z" fill="currentColor" opacity=".8"/>
+        <path d="M60 26 C 55 21, 55 19, 60 15 C 65 19, 65 21, 60 26 Z" fill="currentColor" opacity=".8"/>
+        <path d="M48 8 C 52 11, 54 13, 56 15 C 54 17, 52 19, 48 22"/>
+        <path d="M72 8 C 68 11, 66 13, 64 15 C 66 17, 68 19, 72 22"/>
+        <path d="M44 15 L40 11"/><path d="M44 15 L40 19"/>
+        <path d="M76 15 L80 11"/><path d="M76 15 L80 19"/>
+      </g>
+    </symbol>
+    <symbol id="orn-corner" viewBox="0 0 40 40">
+      <g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+        <path d="M2 2 L14 2 M2 2 L2 14"/>
+        <path d="M2 2 C 12 2, 18 8, 18 18"/>
+        <path d="M6 6 C 14 6, 18 10, 18 18"/>
+        <circle cx="18" cy="18" r="2.5" fill="currentColor"/>
+        <path d="M22 8 C 26 12, 28 16, 28 22"/>
+        <path d="M8 22 C 12 26, 16 28, 22 28"/>
+        <path d="M28 22 C 30 22, 32 24, 32 28"/>
+        <path d="M22 28 C 22 30, 24 32, 28 32"/>
+        <path d="M30 30 L34 34" stroke-width="1"/>
+      </g>
+    </symbol>
+    <symbol id="orn-crest" viewBox="0 0 120 36">
+      <g fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+        <path d="M0 18 L34 18"/><path d="M86 18 L120 18"/>
+        <path d="M34 18 C 38 14, 42 10, 46 10 C 50 10, 52 14, 52 18 C 52 22, 50 26, 46 26 C 42 26, 38 22, 34 18 Z"/>
+        <path d="M86 18 C 82 14, 78 10, 74 10 C 70 10, 68 14, 68 18 C 68 22, 70 26, 74 26 C 78 26, 82 22, 86 18 Z"/>
+        <path d="M52 18 C 56 12, 60 6, 60 0"/><path d="M68 18 C 64 12, 60 6, 60 0"/>
+        <path d="M52 18 C 56 24, 60 30, 60 36"/><path d="M68 18 C 64 24, 60 30, 60 36"/>
+        <circle cx="60" cy="18" r="3" fill="currentColor"/>
+        <circle cx="46" cy="18" r="1.5" fill="currentColor"/>
+        <circle cx="74" cy="18" r="1.5" fill="currentColor"/>
+      </g>
+    </symbol>
+    <symbol id="orn-vine" viewBox="0 0 32 160">
+      <g fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round">
+        <path d="M16 0 L16 160"/>
+        <path d="M16 20 C 24 24, 28 28, 24 36 C 20 32, 18 28, 16 20"/>
+        <path d="M16 20 C 8 24, 4 28, 8 36 C 12 32, 14 28, 16 20"/>
+        <path d="M16 60 C 24 64, 28 68, 24 76 C 20 72, 18 68, 16 60"/>
+        <path d="M16 60 C 8 64, 4 68, 8 76 C 12 72, 14 68, 16 60"/>
+        <path d="M16 100 C 24 104, 28 108, 24 116 C 20 112, 18 108, 16 100"/>
+        <path d="M16 100 C 8 104, 4 108, 8 116 C 12 112, 14 108, 16 100"/>
+        <circle cx="16" cy="20" r="2" fill="currentColor"/>
+        <circle cx="16" cy="60" r="2" fill="currentColor"/>
+        <circle cx="16" cy="100" r="2" fill="currentColor"/>
+        <circle cx="16" cy="140" r="2" fill="currentColor"/>
+      </g>
+    </symbol>
+    <symbol id="brand-mark" viewBox="0 0 42 42">
+      <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round">
+        <path d="M6 32 C 14 28, 28 28, 36 32 L 36 12 C 28 8, 14 8, 6 12 Z" fill="currentColor" opacity=".1"/>
+        <path d="M6 32 C 14 28, 28 28, 36 32 L 36 12 C 28 8, 14 8, 6 12 Z"/>
+        <path d="M21 12 L21 32"/>
+        <path d="M21 22 C 17 18, 14 16, 12 16 M21 22 C 25 18, 28 16, 30 16" stroke-width="1.2"/>
+        <circle cx="21" cy="22" r="1.5" fill="currentColor"/>
+      </g>
+    </symbol>
+    <symbol id="orn-lotus" viewBox="0 0 64 64">
+      <g fill="currentColor">
+        <g class="petal"><path d="M32 32 C 24 22, 24 12, 32 4 C 40 12, 40 22 32 32 Z" opacity=".9"/></g>
+        <g class="petal" style="transform:rotate(45deg);transform-origin:32px 32px"><path d="M32 32 C 24 22, 24 12, 32 4 C 40 12, 40 22 32 32 Z" opacity=".75"/></g>
+        <g class="petal" style="transform:rotate(90deg);transform-origin:32px 32px"><path d="M32 32 C 24 22, 24 12, 32 4 C 40 12, 40 22 32 32 Z" opacity=".9"/></g>
+        <g class="petal" style="transform:rotate(135deg);transform-origin:32px 32px"><path d="M32 32 C 24 22, 24 12, 32 4 C 40 12, 40 22 32 32 Z" opacity=".75"/></g>
+        <g class="petal" style="transform:rotate(180deg);transform-origin:32px 32px"><path d="M32 32 C 24 22, 24 12, 32 4 C 40 12, 40 22 32 32 Z" opacity=".9"/></g>
+        <g class="petal" style="transform:rotate(225deg);transform-origin:32px 32px"><path d="M32 32 C 24 22, 24 12, 32 4 C 40 12, 40 22 32 32 Z" opacity=".75"/></g>
+        <g class="petal" style="transform:rotate(270deg);transform-origin:32px 32px"><path d="M32 32 C 24 22, 24 12, 32 4 C 40 12, 40 22 32 32 Z" opacity=".9"/></g>
+        <g class="petal" style="transform:rotate(315deg);transform-origin:32px 32px"><path d="M32 32 C 24 22, 24 12, 32 4 C 40 12, 40 22 32 32 Z" opacity=".75"/></g>
+        <circle cx="32" cy="32" r="4" fill="currentColor"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<!-- APP SHELL -->
+<div id="app">
+  <header class="site-header" id="site-header">
+    <div class="header-top">
+      <a class="brand" href="#/">
+        <svg class="brand-mark"><use href="#brand-mark"/></svg>
+        <div>
+          <div class="brand-name">KhozyReads</div>
+          <div class="brand-tag" data-i18n="brand.tag">ហាងសៀវភៅឌីជីថល</div>
+        </div>
+      </a>
+      <nav class="header-nav">
+        <a class="nav-link" href="#/" data-i18n="nav.store">ហាង</a>
+        <a class="nav-link" href="#/library" data-i18n="nav.library">បណ្ណាល័យរបស់ខ្ញុំ</a>
+        <span id="lang-switcher" role="group" aria-label="Language">
+          <button class="km" data-lang="kh">ខ្មែរ</button>
+          <button data-lang="en">EN</button>
+        </span>
+        <div id="auth-nav"></div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="route-outlet"><div class="center" style="padding:80px"><span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span></div></main>
+
+  <footer class="site-footer" id="site-footer">
+    <div class="divider-orn"><svg><use href="#orn-divider"/></svg></div>
+    <div class="brand-name">KhozyReads</div>
+    <p data-i18n="footer.tag">សៀវភៅឌីជីថលដែលបន្ថែមភាពរីករាយក្នុងការអាន</p>
+    <p class="muted">© 2026 · <span data-i18n="footer.note">បង្កើតដោយក្តីស្រឡាញ់ពីខ្មែរ</span></p>
+  </footer>
+</div>
+
+<a id="tg-bubble" href="#" target="_blank" rel="noopener" aria-label="Telegram">
+  <svg viewBox="0 0 24 24"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+</a>
+
+<div id="ss-warning" role="alertdialog">
+  <div class="ss-card">
+    <svg class="orn"><use href="#orn-crest"/></svg>
+    <h3 data-i18n="ss.title">ការថតអេក្រង់ត្រូវបានហាមឃាត់</h3>
+    <p data-i18n="ss.body">ខ្លឹមសារនេះការពារដោយម្ចាស់ស្នាដៃ។ សូមមេត្តាគោរពច្បាប់រក្សាសិទ្ធិ។</p>
+    <div class="ss-info" id="ss-info"></div>
+    <button class="btn btn-ghost" id="ss-dismiss" data-i18n="ss.dismiss">យល់ព្រម</button>
+  </div>
+</div>
+
+<!-- ==================== TEMPLATES ==================== -->
+<template id="tpl-home">
+<section class="route">
+  <div class="container">
+    <div class="hero">
+      <svg class="hero-orn-side left"><use href="#orn-vine"/></svg>
+      <svg class="hero-orn-side right"><use href="#orn-vine"/></svg>
+      <svg class="hero-orn-top"><use href="#orn-crest"/></svg>
+      <div class="eyebrow" data-i18n="home.eyebrow">បណ្ណាគារខ្មែរឌីជីថល · EST. 2026</div>
+      <h1 class="display display-1" data-i18n="home.title">ហាងសៀវភៅឌីជីថល</h1>
+      <p class="lede" data-i18n="home.lede">អានរឿងស្នេហា ប្រវត្តិសាស្ត្រ និងសិល្បៈខ្មែរ — គ្រប់ពេលវេលា គ្រប់ទីកន្លែង។</p>
+    </div>
+    <div class="section-head">
+      <div class="left">
+        <span class="eyebrow" data-i18n="home.all.eyebrow">បណ្តុំសៀវភៅទាំងអស់</span>
+        <h2 class="display display-3" data-i18n="home.all.h">ហាងសៀវភៅឌីជីថល</h2>
+      </div>
+      <div class="right"><span data-i18n="home.all.sort">តម្រៀបតាម · ថ្មីបំផុត</span></div>
+    </div>
+    <div class="book-grid" id="book-grid"></div>
+  </div>
+</section>
+</template>
+
+<template id="tpl-detail">
+<section class="route">
+  <div class="container">
+    <nav class="breadcrumbs">
+      <a href="#/" data-i18n="nav.store">ហាង</a>
+      <span class="sep">·</span>
+      <span class="muted" data-bind="title"></span>
+    </nav>
+    <div class="book-detail">
+      <div class="detail-cover">
+        <div class="frame"></div>
+        <div class="cover-img" data-bind="cover"></div>
+      </div>
+      <div class="detail-info">
+        <span class="eyebrow" data-i18n="detail.eyebrow">ប្រលោមលោក · ឆ្នាំ ២០២៦</span>
+        <h1 data-bind="title"></h1>
+        <div class="author"><span data-i18n="detail.by">និពន្ធដោយ</span> <em data-bind="creator"></em></div>
+        <div class="price-row">
+          <span class="price" data-bind="price"></span>
+          <span class="price-note" data-i18n="detail.priceNote">តម្លៃតែម្តង · កាន់កាប់រហូត</span>
+        </div>
+        <div class="synopsis-head"><span class="eyebrow" data-i18n="detail.synopsis">ដំណើររឿងសង្ខេប</span></div>
+        <div class="synopsis"><p data-bind="synopsis"></p></div>
+        <div class="cta-row" id="detail-cta"></div>
+      </div>
+    </div>
+  </div>
+</section>
+</template>
+
+<template id="tpl-library">
+<section class="route">
+  <div class="container">
+    <div class="hero" style="padding:60px 0 32px">
+      <svg class="hero-orn-top"><use href="#orn-crest"/></svg>
+      <div class="eyebrow" data-i18n="lib.eyebrow">បណ្ណាល័យផ្ទាល់ខ្លួន</div>
+      <h1 class="display display-2" data-i18n="lib.title">បណ្ណាល័យរបស់ខ្ញុំ</h1>
+      <p class="lede" data-i18n="lib.lede">សៀវភៅទាំងអស់ដែលអ្នកបានទិញ — រួចរាល់ចាប់ផ្តើមអាន។</p>
+    </div>
+    <div class="book-grid" id="library-grid"></div>
+  </div>
+</section>
+</template>
+
+<template id="tpl-login">
+<section class="route">
+  <div class="auth-wrap">
+    <form class="auth-card" id="login-form">
+      <div class="auth-orn-top"><svg><use href="#orn-divider"/></svg></div>
+      <div class="eyebrow center" style="margin-bottom:12px" data-i18n="auth.welcome">សូមស្វាគមន៍មកកាន់</div>
+      <h2 class="display display-3 center" data-i18n="auth.loginH">ចូលគណនី</h2>
+      <p class="sub" data-i18n="auth.loginSub">បន្តការអានសៀវភៅដែលអ្នកស្រឡាញ់</p>
+      <div id="login-error"></div>
+      <div class="field"><label data-i18n="auth.email">អ៊ីមែល</label><input type="email" name="email" required autocomplete="email"/></div>
+      <div class="field"><label data-i18n="auth.pass">ពាក្យសម្ងាត់</label><input type="password" name="password" required autocomplete="current-password"/></div>
+      <button class="btn btn-primary btn-lg" type="submit" data-i18n="auth.loginBtn">ចូលគណនី</button>
+      <div class="auth-foot"><span data-i18n="auth.noAcc">មិនទាន់មានគណនី?</span> <a href="#/register" data-i18n="nav.register">ចុះឈ្មោះ</a></div>
+    </form>
+  </div>
+</section>
+</template>
+
+<template id="tpl-register">
+<section class="route">
+  <div class="auth-wrap">
+    <form class="auth-card" id="reg-form">
+      <div class="auth-orn-top"><svg><use href="#orn-divider"/></svg></div>
+      <div class="eyebrow center" style="margin-bottom:12px" data-i18n="auth.join">ចូលរួមជាមួយយើង</div>
+      <h2 class="display display-3 center" data-i18n="auth.registerH">បង្កើតគណនី</h2>
+      <p class="sub" data-i18n="auth.registerSub">ចាប់ផ្តើមការដំណើរនៃការអានរបស់អ្នក</p>
+      <div id="reg-error"></div>
+      <div class="field"><label data-i18n="auth.user">ឈ្មោះអ្នកប្រើ</label><input type="text" name="username" required pattern="^[a-zA-Z]+[0-9]+$" minlength="3" maxlength="30" placeholder="user123"/><div class="hint muted" style="font-size:12px;margin-top:4px">a-z + 0-9 (user123)</div></div>
+      <div class="field"><label data-i18n="auth.email">អ៊ីមែល</label><input type="email" name="email" required autocomplete="email"/></div>
+      <div class="field"><label data-i18n="auth.pass">ពាក្យសម្ងាត់</label><input type="password" name="password" required minlength="6" autocomplete="new-password"/></div>
+      <button class="btn btn-primary btn-lg" type="submit" data-i18n="auth.registerBtn">បង្កើតគណនី</button>
+      <div class="auth-foot"><span data-i18n="auth.haveAcc">មានគណនីរួចហើយ?</span> <a href="#/login" data-i18n="nav.login">ចូល</a></div>
+    </form>
+  </div>
+</section>
+</template>
+
+<template id="tpl-payment">
+<section class="route">
+  <div class="container">
+    <nav class="breadcrumbs">
+      <a href="#/" data-i18n="nav.store">ហាង</a>
+      <span class="sep">·</span>
+      <a href="#" data-bind="bookLink"><span data-bind="bookTitle"></span></a>
+      <span class="sep">·</span>
+      <span class="muted" data-i18n="pay.crumb">បង់ប្រាក់</span>
+    </nav>
+    <div class="hero" style="padding:32px 0 16px;text-align:left">
+      <div class="eyebrow" data-i18n="pay.eyebrow">ការទូទាត់សុវត្ថិភាព · ABA / KHQR</div>
+      <h1 class="display display-2" data-i18n="pay.title">បញ្ចប់ការទិញរបស់អ្នក</h1>
+    </div>
+    <div class="pay-wrap">
+      <div class="pay-card">
+        <div class="eyebrow" data-i18n="pay.step1">ជំហានទី ១ · ស្កេន QR</div>
+        <h3 class="display display-3" style="margin:8px 0 24px" data-i18n="pay.scan">ស្កេនកូដខាងក្រោម</h3>
+        <div class="qr-frame">
+          <svg class="orn"><use href="#orn-divider"/></svg>
+          <div id="qr-holder"><div class="qr-placeholder-fallback"></div></div>
+          <svg class="orn" style="transform:rotate(180deg)"><use href="#orn-divider"/></svg>
+          <div class="qr-label"><span data-i18n="pay.amount">ចំនួន</span> · <span data-bind="amount"></span></div>
+        </div>
+        <div class="row" style="margin-top:24px;justify-content:space-between">
+          <div>
+            <div class="eyebrow" data-i18n="pay.acc">ឈ្មោះគណនី</div>
+            <div class="serif" style="font-size:18px" data-bind="abaName"></div>
+          </div>
+          <div>
+            <div class="eyebrow" data-i18n="pay.num">លេខគណនី</div>
+            <div class="serif" style="font-size:18px" data-bind="abaNum"></div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="steps">
+          <div class="step"><div class="n">១</div><div><h4 data-i18n="pay.s1h">ស្កេន QR និងបង់ប្រាក់</h4><p data-i18n="pay.s1b">បើកកម្មវិធី ABA Mobile ហើយស្កេនកូដខាងស្តាំ ឬផ្ទេរប្រាក់ដោយផ្ទាល់ទៅគណនី។</p></div></div>
+          <div class="step"><div class="n">២</div><div><h4 data-i18n="pay.s2h">បន្ទាប់​មក​បង្ហោះ​វិក្កយបត្រ</h4><p data-i18n="pay.s2b">ថត​អេក្រង់​នៃ​ការបង់ប្រាក់ និង​បង្ហោះ​នៅ​ក្នុង​ប្រអប់​ខាង​ក្រោម។</p></div></div>
+          <div class="step"><div class="n">៣</div><div><h4 data-i18n="pay.s3h">រង់​ចាំ​ការ​អនុម័ត</h4><p data-i18n="pay.s3b">ក្រុមការងារ​នឹង​ផ្ទៀង​ផ្ទាត់​ក្នុង​រយៈពេល ១ ទៅ ២ ម៉ោង។ អ្នក​នឹង​អាច​អាន​សៀវភៅ​បាន​ភ្លាមៗ។</p></div></div>
+        </div>
+        <form id="proof-form">
+          <label class="upload-zone">
+            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4 L12 16 M6 10 L12 4 L18 10 M4 20 L20 20"/></svg>
+            <div class="serif" style="font-size:17px;margin-bottom:4px" data-i18n="pay.upload">បង្ហោះវិក្កយបត្រ</div>
+            <div class="muted" style="font-size:14px" data-i18n="pay.uploadSub">JPG · PNG · PDF · អតិបរមា 8MB</div>
+            <div id="proof-filename" class="muted" style="font-size:13px;margin-top:8px"></div>
+            <input type="file" name="proof" accept="image/jpeg,image/png,image/webp,application/pdf" required/>
+          </label>
+          <div id="proof-msg"></div>
+          <button class="btn btn-primary btn-lg" style="width:100%;margin-top:24px" type="submit" data-i18n="pay.submit">បញ្ជូនការបង់ប្រាក់</button>
+        </form>
+        <div id="payment-notice" class="alert alert-info" style="margin-top:18px;display:none"></div>
+      </div>
+    </div>
+  </div>
+</section>
+</template>
+
+<template id="tpl-reader">
+<div id="reader-frame">
+  <div class="reader-progress"><div class="bar" id="r-progress" style="width:0%"></div></div>
+  <div id="reader-toolbar">
+    <div class="reader-tool-group">
+      <a id="r-back" class="tool-btn" href="#/library" aria-label="Back">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M15 6 L9 12 L15 18"/></svg>
+      </a>
+      <span class="reader-title" data-bind="title"></span>
+    </div>
+    <div class="reader-tool-group">
+      <button class="tool-btn" id="r-zoomout" aria-label="Zoom out"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6"/><path d="M16 16 L21 21 M8 11 L14 11"/></svg></button>
+      <button class="tool-btn" id="r-zoomin" aria-label="Zoom in"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6"/><path d="M16 16 L21 21 M8 11 L14 11 M11 8 L11 14"/></svg></button>
+      <div class="tool-sep"></div>
+      <button class="tool-btn" data-theme="day" aria-label="Day"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="4"/><path d="M12 2 L12 5 M12 19 L12 22 M2 12 L5 12 M19 12 L22 12 M4.9 4.9 L7 7 M17 17 L19.1 19.1 M4.9 19.1 L7 17 M17 7 L19.1 4.9"/></svg></button>
+      <button class="tool-btn" data-theme="sepia" aria-label="Sepia"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 4 C 8 4, 5 7, 5 12 C 5 17, 8 20, 12 20 C 10 18, 9 15, 9 12 C 9 9, 10 6, 12 4 Z" fill="currentColor"/></svg></button>
+      <button class="tool-btn" data-theme="night" aria-label="Night"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 14 C 16 16, 11 14, 9 10 C 8 7, 9 4, 11 3 C 6 3, 3 7, 4 12 C 5 17, 10 20, 15 19 C 17 18.5, 19 17, 20 14 Z" fill="currentColor"/></svg></button>
+    </div>
+  </div>
+  <div class="reader-disclaimer" id="reader-disclaimer">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1 L3 5 L3 11 C 3 17, 7 21, 12 23 C 17 21, 21 17, 21 11 L 21 5 Z"/></svg>
+    <span data-i18n="reader.licensed">Licensed to</span> <strong id="disclaimer-user"></strong> · <span data-i18n="reader.tracked">Screenshots and recordings are tracked</span>
+  </div>
+  <div id="reader-canvas-wrap">
+    <article class="reader-page" id="reader-page">
+      <div class="loading"><span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span><span class="muted" data-i18n="reader.loading">កំពុងផ្ទុក PDF…</span></div>
+      <canvas id="r-canvas" style="display:none"></canvas>
+    </article>
+  </div>
+  <div class="reader-foot">
+    <button id="r-prev" class="page-nav-big" aria-label="Previous"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M15 6 L9 12 L15 18"/></svg></button>
+    <div class="page-center">
+      <div class="page-count" id="r-page"><span class="num">—</span><span class="of"> / </span><span id="r-total">—</span></div>
+      <input class="page-slider" id="r-slider" type="range" min="1" max="1" value="1" style="--p:0%"/>
+    </div>
+    <button id="r-next" class="page-nav-big" aria-label="Next"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 6 L15 12 L9 18"/></svg></button>
+  </div>
+</div>
+</template>
+
+<!-- Supabase + Config -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script>
+"use strict";
+
+/* ========== Init ========== */
+const CFG = window.KHOZY_CONFIG || {};
+if(!CFG.SUPABASE_URL || !CFG.SUPABASE_ANON_KEY){
+  document.getElementById('route-outlet').innerHTML='<div class="container" style="padding:80px"><div class="alert alert-error">Config missing. Edit <code>config.js</code></div></div>';
+  throw new Error('Config missing');
+}
+const sb = supabase.createClient(CFG.SUPABASE_URL, CFG.SUPABASE_ANON_KEY, { auth:{persistSession:true,autoRefreshToken:true,storageKey:'khozy-auth'} });
+
+/* ========== State ========== */
+const state = { user:null, profile:null, settings:{}, lang: localStorage.getItem('khozy-lang')||'kh' };
+
+/* ========== i18n ========== */
+const I18N = {
+  kh: {
+    'brand.tag':'ហាងសៀវភៅឌីជីថល','nav.store':'ហាង','nav.library':'បណ្ណាល័យរបស់ខ្ញុំ','nav.login':'ចូល','nav.register':'ចុះឈ្មោះ','nav.logout':'ចេញ',
+    'footer.tag':'សៀវភៅឌីជីថលដែលបន្ថែមភាពរីករាយក្នុងការអាន','footer.note':'បង្កើតដោយក្តីស្រឡាញ់ពីខ្មែរ',
+    'home.eyebrow':'បណ្ណាគារខ្មែរឌីជីថល · EST. 2026','home.title':'ហាងសៀវភៅឌីជីថល','home.lede':'អានរឿងស្នេហា ប្រវត្តិសាស្ត្រ និងសិល្បៈខ្មែរ — គ្រប់ពេលវេលា គ្រប់ទីកន្លែង។',
+    'home.all.eyebrow':'បណ្តុំសៀវភៅទាំងអស់','home.all.h':'ហាងសៀវភៅឌីជីថល','home.all.sort':'តម្រៀបតាម · ថ្មីបំផុត','home.empty':'មិនទាន់មានសៀវភៅទេ',
+    'detail.eyebrow':'សៀវភៅ · ឆ្នាំ ២០២៦','detail.by':'និពន្ធដោយ','detail.priceNote':'តម្លៃតែម្តង · កាន់កាប់រហូត','detail.synopsis':'ដំណើររឿងសង្ខេប',
+    'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ',
+    'lib.eyebrow':'បណ្ណាល័យផ្ទាល់ខ្លួន','lib.title':'បណ្ណាល័យរបស់ខ្ញុំ','lib.lede':'សៀវភៅទាំងអស់ដែលអ្នកបានទិញ — រួចរាល់ចាប់ផ្តើមអាន។','lib.empty':'មិនទាន់មានការទិញ',
+    'auth.welcome':'សូមស្វាគមន៍មកកាន់','auth.loginH':'ចូលគណនី','auth.loginSub':'បន្តការអានសៀវភៅដែលអ្នកស្រឡាញ់','auth.loginBtn':'ចូលគណនី','auth.noAcc':'មិនទាន់មានគណនី?','auth.haveAcc':'មានគណនីរួចហើយ?',
+    'auth.join':'ចូលរួមជាមួយយើង','auth.registerH':'បង្កើតគណនី','auth.registerSub':'ចាប់ផ្តើមការដំណើរនៃការអានរបស់អ្នក','auth.registerBtn':'បង្កើតគណនី',
+    'auth.user':'ឈ្មោះអ្នកប្រើ','auth.email':'អ៊ីមែល','auth.pass':'ពាក្យសម្ងាត់',
+    'pay.eyebrow':'ការទូទាត់សុវត្ថិភាព · ABA / KHQR','pay.title':'បញ្ចប់ការទិញរបស់អ្នក','pay.crumb':'បង់ប្រាក់','pay.step1':'ជំហានទី ១ · ស្កេន QR','pay.scan':'ស្កេនកូដខាងក្រោម','pay.amount':'ចំនួន',
+    'pay.acc':'ឈ្មោះគណនី','pay.num':'លេខគណនី','pay.s1h':'ស្កេន QR និងបង់ប្រាក់','pay.s1b':'បើកកម្មវិធី ABA Mobile ហើយស្កេនកូដខាងស្តាំ ឬផ្ទេរប្រាក់ដោយផ្ទាល់ទៅគណនី។','pay.s2h':'បន្ទាប់​មក​បង្ហោះ​វិក្កយបត្រ','pay.s2b':'ថត​អេក្រង់​នៃ​ការបង់ប្រាក់ និង​បង្ហោះ​នៅ​ក្នុង​ប្រអប់​ខាង​ក្រោម។','pay.s3h':'រង់​ចាំ​ការ​អនុម័ត','pay.s3b':'ក្រុមការងារ​នឹង​ផ្ទៀង​ផ្ទាត់​ក្នុង​រយៈពេល ១ ទៅ ២ ម៉ោង។','pay.upload':'បង្ហោះវិក្កយបត្រ','pay.uploadSub':'JPG · PNG · PDF · អតិបរមា 8MB','pay.submit':'បញ្ជូនការបង់ប្រាក់','pay.success':'ដាក់ស្នើដោយជោគជ័យ! រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។',
+    'reader.loading':'កំពុងផ្ទុក PDF…','reader.failed':'មិនអាចផ្ទុក PDF បានទេ','reader.licensed':'ផ្តល់សិទ្ធិឱ្យ','reader.tracked':'ការថត និងការថតវីដេអូត្រូវបានតាមដាន',
+    'badge.pending':'កំពុងរង់ចាំ','badge.approved':'យល់ព្រម','badge.rejected':'បដិសេធ',
+    'err.bookNotFound':'រកសៀវភៅមិនឃើញ','err.loginFirst':'សូមចូលគណនីមុនសិន','err.noAccess':'អ្នកត្រូវទិញសៀវភៅនេះមុនអាន','err.uploadFailed':'បរាជ័យក្នុងការបង្ហោះ','err.fileTooLarge':'ឯកសារធំជាង 8MB','err.invalidFile':'ប្រភេទឯកសារមិនត្រឹមត្រូវ',
+    'ss.title':'ការការពារមាតិកាបានបើក','ss.body':'មិនអនុញ្ញាតឱ្យថត, ថតវីដេអូ, ឬចម្លងមាតិកា។ មាតិកានេះត្រូវបានផ្តល់សិទ្ធិឱ្យអ្នកម្នាក់។','ss.dismiss':'ខ្ញុំយល់ហើយ'
+  },
+  en: {
+    'brand.tag':'Digital Book Store','nav.store':'Store','nav.library':'My Library','nav.login':'Sign In','nav.register':'Register','nav.logout':'Logout',
+    'footer.tag':'Digital books that bring joy to reading','footer.note':'Crafted with love from Cambodia',
+    'home.eyebrow':'Khmer digital bookstore · EST. 2026','home.title':'Digital Book Store','home.lede':'Romance, history, and Khmer literature — wherever, whenever.',
+    'home.all.eyebrow':'All books','home.all.h':'Digital Book Store','home.all.sort':'Sorted by · Newest','home.empty':'No books yet',
+    'detail.eyebrow':'Book · 2026','detail.by':'by','detail.priceNote':'One-time purchase · yours forever','detail.synopsis':'Synopsis',
+    'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Pending Verification','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled',
+    'lib.eyebrow':'Personal library','lib.title':'My Library','lib.lede':'All books you own — ready to read.','lib.empty':'No purchases yet',
+    'auth.welcome':'Welcome to','auth.loginH':'Sign In','auth.loginSub':'Continue reading what you love','auth.loginBtn':'Sign In','auth.noAcc':'No account yet?','auth.haveAcc':'Already have an account?',
+    'auth.join':'Join us','auth.registerH':'Create Account','auth.registerSub':'Start your reading journey','auth.registerBtn':'Create Account',
+    'auth.user':'Username','auth.email':'Email','auth.pass':'Password',
+    'pay.eyebrow':'Secure payment · ABA / KHQR','pay.title':'Complete your purchase','pay.crumb':'Payment','pay.step1':'Step 1 · Scan QR','pay.scan':'Scan the code below','pay.amount':'Amount',
+    'pay.acc':'Account Name','pay.num':'Account Number','pay.s1h':'Scan QR and pay','pay.s1b':'Open ABA Mobile and scan the QR or transfer directly to the account.','pay.s2h':'Then upload the receipt','pay.s2b':'Take a screenshot of your payment and upload in the box below.','pay.s3h':'Wait for approval','pay.s3b':'Our team verifies within 1-2 hours. You can read immediately after.','pay.upload':'Upload receipt','pay.uploadSub':'JPG · PNG · PDF · max 8MB','pay.submit':'Submit payment','pay.success':'Submitted! Waiting for admin approval.',
+    'reader.loading':'Loading PDF…','reader.failed':'Failed to load PDF','reader.licensed':'Licensed to','reader.tracked':'Screenshots and recordings are tracked',
+    'badge.pending':'Pending','badge.approved':'Approved','badge.rejected':'Rejected',
+    'err.bookNotFound':'Book not found','err.loginFirst':'Please login first','err.noAccess':'Please purchase this book to read','err.uploadFailed':'Upload failed','err.fileTooLarge':'File larger than 8MB','err.invalidFile':'Invalid file type',
+    'ss.title':'Content Protection Active','ss.body':'Screenshots, screen recording, and copying are not permitted. This content is licensed only to you.','ss.dismiss':'I understand'
+  }
+};
+function t(k){ return (I18N[state.lang]&&I18N[state.lang][k]) || I18N.en[k] || k; }
+function applyI18n(scope){ (scope||document).querySelectorAll('[data-i18n]').forEach(el=>{ const k=el.getAttribute('data-i18n'); const v=I18N[state.lang][k]||I18N.en[k]; if(v!=null) el.textContent=v; }); document.documentElement.lang = state.lang==='kh'?'km':'en'; }
+
+/* ========== Helpers ========== */
+const $ = (s,c=document)=>c.querySelector(s);
+const $$ = (s,c=document)=>c.querySelectorAll(s);
+const esc = s => s==null?'':String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtMoney = (a,c)=>`${Number(a||0).toFixed(2)} ${c||'USD'}`;
+function alertBox(m,type='error'){ return `<div class="alert alert-${type}">${esc(m)}</div>`; }
+function bindData(scope, key, val){ scope.querySelectorAll(`[data-bind="${key}"]`).forEach(el=>el.textContent=val); }
+async function publicUrl(bucket,path){ if(!path) return ''; const {data}=sb.storage.from(bucket).getPublicUrl(path); return data.publicUrl; }
+function pickColor(seed){ const palette=['linear-gradient(135deg,#7B2D26 0%,#3D5B49 100%)','linear-gradient(135deg,#3D5B49,#D4A574)','linear-gradient(135deg,#1E2A3A,#7B2D26)','linear-gradient(135deg,#E8C5BC,#7B2D26)','linear-gradient(135deg,#D4A574,#7B2D26)']; let h=0; for(let i=0;i<String(seed||'').length;i++) h=(h*31+String(seed).charCodeAt(i))|0; return palette[Math.abs(h)%palette.length]; }
+
+/* ========== Auth ========== */
+async function loadAuth(){
+  const { data:{session} } = await sb.auth.getSession();
+  state.user = session?.user || null;
+  state.profile = null;
+  if(state.user){
+    const { data } = await sb.from('users_profile').select('*').eq('auth_user_id',state.user.id).maybeSingle();
+    state.profile = data;
+  }
+  renderAuthNav();
+}
+function renderAuthNav(){
+  const el = $('#auth-nav'); if(!el) return;
+  if(state.user && state.profile){
+    const u = state.profile.username || '';
+    el.innerHTML = `<span class="user-chip"><span class="avatar">${esc(u.charAt(0).toUpperCase()||'U')}</span><span>@${esc(u)}</span></span> <a href="#" id="logout-link" class="nav-link" data-i18n="nav.logout">ចេញ</a>`;
+    applyI18n(el);
+    $('#logout-link').onclick = e=>{ e.preventDefault(); doLogout(); };
+  } else {
+    el.innerHTML = `<a class="nav-link" href="#/login" data-i18n="nav.login">ចូល</a> <a class="btn btn-ghost" href="#/register" data-i18n="nav.register">ចុះឈ្មោះ</a>`;
+    applyI18n(el);
+  }
+}
+async function doLogout(){
+  try{ await sb.auth.signOut(); }catch(e){}
+  state.user=null; state.profile=null;
+  renderAuthNav();
+  if(location.hash==='#/'||location.hash==='') route(); else location.hash='#/';
+}
+
+/* ========== Settings ========== */
+async function loadSettings(){
+  const { data } = await sb.from('site_settings').select('setting_key,setting_value');
+  state.settings = Object.fromEntries((data||[]).map(r=>[r.setting_key,r.setting_value]));
+  updateTelegramBubble();
+}
+function updateTelegramBubble(){
+  const link = state.settings?.telegram_group_link;
+  const bubble = $('#tg-bubble');
+  if(!bubble) return;
+  if(link && /^https?:\/\//.test(link)){ bubble.href=link; bubble.classList.add('show'); }
+  else bubble.classList.remove('show');
+}
+
+/* ========== Lang ========== */
+function setLang(l){
+  state.lang = l;
+  localStorage.setItem('khozy-lang', l);
+  document.documentElement.lang = l==='kh'?'km':'en';
+  $$('#lang-switcher button').forEach(b=>b.classList.toggle('active', b.dataset.lang===l));
+  applyI18n();
+  renderAuthNav();
+  route();
+}
+$$('#lang-switcher button').forEach(b=>b.addEventListener('click',()=>setLang(b.dataset.lang)));
+
+/* ========== Router ========== */
+let _routeToken=0, _spinnerTimer=null;
+function showTemplate(id){
+  const tpl = document.getElementById(id);
+  const node = tpl.content.cloneNode(true);
+  const outlet = $('#route-outlet');
+  outlet.innerHTML=''; outlet.appendChild(node);
+  applyI18n(outlet);
+}
+function parseHash(){
+  const h = location.hash.replace(/^#\/?/,'')||'';
+  const parts = h.split('/').filter(Boolean);
+  return { name: parts[0]||'', id: parts[1]||null };
+}
+function route(){
+  const token = ++_routeToken;
+  const isStale = ()=>token!==_routeToken;
+  cleanupReader();
+  const r = parseHash();
+  const showChrome = r.name!=='read';
+  $('#site-header').style.display = showChrome?'':'none';
+  $('#site-footer').style.display = showChrome?'':'none';
+  if(_spinnerTimer) clearTimeout(_spinnerTimer);
+  _spinnerTimer = setTimeout(()=>{ if(!isStale()) $('#route-outlet').innerHTML=`<div class="center" style="padding:80px"><span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span></div>`; }, 150);
+  const handlers = {'':renderHome, 'home':renderHome, 'book':renderBookDetail, 'library':renderLibrary, 'login':renderLogin, 'register':renderRegister, 'payment':renderPayment, 'read':renderReader};
+  const h = handlers[r.name] || renderHome;
+  Promise.resolve(h(r.id, isStale)).catch(err=>{ if(isStale()) return; console.error(err); $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(err.message||String(err))}</div>`; }).finally(()=>{ if(_spinnerTimer){clearTimeout(_spinnerTimer);_spinnerTimer=null;} updateTelegramBubble(); window.scrollTo(0,0); });
+}
+window.addEventListener('hashchange', route);
+
+/* ========== Pages ========== */
+async function renderHome(){
+  const { data:books, error } = await sb.from('books').select('id,title,creator,price,currency,cover_url,is_buy_enabled').eq('status','active').order('created_at',{ascending:false});
+  if(error) throw error;
+  showTemplate('tpl-home');
+  const grid = $('#book-grid');
+  if(!books||!books.length){ grid.innerHTML=`<div style="grid-column:1/-1" class="empty muted center">${esc(t('home.empty'))}</div>`; return; }
+  grid.innerHTML = books.map(b=>`
+    <a class="book-card" href="#/book/${b.id}">
+      <div class="book-cover" style="background:${b.cover_url?'var(--bg-deep)':pickColor(b.id)}">
+        ${b.cover_url ? `<img src="${esc(b.cover_url)}" alt="" loading="lazy"/>` : `<div class="placeholder">COVER</div><svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}
+      </div>
+      <div class="book-meta">
+        <h3 class="book-title">${esc(b.title)}</h3>
+        <p class="book-author">${esc(b.creator||'-')}</p>
+        <span class="book-price">${fmtMoney(b.price,b.currency)}</span>
+      </div>
+    </a>
+  `).join('');
+}
+
+async function renderBookDetail(id){
+  if(!id){ location.hash='#/'; return; }
+  const { data:book, error } = await sb.from('books').select('*').eq('id',id).maybeSingle();
+  if(error||!book){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.bookNotFound'))}</div>`; return; }
+  let action='guest', orderId=null;
+  if(state.user&&state.profile){
+    const { data:lib } = await sb.from('user_library').select('id').eq('user_id',state.profile.id).eq('book_id',id).eq('access_status','active').maybeSingle();
+    if(lib) action='read';
+    else {
+      const { data:orders } = await sb.from('orders').select('id,status').eq('user_id',state.profile.id).eq('book_id',id).order('created_at',{ascending:false}).limit(1);
+      const last = orders?.[0];
+      if(last?.status==='pending'){ action='pending'; orderId=last.id; }
+      else if(last?.status==='rejected') action='buyAgain';
+      else action='buy';
+    }
+  }
+  if(!book.is_buy_enabled && (action==='buy'||action==='buyAgain')) action='disabled';
+  showTemplate('tpl-detail');
+  const scope = $('#route-outlet');
+  bindData(scope,'title',book.title);
+  bindData(scope,'creator',book.creator||'-');
+  bindData(scope,'price',fmtMoney(book.price,book.currency));
+  bindData(scope,'synopsis',book.synopsis||'');
+  const cover = scope.querySelector('[data-bind="cover"]');
+  if(book.cover_url){ cover.innerHTML = `<img src="${esc(book.cover_url)}" alt=""/>`; }
+  else { cover.style.background = pickColor(book.id); cover.innerHTML = `<svg style="position:absolute;width:54px;height:54px;top:14px;left:14px;color:var(--accent);opacity:.9"><use href="#orn-corner"/></svg><svg style="position:absolute;width:54px;height:54px;bottom:14px;right:14px;color:var(--accent);opacity:.9;transform:rotate(180deg)"><use href="#orn-corner"/></svg>`; }
+  const ctaWrap = $('#detail-cta');
+  const ctaMap = {
+    guest: `<a class="btn btn-primary btn-lg" href="#/login">${t('cta.loginToBuy')}</a>`,
+    buy: `<button class="btn btn-primary btn-lg" id="buy-btn">${t('cta.buy')} · ${fmtMoney(book.price,book.currency)}</button>`,
+    buyAgain: `<button class="btn btn-primary btn-lg" id="buy-btn">${t('cta.buyAgain')}</button>`,
+    pending: `<a class="btn btn-ghost btn-lg" href="#/payment/${orderId}"><span class="badge b-pending"><span class="dot"></span>${t('cta.pending')}</span></a>`,
+    read: `<a class="btn btn-primary btn-lg" href="#/read/${id}">${t('cta.read')}</a>`,
+    disabled: `<button class="btn btn-ghost btn-lg" disabled>${t('cta.disabled')}${book.buy_disabled_remark?` — ${esc(book.buy_disabled_remark)}`:''}</button>`
+  };
+  ctaWrap.innerHTML = ctaMap[action];
+  const buyBtn = $('#buy-btn');
+  if(buyBtn) buyBtn.onclick = async ()=>{
+    buyBtn.disabled = true;
+    const { data:order, error } = await sb.from('orders').insert({ user_id:state.profile.id, book_id:book.id, amount:book.price, currency:book.currency, payment_method:'ABA QR / KHQR', status:'pending' }).select('id').single();
+    if(error){ alert(error.message); buyBtn.disabled=false; return; }
+    sb.from('activity_logs').insert({ action:'order.create', actor_user_id:state.profile.id, actor_username:state.profile.username, target_type:'order', target_id:order.id, details:{book_id:book.id} }).then(()=>{}).catch(()=>{});
+    location.hash = `#/payment/${order.id}`;
+  };
+}
+
+async function renderLibrary(){
+  if(!state.user){ location.hash='#/login'; return; }
+  const { data:lib } = await sb.from('user_library').select('id,access_status,book_id,books(id,title,creator,cover_url)').eq('user_id',state.profile.id);
+  const { data:orders } = await sb.from('orders').select('id,status,book_id,reject_reason,books(id,title,cover_url)').eq('user_id',state.profile.id).in('status',['pending','rejected']).order('created_at',{ascending:false});
+  showTemplate('tpl-library');
+  const grid = $('#library-grid');
+  const items = [];
+  (lib||[]).filter(r=>r.access_status==='active').forEach(r=>items.push(`<a class="book-card" href="#/read/${r.books.id}"><div class="book-cover" style="background:${r.books.cover_url?'var(--bg-deep)':pickColor(r.books.id)}">${r.books.cover_url?`<img src="${esc(r.books.cover_url)}"/>`:`<svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}<span class="progress-pill"><span class="dot"></span>${t('badge.approved')}</span></div><div class="book-meta"><h3 class="book-title">${esc(r.books.title)}</h3><p class="book-author">${esc(r.books.creator||'-')}</p></div></a>`));
+  (orders||[]).forEach(o=>{
+    const isP = o.status==='pending';
+    const badge = isP?`<span class="badge b-pending"><span class="dot"></span>${t('badge.pending')}</span>`:`<span class="badge b-rejected"><span class="dot"></span>${t('badge.rejected')}</span>`;
+    const href = isP?`#/payment/${o.id}`:`#/book/${o.book_id}`;
+    items.push(`<a class="book-card" href="${href}"><div class="book-cover" style="background:${o.books?.cover_url?'var(--bg-deep)':pickColor(o.book_id)}">${o.books?.cover_url?`<img src="${esc(o.books.cover_url)}"/>`:`<svg class="corner-orn tl"><use href="#orn-corner"/></svg>`}<span class="progress-pill"><span class="dot"></span>${isP?t('badge.pending'):t('badge.rejected')}</span></div><div class="book-meta"><h3 class="book-title">${esc(o.books?.title||'')}</h3>${badge}${o.reject_reason?`<p class="book-author" style="margin-top:6px">${esc(o.reject_reason)}</p>`:''}</div></a>`);
+  });
+  if(!items.length) grid.innerHTML=`<div style="grid-column:1/-1" class="empty muted center">${esc(t('lib.empty'))}</div>`;
+  else grid.innerHTML = items.join('');
+}
+
+async function renderLogin(){
+  if(state.user){ location.hash='#/'; return; }
+  showTemplate('tpl-login');
+  $('#login-form').onsubmit = async e=>{
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const btn = e.target.querySelector('button[type=submit]'); btn.disabled=true;
+    const { error } = await sb.auth.signInWithPassword({ email:fd.get('email'), password:fd.get('password') });
+    btn.disabled=false;
+    if(error){ $('#login-error').innerHTML = alertBox(error.message); return; }
+    await loadAuth();
+    location.hash='#/';
+  };
+}
+
+async function renderRegister(){
+  if(state.user){ location.hash='#/'; return; }
+  showTemplate('tpl-register');
+  $('#reg-form').onsubmit = async e=>{
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const btn = e.target.querySelector('button[type=submit]'); btn.disabled=true;
+    const username = String(fd.get('username')).toLowerCase().trim();
+    const { error } = await sb.auth.signUp({ email:fd.get('email'), password:fd.get('password'), options:{ data:{ username } } });
+    btn.disabled=false;
+    if(error){ $('#reg-error').innerHTML = alertBox(error.message); return; }
+    await sb.auth.signInWithPassword({ email:fd.get('email'), password:fd.get('password') });
+    await loadAuth();
+    location.hash='#/';
+  };
+}
+
+async function renderPayment(orderId){
+  if(!state.user){ location.hash='#/login'; return; }
+  if(!orderId){ location.hash='#/library'; return; }
+  const { data:order, error } = await sb.from('orders').select('*, books(id,title)').eq('id',orderId).maybeSingle();
+  if(error||!order){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.bookNotFound'))}</div>`; return; }
+  if(order.user_id !== state.profile.id){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.noAccess'))}</div>`; return; }
+  showTemplate('tpl-payment');
+  const scope = $('#route-outlet');
+  bindData(scope,'bookTitle',order.books?.title||'');
+  bindData(scope,'amount',fmtMoney(order.amount,order.currency));
+  bindData(scope,'abaName',state.settings.aba_account_name||'-');
+  bindData(scope,'abaNum',state.settings.aba_account_number||'-');
+  scope.querySelectorAll('[data-bind="bookLink"]').forEach(a=>a.href=`#/book/${order.books?.id||''}`);
+  if(state.settings.aba_qr_path){
+    const qr = await publicUrl('site-assets', state.settings.aba_qr_path);
+    $('#qr-holder').innerHTML = `<img src="${esc(qr)}" alt="ABA QR"/>`;
+  }
+  const noticeKey = state.lang==='kh'?'payment_notice_kh':'payment_notice_en';
+  const notice = state.settings[noticeKey]||state.settings.payment_notice_en;
+  if(notice){ const el=$('#payment-notice'); el.textContent=notice; el.style.display='block'; }
+  const fileInput = $('#proof-form input[name=proof]');
+  fileInput.addEventListener('change',()=>{ const f=fileInput.files[0]; $('#proof-filename').textContent = f?f.name:''; });
+  $('#proof-form').onsubmit = async e=>{
+    e.preventDefault();
+    const file = fileInput.files[0]; if(!file) return;
+    const allowed = ['image/jpeg','image/png','image/webp','application/pdf'];
+    if(!allowed.includes(file.type)){ $('#proof-msg').innerHTML = alertBox(t('err.invalidFile')); return; }
+    if(file.size > 8*1024*1024){ $('#proof-msg').innerHTML = alertBox(t('err.fileTooLarge')); return; }
+    const btn = e.target.querySelector('button[type=submit]'); btn.disabled=true;
+    try{
+      const ext = (file.name.split('.').pop()||'bin').toLowerCase();
+      const path = `${state.profile.id}/proof_${order.id}_${Date.now()}.${ext}`;
+      const { error: upErr } = await sb.storage.from('payment-proofs').upload(path,file,{ upsert:false, contentType:file.type });
+      if(upErr) throw upErr;
+      const { data: sg } = await sb.storage.from('payment-proofs').createSignedUrl(path, 60*60*24*7);
+      await sb.from('orders').update({ proof_url: sg?.signedUrl||path, status:'pending' }).eq('id',order.id);
+      sb.functions.invoke('notify-telegram',{body:{order_id:order.id}}).catch(()=>{});
+      sb.from('activity_logs').insert({ action:'order.proof_uploaded', actor_user_id:state.profile.id, actor_username:state.profile.username, target_type:'order', target_id:order.id, details:{book_id:order.book_id} }).then(()=>{}).catch(()=>{});
+      $('#proof-msg').innerHTML = alertBox(t('pay.success'),'success');
+      setTimeout(()=>{ location.hash='#/library'; }, 1500);
+    }catch(err){
+      console.error(err);
+      $('#proof-msg').innerHTML = alertBox(err.message||t('err.uploadFailed'));
+      btn.disabled=false;
+    }
+  };
+}
+
+/* ========== Reader ========== */
+let _readerCleanup = null;
+function cleanupReader(){ if(_readerCleanup){ _readerCleanup(); _readerCleanup=null; } }
+
+async function renderReader(bookId){
+  if(!state.user||!state.profile){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.loginFirst'))}</div>`; return; }
+  if(!bookId){ location.hash='#/library'; return; }
+  const { data:lib } = await sb.from('user_library').select('id').eq('user_id',state.profile.id).eq('book_id',bookId).eq('access_status','active').maybeSingle();
+  if(!lib){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.noAccess'))}</div>`; return; }
+  const { data:book } = await sb.from('books').select('id,title,pdf_path').eq('id',bookId).maybeSingle();
+  if(!book?.pdf_path){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.bookNotFound'))}</div>`; return; }
+  const { data:res, error:fnErr } = await sb.functions.invoke('get-pdf-url',{ body:{ book_id:bookId } });
+  if(fnErr||!res?.url){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(fnErr?.message||t('err.noAccess'))}</div>`; return; }
+  showTemplate('tpl-reader');
+  const scope = $('#route-outlet');
+  bindData(scope,'title',book.title);
+  sb.from('activity_logs').insert({ action:'book.read', actor_user_id:state.profile.id, actor_username:state.profile.username, target_type:'book', target_id:book.id }).then(()=>{}).catch(()=>{});
+  initReader(book, res.url);
+}
+
+async function initReader(book, pdfUrl){
+  const frame = $('#reader-frame');
+  const canvas = $('#r-canvas');
+  const ctx = canvas.getContext('2d');
+  const pageLbl = $('#r-page');
+  const totalLbl = $('#r-total');
+  const slider = $('#r-slider');
+  const prog = $('#r-progress');
+  const wrap = $('#reader-canvas-wrap');
+  const loading = $('#reader-page .loading');
+
+  let pdf=null, pageNum=1, scale=null, baseScale=1, fontMult=1;
+  const wakeTimer = { handle:null };
+
+  $('#r-back').onclick = ()=>{ location.hash='#/library'; };
+  $('#r-prev').onclick = ()=>{ if(pdf && pageNum>1){ pageNum--; renderPage(); } };
+  $('#r-next').onclick = ()=>{ if(pdf && pageNum<pdf.numPages){ pageNum++; renderPage(); } };
+  $('#r-zoomin').onclick = ()=>{ fontMult = Math.min(2.5, fontMult+0.15); renderPage(); };
+  $('#r-zoomout').onclick = ()=>{ fontMult = Math.max(0.5, fontMult-0.15); renderPage(); };
+  slider.oninput = ()=>{ if(pdf){ pageNum = parseInt(slider.value)||1; renderPage(); } };
+
+  frame.querySelectorAll('[data-theme]').forEach(b=>{
+    b.onclick = ()=>{
+      const th = b.dataset.theme;
+      frame.classList.remove('reader-dark','reader-sepia');
+      if(th==='night') frame.classList.add('reader-dark');
+      if(th==='sepia') frame.classList.add('reader-sepia');
+      frame.querySelectorAll('[data-theme]').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+    };
+  });
+  frame.querySelector('[data-theme="day"]').classList.add('active');
+
+  // Watermark info — to be BAKED into canvas every render
+  const wmText = `KhozyReads · @${state.profile.username} · ${state.profile.id.slice(0,8)}`;
+  $('#disclaimer-user').textContent = '@' + state.profile.username;
+
+  // Load PDF.js
+  try{
+    if(!window.pdfjsLib){
+      await new Promise((resolve,reject)=>{ const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js'; s.onload=resolve; s.onerror=()=>reject(new Error('pdfjs load failed')); document.head.appendChild(s); });
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+    }
+    pdf = await Promise.race([
+      pdfjsLib.getDocument({ url:pdfUrl }).promise,
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('PDF load timeout')), 30000))
+    ]);
+    loading.style.display='none';
+    canvas.style.display='block';
+    totalLbl.textContent = pdf.numPages;
+    slider.max = pdf.numPages;
+    await renderPage();
+  }catch(err){
+    console.error('Reader error:',err);
+    loading.innerHTML = alertBox(t('reader.failed') + ': ' + (err.message||''));
+    return;
+  }
+
+  function bakeWatermark(){
+    // Draw watermark DIRECTLY onto the canvas so it's part of every
+    // screenshot, screen recording, or photo of the screen.
+    const w = canvas.width, h = canvas.height;
+    const ts = new Date().toLocaleString();
+    const text = `${wmText} · ${ts}`;
+    ctx.save();
+    const fontSize = Math.max(13, Math.round(w / 55));
+    ctx.font = `italic ${fontSize}px 'Crimson Pro', 'Noto Serif Khmer', serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillStyle = 'rgba(123,45,38,0.16)';
+    const stepX = Math.max(260, fontSize*22);
+    const stepY = Math.max(110, fontSize*7);
+    // Offset rows for staggered pattern
+    let row = 0;
+    for(let y=stepY/2; y<h+stepY; y+=stepY){
+      const offsetX = (row%2===0) ? 0 : stepX/2;
+      for(let x=offsetX; x<w+stepX; x+=stepX){
+        ctx.save();
+        ctx.translate(x, y);
+        ctx.rotate(-Math.PI/9);
+        ctx.fillText(text, 0, 0);
+        ctx.restore();
+      }
+      row++;
+    }
+    // Corner identifiers (always visible on screenshots, semi-bold)
+    ctx.fillStyle = 'rgba(123,45,38,0.38)';
+    const cornerSize = Math.max(12, Math.round(w/75));
+    ctx.font = `600 ${cornerSize}px 'Cormorant Garamond', 'Crimson Pro', serif`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'top';
+    ctx.fillText('KhozyReads', 14, 12);
+    ctx.font = `italic ${cornerSize-2}px 'Crimson Pro', serif`;
+    ctx.fillText(`@${state.profile.username}`, 14, 12 + cornerSize + 2);
+    // Bottom-right: timestamp
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.font = `${cornerSize-2}px 'Crimson Pro', monospace`;
+    ctx.fillText(ts, w-14, h-12);
+    ctx.restore();
+  }
+
+  async function renderPage(){
+    if(!pdf) return;
+    const page = await pdf.getPage(pageNum);
+    const containerW = $('.reader-page').clientWidth - 80;
+    const v0 = page.getViewport({scale:1});
+    if(scale===null){ baseScale = Math.max(0.5, Math.min(2.5, containerW / v0.width)); }
+    scale = baseScale * fontMult;
+    const viewport = page.getViewport({scale});
+    canvas.width = viewport.width; canvas.height = viewport.height;
+    await page.render({canvasContext:ctx, viewport}).promise;
+    // BAKE WATERMARK onto canvas (this is in every screenshot)
+    bakeWatermark();
+    pageLbl.innerHTML = `<span class="num">${pageNum}</span><span class="of"> / </span>${pdf.numPages}`;
+    slider.value = pageNum;
+    const pct = pdf.numPages > 1 ? ((pageNum-1)/(pdf.numPages-1))*100 : 0;
+    slider.style.setProperty('--p', pct+'%');
+    prog.style.width = pct + '%';
+  }
+
+  // Refresh watermark every 30s so timestamp keeps current
+  const wmInterval = setInterval(()=>{ if(pdf) renderPage(); }, 30000);
+
+  // Reader protection
+  document.body.classList.add('reading');
+  const onContext = e=>{ e.preventDefault(); showScreenshotWarning('right-click'); };
+  const onSelect = e=>e.preventDefault();
+  const onCopy = e=>{ e.preventDefault(); showScreenshotWarning('copy'); };
+  const onKey = e=>{
+    const k = e.key.toLowerCase(); const ctrl = e.ctrlKey||e.metaKey;
+    if(ctrl && ['c','x','s','p','u','a'].includes(k)){ e.preventDefault(); showScreenshotWarning('Ctrl+'+k.toUpperCase()); }
+    if(k==='f12'){ e.preventDefault(); showScreenshotWarning('F12'); }
+    if(ctrl && e.shiftKey && ['i','j','c'].includes(k)){ e.preventDefault(); showScreenshotWarning('DevTools'); }
+    if(e.key==='ArrowLeft') $('#r-prev').click();
+    if(e.key==='ArrowRight') $('#r-next').click();
+  };
+  const onVis = ()=>{ if(document.hidden) wrap.classList.add('blurred'); else wrap.classList.remove('blurred'); };
+  const onBlur = ()=>wrap.classList.add('blurred');
+  const onFocus = ()=>wrap.classList.remove('blurred');
+  document.addEventListener('contextmenu', onContext);
+  document.addEventListener('selectstart', onSelect);
+  document.addEventListener('copy', onCopy);
+  document.addEventListener('cut', onCopy);
+  document.addEventListener('keydown', onKey);
+  document.addEventListener('visibilitychange', onVis);
+  window.addEventListener('blur', onBlur);
+  window.addEventListener('focus', onFocus);
+
+  // Auto-hide toolbar
+  const toolbar = $('#reader-toolbar');
+  const foot = frame.querySelector('.reader-foot');
+  function wake(){
+    toolbar.classList.remove('hidden'); foot.classList.remove('hidden');
+    clearTimeout(wakeTimer.handle);
+    wakeTimer.handle = setTimeout(()=>{ toolbar.classList.add('hidden'); foot.classList.add('hidden'); }, 3500);
+  }
+  frame.addEventListener('mousemove', wake);
+  frame.addEventListener('click', wake);
+  wake();
+
+  _readerCleanup = ()=>{
+    document.removeEventListener('contextmenu', onContext);
+    document.removeEventListener('selectstart', onSelect);
+    document.removeEventListener('copy', onCopy);
+    document.removeEventListener('cut', onCopy);
+    document.removeEventListener('keydown', onKey);
+    document.removeEventListener('visibilitychange', onVis);
+    window.removeEventListener('blur', onBlur);
+    window.removeEventListener('focus', onFocus);
+    clearTimeout(wakeTimer.handle);
+    clearInterval(wmInterval);
+    document.body.classList.remove('reading');
+  };
+}
+
+/* ========== Screenshot Protection ========== */
+function showScreenshotWarning(reason){
+  const overlay = $('#ss-warning');
+  const info = $('#ss-info');
+  const user = state.profile?.username||'guest';
+  const userId = state.profile?.id?.slice(0,8)||'-';
+  info.textContent = `${user} · ${userId} · ${new Date().toLocaleString()} · ${reason}`;
+  overlay.classList.add('show');
+  if(state.profile){
+    sb.from('activity_logs').insert({ action:'protection.triggered', actor_user_id:state.profile.id, actor_username:state.profile.username, details:{reason} }).then(()=>{}).catch(()=>{});
+  }
+}
+$('#ss-dismiss').onclick = ()=>$('#ss-warning').classList.remove('show');
+document.addEventListener('keyup', e=>{ if(e.key==='PrintScreen'){ navigator.clipboard?.writeText('').catch(()=>{}); showScreenshotWarning('PrintScreen'); } });
+document.addEventListener('keydown', e=>{
+  const k=(e.key||'').toLowerCase(); const ctrl=e.ctrlKey||e.metaKey;
+  if(e.shiftKey&&(e.metaKey||e.getModifierState&&e.getModifierState('Meta'))&&k==='s'){ e.preventDefault(); showScreenshotWarning('Win+Shift+S'); }
+  if(e.shiftKey&&e.metaKey&&['3','4','5'].includes(k)){ e.preventDefault(); showScreenshotWarning('Mac screenshot'); }
+  if(ctrl&&e.shiftKey&&k==='s'){ e.preventDefault(); showScreenshotWarning('Ctrl+Shift+S'); }
+});
+let devtoolsOpen = false;
+setInterval(()=>{
+  const open = (window.outerWidth-window.innerWidth>160)||(window.outerHeight-window.innerHeight>160);
+  if(open && !devtoolsOpen){ devtoolsOpen=true; showScreenshotWarning('DevTools'); }
+  if(!open) devtoolsOpen=false;
+}, 1500);
+if(navigator.mediaDevices?.getDisplayMedia){
+  const orig = navigator.mediaDevices.getDisplayMedia.bind(navigator.mediaDevices);
+  navigator.mediaDevices.getDisplayMedia = function(){ showScreenshotWarning('Screen capture API'); return Promise.reject(new Error('Blocked')); };
+}
+
+/* ========== Boot ========== */
+let _authReady=false;
+sb.auth.onAuthStateChange(async (event)=>{ if(!_authReady) return; if(['SIGNED_IN','SIGNED_OUT'].includes(event)){ await loadAuth(); } });
+(async()=>{
+  document.querySelectorAll('#lang-switcher button').forEach(b=>b.classList.toggle('active', b.dataset.lang===state.lang));
+  document.documentElement.lang = state.lang==='kh'?'km':'en';
+  await Promise.all([loadAuth(), loadSettings()]);
+  applyI18n();
+  route();
+  _authReady=true;
+})();
+</script>
+</body>
+</html>

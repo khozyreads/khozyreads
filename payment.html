@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="kh">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Payment - KhozyReads</title><link rel="stylesheet" href="assets/style.css"></head>
+<body data-page="payment">
+  <header class="site-header">
+    <a class="brand" href="index.html">KhozyReads</a>
+    <nav class="nav"><a href="library.html" data-i18n="library">My Library</a><button class="secondary hidden" data-auth-user data-logout data-i18n="logout">Logout</button><span class="lang-switch"><button data-lang="kh">KH</button><button data-lang="en">EN</button></span></nav>
+  </header>
+  <main class="container">
+    <section class="panel" data-payment-info><h1 data-i18n="payment">Payment</h1><p data-i18n="payment_helper">Pay with ABA QR / KHQR, then upload a clear payment receipt.</p></section>
+    <section class="panel" style="margin-top:16px">
+      <form class="form" data-proof-form>
+        <label><span data-i18n="uploadProof">Upload payment proof</span><input name="proof" type="file" accept="image/*,.pdf" required></label>
+        <button data-i18n="submitProof">Submit proof</button>
+      </form>
+      <p data-message></p>
+    </section>
+  </main>
+  <script src="assets/nav-state.js"></script>
+  <script type="module" src="assets/app.js"></script>
+</body>
+</html>
