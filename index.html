@@ -1293,16 +1293,17 @@ document.addEventListener('keyup', e=>{
 });
 document.addEventListener('keydown', e=>{
   const k=(e.key||'').toLowerCase(); const ctrl=e.ctrlKey||e.metaKey;
-  // Screenshot tool shortcuts
-  if(e.shiftKey && (e.metaKey || (e.getModifierState && e.getModifierState('Meta'))) && k==='s'){ e.preventDefault(); showScreenshotWarning('Win+Shift+S'); }
-  if(e.shiftKey && e.metaKey && ['3','4','5'].includes(k)){ e.preventDefault(); showScreenshotWarning('Mac screenshot'); }
-  if(ctrl && e.shiftKey && k==='s'){ e.preventDefault(); showScreenshotWarning('Ctrl+Shift+S'); }
-  // Refresh shortcuts
-  if(e.key==='F5' || (ctrl && (k==='r')) ){ e.preventDefault(); showScreenshotWarning('Refresh attempt (F5 / Ctrl+R)'); }
-  // Save / print / view source
-  if(ctrl && k==='s'){ e.preventDefault(); showScreenshotWarning('Save page (Ctrl+S)'); }
-  if(ctrl && k==='p'){ e.preventDefault(); showScreenshotWarning('Print (Ctrl+P)'); }
-  if(ctrl && k==='u'){ e.preventDefault(); showScreenshotWarning('View source (Ctrl+U)'); }
+  // Always block: screenshot tool shortcuts (sensitive even outside reader)
+  if(e.shiftKey && (e.metaKey || (e.getModifierState && e.getModifierState('Meta'))) && k==='s'){ e.preventDefault(); showScreenshotWarning('Win+Shift+S'); return; }
+  if(e.shiftKey && e.metaKey && ['3','4','5'].includes(k)){ e.preventDefault(); showScreenshotWarning('Mac screenshot'); return; }
+  if(ctrl && e.shiftKey && k==='s'){ e.preventDefault(); showScreenshotWarning('Ctrl+Shift+S'); return; }
+  // Only block these IN READER (avoid blocking normal F5/Ctrl+R/Ctrl+S/P/U on store page)
+  if(isInReader()){
+    if(e.key==='F5' || (ctrl && k==='r')){ e.preventDefault(); showScreenshotWarning('Refresh blocked'); return; }
+    if(ctrl && k==='s'){ e.preventDefault(); showScreenshotWarning('Save page (Ctrl+S)'); return; }
+    if(ctrl && k==='p'){ e.preventDefault(); showScreenshotWarning('Print (Ctrl+P)'); return; }
+    if(ctrl && k==='u'){ e.preventDefault(); showScreenshotWarning('View source (Ctrl+U)'); return; }
+  }
 });
 
 // DevTools detection (window size delta trick)
@@ -1313,35 +1314,36 @@ setInterval(()=>{
   if(!open) devtoolsOpen=false;
 }, 1500);
 
-// Tab switch / visibility change
+// Tab switch / window blur — ONLY trigger overlay when user is in reader
+// (in store/library/login views, iOS fires these too often during normal use)
+function isInReader(){ return (location.hash.replace(/^#\/?/,'').split('/')[0]) === 'read'; }
 let _hiddenAt = 0;
 document.addEventListener('visibilitychange', ()=>{
+  if(!isInReader()) return; // skip outside reader
   if(document.hidden){
     _hiddenAt = Date.now();
   } else if(_hiddenAt > 0){
     const awayMs = Date.now() - _hiddenAt;
-    if(awayMs > 500){
+    if(awayMs > 3000){ // threshold: 3 seconds away
       showScreenshotWarning(`Tab away ${Math.round(awayMs/1000)}s`);
     }
   }
 });
 
-// Window blur / focus
 let _blurredAt = 0;
-window.addEventListener('blur', ()=>{ _blurredAt = Date.now(); });
+window.addEventListener('blur', ()=>{ if(isInReader()) _blurredAt = Date.now(); });
 window.addEventListener('focus', ()=>{
-  if(_blurredAt === 0) return;
+  if(!isInReader() || _blurredAt === 0){ _blurredAt = 0; return; }
   const awayMs = Date.now() - _blurredAt;
-  if(awayMs > 800){
+  if(awayMs > 5000){ // threshold: 5 seconds unfocused
     showScreenshotWarning(`Window unfocused ${Math.round(awayMs/1000)}s`);
   }
   _blurredAt = 0;
 });
 
-// Block beforeunload (refresh / close tab) — show browser native confirm
+// Block beforeunload (refresh / close tab) — only in reader to avoid annoying users
 window.addEventListener('beforeunload', (e)=>{
-  // Only prompt when user is logged in (logged-in user might have content open)
-  if(state.user){
+  if(state.user && isInReader()){
     e.preventDefault();
     e.returnValue = '';
     return '';
