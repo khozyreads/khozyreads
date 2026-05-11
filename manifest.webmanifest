@@ -1,0 +1,34 @@
+{
+  "name": "KhozyReads — ហាងសៀវភៅឌីជីថល",
+  "short_name": "KhozyReads",
+  "description": "Khmer digital book and story store",
+  "lang": "km",
+  "start_url": "/index.html",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FAF5E9",
+  "theme_color": "#7B2D26",
+  "categories": ["books", "education", "entertainment"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "My Library",
+      "short_name": "Library",
+      "url": "/index.html#/library"
+    }
+  ]
+}

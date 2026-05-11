@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FAF5E9"/>
+      <stop offset="100%" stop-color="#F2E9D2"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <!-- Decorative gold accent line -->
+  <rect x="64" y="438" width="384" height="3" fill="#D4A574" opacity="0.6"/>
+  <!-- Book base -->
+  <g transform="translate(256,260)">
+    <path d="M -160 80 C -80 50, 80 50, 160 80 L 160 -80 C 80 -110, -80 -110, -160 -80 Z" fill="#7B2D26" opacity="0.12"/>
+    <path d="M -160 80 C -80 50, 80 50, 160 80 L 160 -80 C 80 -110, -80 -110, -160 -80 Z" fill="none" stroke="#7B2D26" stroke-width="8" stroke-linejoin="round"/>
+    <path d="M 0 -90 L 0 80" stroke="#7B2D26" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <!-- Lotus petals over book -->
+  <g transform="translate(256,255)">
+    <g fill="#D4A574" opacity="0.95">
+      <path d="M 0 0 C -28 -32, -28 -68, 0 -100 C 28 -68, 28 -32, 0 0 Z"/>
+      <path d="M 0 0 C -28 -32, -28 -68, 0 -100 C 28 -68, 28 -32, 0 0 Z" transform="rotate(45)" opacity="0.8"/>
+      <path d="M 0 0 C -28 -32, -28 -68, 0 -100 C 28 -68, 28 -32, 0 0 Z" transform="rotate(-45)" opacity="0.8"/>
+      <path d="M 0 0 C -28 -32, -28 -68, 0 -100 C 28 -68, 28 -32, 0 0 Z" transform="rotate(90)" opacity="0.6"/>
+      <path d="M 0 0 C -28 -32, -28 -68, 0 -100 C 28 -68, 28 -32, 0 0 Z" transform="rotate(-90)" opacity="0.6"/>
+    </g>
+    <circle cx="0" cy="0" r="10" fill="#7B2D26"/>
+  </g>
+  <!-- Brand text -->
+  <text x="256" y="420" font-family="'Cormorant Garamond', 'Times New Roman', serif" font-size="56" font-weight="600" fill="#1E2A3A" text-anchor="middle">KhozyReads</text>
+</svg>
