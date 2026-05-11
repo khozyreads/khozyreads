@@ -366,8 +366,9 @@ html[lang="km"] .ss-card p{font-family:var(--font-khmer);font-style:normal}
   .reader-title{max-width:50vw;font-size:16px}
   .tool-btn{width:38px;height:38px}
   .tool-sep{margin:0 2px}
-  #reader-canvas-wrap{padding:14px 8px}
-  .reader-page{padding:14px}
+  #reader-canvas-wrap{padding:8px 4px;align-items:flex-start}
+  .reader-page{padding:8px;width:100%;max-width:100%}
+  .reader-page canvas{margin:0 auto;display:block}
   .reader-foot{padding:12px 14px;gap:12px}
   .page-nav-big{width:52px;height:52px;flex:0 0 52px}
   .page-count{font-size:18px}
@@ -844,11 +845,23 @@ function renderAuthNav(){
     applyI18n(el);
   }
 }
+let _loggingOut = false;
 async function doLogout(){
-  try{ await sb.auth.signOut(); }catch(e){}
-  state.user=null; state.profile=null;
+  if(_loggingOut) return;
+  _loggingOut = true;
+  // Clean up reader first (so PDF.js released, body class cleared) if we're inside it
+  cleanupReader();
+  // Instant UI feedback — clear state immediately
+  state.user = null;
+  state.profile = null;
   renderAuthNav();
-  if(location.hash==='#/'||location.hash==='') route(); else location.hash='#/';
+  const lo = document.getElementById('logout-link');
+  if(lo){ lo.style.opacity='.5'; lo.style.pointerEvents='none'; }
+  // Fire signOut in background (don't block UI)
+  sb.auth.signOut().catch(()=>{}).finally(()=>{ _loggingOut=false; });
+  // Navigate to home
+  if(location.hash==='#/'||location.hash==='') route();
+  else location.hash='#/';
 }
 
 /* ========== Settings ========== */
@@ -1197,14 +1210,24 @@ async function initReader(book, pdfUrl){
   async function renderPage(){
     if(!pdf) return;
     const page = await pdf.getPage(pageNum);
-    const containerW = $('.reader-page').clientWidth - 80;
+    // Compute available width: reader-page width minus its actual padding
+    const pageEl = $('.reader-page');
+    const cs = getComputedStyle(pageEl);
+    const padL = parseFloat(cs.paddingLeft)||0;
+    const padR = parseFloat(cs.paddingRight)||0;
+    const containerW = pageEl.clientWidth - padL - padR;
     const v0 = page.getViewport({scale:1});
-    if(scale===null){ baseScale = Math.max(0.5, Math.min(2.5, containerW / v0.width)); }
+    if(scale===null){ baseScale = Math.max(0.5, Math.min(3, containerW / v0.width)); }
     scale = baseScale * fontMult;
     const viewport = page.getViewport({scale});
-    canvas.width = viewport.width; canvas.height = viewport.height;
+    // Use device pixel ratio for sharper render on mobile
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = viewport.width * dpr;
+    canvas.height = viewport.height * dpr;
+    canvas.style.width = viewport.width + 'px';
+    canvas.style.height = viewport.height + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     await page.render({canvasContext:ctx, viewport}).promise;
-    // BAKE WATERMARK onto canvas (this is in every screenshot)
     bakeWatermark();
     pageLbl.innerHTML = `<span class="num">${pageNum}</span><span class="of"> / </span>${pdf.numPages}`;
     slider.value = pageNum;
@@ -1212,6 +1235,11 @@ async function initReader(book, pdfUrl){
     slider.style.setProperty('--p', pct+'%');
     prog.style.width = pct + '%';
   }
+  // Re-render on resize/rotate (mobile keyboard, orientation change)
+  let _resizeT = null;
+  function onResize(){ clearTimeout(_resizeT); _resizeT = setTimeout(()=>{ scale=null; renderPage(); }, 250); }
+  window.addEventListener('resize', onResize);
+  window.addEventListener('orientationchange', onResize);
 
   // Refresh watermark every 30s so timestamp keeps current
   const wmInterval = setInterval(()=>{ if(pdf) renderPage(); }, 30000);
@@ -1262,9 +1290,15 @@ async function initReader(book, pdfUrl){
     document.removeEventListener('visibilitychange', onVis);
     window.removeEventListener('blur', onBlur);
     window.removeEventListener('focus', onFocus);
+    window.removeEventListener('resize', onResize);
+    window.removeEventListener('orientationchange', onResize);
     clearTimeout(wakeTimer.handle);
+    clearTimeout(_resizeT);
     clearInterval(wmInterval);
     document.body.classList.remove('reading');
+    // Free PDF document to release memory
+    try{ if(pdf && pdf.destroy) pdf.destroy(); }catch(e){}
+    pdf = null;
   };
 }
 
@@ -1358,7 +1392,12 @@ if(navigator.mediaDevices?.getDisplayMedia){
 
 /* ========== Boot ========== */
 let _authReady=false;
-sb.auth.onAuthStateChange(async (event)=>{ if(!_authReady) return; if(['SIGNED_IN','SIGNED_OUT'].includes(event)){ await loadAuth(); } });
+sb.auth.onAuthStateChange(async (event)=>{
+  if(!_authReady) return;
+  // Skip if we are in the middle of an explicit logout (already cleared state)
+  if(event === 'SIGNED_OUT' && _loggingOut) return;
+  if(['SIGNED_IN','SIGNED_OUT'].includes(event)){ await loadAuth(); }
+});
 (async()=>{
   document.querySelectorAll('#lang-switcher button').forEach(b=>b.classList.toggle('active', b.dataset.lang===state.lang));
   document.documentElement.lang = state.lang==='kh'?'km':'en';

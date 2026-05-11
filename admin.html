@@ -429,10 +429,15 @@ function renderTopNav(){
   userNav.innerHTML = `<span class="user-chip"><span class="avatar">${esc(u.charAt(0).toUpperCase()||'A')}</span>@${esc(u)}</span><a class="btn btn-ghost btn-sm" href="#" id="logout-btn">Logout</a>`;
   $('#logout-btn').onclick = e=>{ e.preventDefault(); doLogout(); };
 }
+let _loggingOut = false;
 async function doLogout(){
-  try{ await sb.auth.signOut(); }catch(e){}
+  if(_loggingOut) return;
+  _loggingOut = true;
   state.user=null; state.profile=null;
   renderTopNav();
+  const lb = document.getElementById('logout-btn');
+  if(lb){ lb.style.opacity='.5'; lb.style.pointerEvents='none'; }
+  sb.auth.signOut().catch(()=>{}).finally(()=>{ _loggingOut=false; });
   if(location.hash==='#/login') route(); else location.hash='#/login';
 }
 
@@ -725,7 +730,11 @@ async function renderLogs(){
 }
 
 let _authReady=false;
-sb.auth.onAuthStateChange(async (event)=>{ if(!_authReady) return; if(['SIGNED_IN','SIGNED_OUT'].includes(event)){ await loadAuth(); route(); } });
+sb.auth.onAuthStateChange(async (event)=>{
+  if(!_authReady) return;
+  if(event === 'SIGNED_OUT' && _loggingOut) return;
+  if(['SIGNED_IN','SIGNED_OUT'].includes(event)){ await loadAuth(); route(); }
+});
 (async()=>{ await loadAuth(); route(); _authReady=true; })();
 
 // PWA: register service worker (shared with buyer page)
