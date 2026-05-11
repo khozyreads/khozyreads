@@ -541,8 +541,8 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
 <div id="ss-warning" role="alertdialog">
   <div class="ss-card">
     <svg class="orn"><use href="#orn-crest"/></svg>
-    <h3 data-i18n="ss.title">ការថតអេក្រង់ត្រូវបានហាមឃាត់</h3>
-    <p data-i18n="ss.body">ខ្លឹមសារនេះការពារដោយម្ចាស់ស្នាដៃ។ សូមមេត្តាគោរពច្បាប់រក្សាសិទ្ធិ។</p>
+    <h3 data-i18n="ss.title">ការការពារមាតិកាបានបើក</h3>
+    <p data-i18n="ss.body">មិនអនុញ្ញាតិឱ្យថតរូប, ថតវីដេអូ ឬធ្វើការចែកចាយបន្តដោយគ្មានការអនុញ្ញាតិជាលាយលក្ខណ៍អក្សរពីខូហ្ស៊ីរីដ។</p>
     <div class="ss-info" id="ss-info"></div>
     <button class="btn btn-ghost" id="ss-dismiss" data-i18n="ss.dismiss">យល់ព្រម</button>
   </div>
@@ -787,7 +787,7 @@ const I18N = {
     'reader.loading':'កំពុងផ្ទុក PDF…','reader.failed':'មិនអាចផ្ទុក PDF បានទេ','reader.licensed':'ផ្តល់សិទ្ធិឱ្យ','reader.tracked':'ការថត និងការថតវីដេអូត្រូវបានតាមដាន',
     'badge.pending':'កំពុងរង់ចាំ','badge.approved':'យល់ព្រម','badge.rejected':'បដិសេធ',
     'err.bookNotFound':'រកសៀវភៅមិនឃើញ','err.loginFirst':'សូមចូលគណនីមុនសិន','err.noAccess':'អ្នកត្រូវទិញសៀវភៅនេះមុនអាន','err.uploadFailed':'បរាជ័យក្នុងការបង្ហោះ','err.fileTooLarge':'ឯកសារធំជាង 8MB','err.invalidFile':'ប្រភេទឯកសារមិនត្រឹមត្រូវ',
-    'ss.title':'ការការពារមាតិកាបានបើក','ss.body':'មិនអនុញ្ញាតឱ្យថត, ថតវីដេអូ, ឬចម្លងមាតិកា។ មាតិកានេះត្រូវបានផ្តល់សិទ្ធិឱ្យអ្នកម្នាក់។','ss.dismiss':'ខ្ញុំយល់ហើយ','pwa.install':'ដំឡើងកម្មវិធី'
+    'ss.title':'ការការពារមាតិកាបានបើក','ss.body':'មិនអនុញ្ញាតិឱ្យថតរូប, ថតវីដេអូ ឬធ្វើការចែកចាយបន្តដោយគ្មានការអនុញ្ញាតិជាលាយលក្ខណ៍អក្សរពីខូហ្ស៊ីរីដ។','ss.dismiss':'ខ្ញុំយល់ហើយ','pwa.install':'ដំឡើងកម្មវិធី'
   },
   en: {
     'brand.tag':'Digital Book Store','nav.store':'Store','nav.library':'My Library','nav.login':'Sign In','nav.register':'Register','nav.logout':'Logout',
@@ -805,7 +805,7 @@ const I18N = {
     'reader.loading':'Loading PDF…','reader.failed':'Failed to load PDF','reader.licensed':'Licensed to','reader.tracked':'Screenshots and recordings are tracked',
     'badge.pending':'Pending','badge.approved':'Approved','badge.rejected':'Rejected',
     'err.bookNotFound':'Book not found','err.loginFirst':'Please login first','err.noAccess':'Please purchase this book to read','err.uploadFailed':'Upload failed','err.fileTooLarge':'File larger than 8MB','err.invalidFile':'Invalid file type',
-    'ss.title':'Content Protection Active','ss.body':'Screenshots, screen recording, and copying are not permitted. This content is licensed only to you.','ss.dismiss':'I understand','pwa.install':'Install App'
+    'ss.title':'Content Protection Active','ss.body':'Screenshots, video recording, or redistribution are not permitted without written permission from KhozyReads.','ss.dismiss':'I understand','pwa.install':'Install App'
   }
 };
 function t(k){ return (I18N[state.lang]&&I18N[state.lang][k]) || I18N.en[k] || k; }
