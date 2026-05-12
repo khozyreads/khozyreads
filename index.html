@@ -154,6 +154,8 @@ html[lang="km"] .book-author{font-family:var(--font-khmer);font-style:normal;fon
 .book-price{font-family:var(--font-display);font-size:18px;color:var(--primary);font-weight:500}
 
 .progress-pill{position:absolute;left:10px;bottom:10px;display:inline-flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(30,42,58,.85);color:#FAF5E9;border-radius:999px;font-size:12px;letter-spacing:.06em;backdrop-filter:blur(4px)}
+.free-badge{position:absolute;top:10px;right:10px;padding:5px 12px;background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#1E2A3A;border-radius:999px;font-family:var(--font-serif);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;box-shadow:0 4px 12px rgba(212,165,116,.5);z-index:5}
+html[lang="km"] .free-badge{font-family:var(--font-khmer);letter-spacing:.02em;font-size:12px}
 .progress-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
 html[lang="km"] .progress-pill{font-family:var(--font-khmer)}
 
@@ -790,7 +792,7 @@ const I18N = {
     'home.eyebrow':'បណ្ណាគារខ្មែរឌីជីថល · EST. 2026','home.title':'ហាងសៀវភៅឌីជីថល','home.lede':'អានរឿងស្នេហា ប្រវត្តិសាស្ត្រ និងសិល្បៈខ្មែរ — គ្រប់ពេលវេលា គ្រប់ទីកន្លែង។',
     'home.all.eyebrow':'បណ្តុំសៀវភៅទាំងអស់','home.all.h':'ហាងសៀវភៅឌីជីថល','home.all.sort':'តម្រៀបតាម · ថ្មីបំផុត','home.empty':'មិនទាន់មានសៀវភៅទេ',
     'detail.eyebrow':'សៀវភៅ · ឆ្នាំ ២០២៦','detail.by':'និពន្ធដោយ','detail.priceNote':'តម្លៃតែម្តង · កាន់កាប់រហូត','detail.synopsis':'ដំណើររឿងសង្ខេប',
-    'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ',
+    'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន',
     'lib.eyebrow':'បណ្ណាល័យផ្ទាល់ខ្លួន','lib.title':'បណ្ណាល័យរបស់ខ្ញុំ','lib.lede':'សៀវភៅទាំងអស់ដែលអ្នកបានទិញ — រួចរាល់ចាប់ផ្តើមអាន។','lib.empty':'មិនទាន់មានការទិញ',
     'auth.welcome':'សូមស្វាគមន៍មកកាន់','auth.loginH':'ចូលគណនី','auth.loginSub':'បន្តការអានសៀវភៅដែលអ្នកស្រឡាញ់','auth.loginBtn':'ចូលគណនី','auth.noAcc':'មិនទាន់មានគណនី?','auth.haveAcc':'មានគណនីរួចហើយ?',
     'auth.join':'ចូលរួមជាមួយយើង','auth.registerH':'បង្កើតគណនី','auth.registerSub':'ចាប់ផ្តើមការដំណើរនៃការអានរបស់អ្នក','auth.registerBtn':'បង្កើតគណនី',
@@ -808,7 +810,7 @@ const I18N = {
     'home.eyebrow':'Khmer digital bookstore · EST. 2026','home.title':'Digital Book Store','home.lede':'Romance, history, and Khmer literature — wherever, whenever.',
     'home.all.eyebrow':'All books','home.all.h':'Digital Book Store','home.all.sort':'Sorted by · Newest','home.empty':'No books yet',
     'detail.eyebrow':'Book · 2026','detail.by':'by','detail.priceNote':'One-time purchase · yours forever','detail.synopsis':'Synopsis',
-    'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Pending Verification','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled',
+    'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Pending Verification','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled','cta.readFree':'Read for Free','cta.loginToRead':'Login to Read',
     'lib.eyebrow':'Personal library','lib.title':'My Library','lib.lede':'All books you own — ready to read.','lib.empty':'No purchases yet',
     'auth.welcome':'Welcome to','auth.loginH':'Sign In','auth.loginSub':'Continue reading what you love','auth.loginBtn':'Sign In','auth.noAcc':'No account yet?','auth.haveAcc':'Already have an account?',
     'auth.join':'Join us','auth.registerH':'Create Account','auth.registerSub':'Start your reading journey','auth.registerBtn':'Create Account',
@@ -934,7 +936,7 @@ window.addEventListener('hashchange', route);
 
 /* ========== Pages ========== */
 async function renderHome(){
-  const { data:books, error } = await sb.from('books').select('id,title,creator,price,currency,cover_url,is_buy_enabled').eq('status','active').order('created_at',{ascending:false});
+  const { data:books, error } = await sb.from('books').select('id,title,creator,price,currency,cover_url,is_buy_enabled,is_free').eq('status','active').order('created_at',{ascending:false});
   if(error) throw error;
   showTemplate('tpl-home');
   const grid = $('#book-grid');
@@ -943,11 +945,12 @@ async function renderHome(){
     <a class="book-card" href="#/book/${b.id}">
       <div class="book-cover" style="background:${b.cover_url?'var(--bg-deep)':pickColor(b.id)}">
         ${b.cover_url ? `<img src="${esc(b.cover_url)}" alt="" loading="lazy"/>` : `<div class="placeholder">COVER</div><svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}
+        ${b.is_free ? `<span class="free-badge">${state.lang==='kh'?'🎁 ឥតគិតថ្លៃ':'🎁 FREE'}</span>` : ''}
       </div>
       <div class="book-meta">
         <h3 class="book-title">${esc(b.title)}</h3>
         <p class="book-author">${esc(b.creator||'-')}</p>
-        <span class="book-price">${fmtMoney(b.price,b.currency)}</span>
+        <span class="book-price">${b.is_free ? (state.lang==='kh'?'ឥតគិតថ្លៃ':'Free') : fmtMoney(b.price,b.currency)}</span>
       </div>
     </a>
   `).join('');
@@ -961,6 +964,7 @@ async function renderBookDetail(id){
   if(state.user&&state.profile){
     const { data:lib } = await sb.from('user_library').select('id').eq('user_id',state.profile.id).eq('book_id',id).eq('access_status','active').maybeSingle();
     if(lib) action='read';
+    else if(book.is_free){ action='claim_free'; }
     else {
       const { data:orders } = await sb.from('orders').select('id,status').eq('user_id',state.profile.id).eq('book_id',id).order('created_at',{ascending:false}).limit(1);
       const last = orders?.[0];
@@ -968,6 +972,8 @@ async function renderBookDetail(id){
       else if(last?.status==='rejected') action='buyAgain';
       else action='buy';
     }
+  } else if(book.is_free) {
+    action = 'login_to_read'; // guest sees a free book
   }
   if(!book.is_buy_enabled && (action==='buy'||action==='buyAgain')) action='disabled';
   showTemplate('tpl-detail');
@@ -982,8 +988,10 @@ async function renderBookDetail(id){
   const ctaWrap = $('#detail-cta');
   const ctaMap = {
     guest: `<a class="btn btn-primary btn-lg" href="#/login">${t('cta.loginToBuy')}</a>`,
+    login_to_read: `<a class="btn btn-gold btn-lg" href="#/login">${t('cta.loginToRead')}</a>`,
     buy: `<button class="btn btn-primary btn-lg" id="buy-btn">${t('cta.buy')} · ${fmtMoney(book.price,book.currency)}</button>`,
     buyAgain: `<button class="btn btn-primary btn-lg" id="buy-btn">${t('cta.buyAgain')}</button>`,
+    claim_free: `<button class="btn btn-gold btn-lg" id="claim-btn">🎁 ${t('cta.readFree')}</button>`,
     pending: `<a class="btn btn-ghost btn-lg" href="#/payment/${orderId}"><span class="badge b-pending"><span class="dot"></span>${t('cta.pending')}</span></a>`,
     read: `<a class="btn btn-primary btn-lg" href="#/read/${id}">${t('cta.read')}</a>`,
     disabled: `<button class="btn btn-ghost btn-lg" disabled>${t('cta.disabled')}${book.buy_disabled_remark?` — ${esc(book.buy_disabled_remark)}`:''}</button>`
@@ -996,6 +1004,15 @@ async function renderBookDetail(id){
     if(error){ alert(error.message); buyBtn.disabled=false; return; }
     sb.from('activity_logs').insert({ action:'order.create', actor_user_id:state.profile.id, actor_username:state.profile.username, target_type:'order', target_id:order.id, details:{book_id:book.id} }).then(()=>{}).catch(()=>{});
     location.hash = `#/payment/${order.id}`;
+  };
+
+  const claimBtn = $('#claim-btn');
+  if(claimBtn) claimBtn.onclick = async ()=>{
+    claimBtn.disabled = true;
+    claimBtn.textContent = '...';
+    const { error } = await sb.rpc('claim_free_book', { p_book_id: book.id });
+    if(error){ alert(error.message); claimBtn.disabled=false; claimBtn.textContent='🎁 '+t('cta.readFree'); return; }
+    location.hash = `#/read/${book.id}`;
   };
 }
 
