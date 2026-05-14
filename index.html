@@ -274,6 +274,12 @@ html[lang="km"] .reader-disclaimer{font-family:var(--font-khmer);letter-spacing:
 #tg-bubble::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:1px solid var(--accent);opacity:.5;animation:tg-pulse 3s ease-out infinite}
 @keyframes tg-pulse{0%{transform:scale(.95);opacity:.5}70%{transform:scale(1.15);opacity:0}100%{transform:scale(1.15);opacity:0}}
 
+#fb-bubble{position:fixed;right:24px;bottom:96px;z-index:40;width:60px;height:60px;border-radius:50%;background:#1877F2;color:#fff;display:none;align-items:center;justify-content:center;box-shadow:0 12px 30px rgba(24,119,242,.4);transition:transform .2s,box-shadow .2s;border:0;cursor:pointer;text-decoration:none}
+#fb-bubble.show{display:flex}
+#fb-bubble:hover{transform:translateY(-3px) scale(1.05);box-shadow:0 16px 36px rgba(24,119,242,.5);text-decoration:none;border:0}
+#fb-bubble svg{width:28px;height:28px;fill:currentColor}
+#fb-bubble::after{content:"";position:absolute;inset:-6px;border-radius:50%;border:1px solid #1877F2;opacity:.4;animation:tg-pulse 3s ease-out infinite}
+
 #ss-warning{display:none;position:fixed;inset:0;z-index:200;background:rgba(20,15,12,.94);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:24px;text-align:center}
 #ss-warning.show{display:flex}
 .ss-card{max-width:520px;padding:60px 48px;background:var(--bg-elevated);border:1px solid var(--accent);position:relative;color:var(--fg)}
@@ -382,6 +388,8 @@ html[lang="km"] .ss-card p{font-family:var(--font-khmer);font-style:normal}
 
   #tg-bubble{right:16px;bottom:16px;width:52px;height:52px}
   #tg-bubble svg{width:22px;height:22px}
+  #fb-bubble{right:16px;bottom:80px;width:52px;height:52px}
+  #fb-bubble svg{width:24px;height:24px}
 }
 
 /* Extra small phones */
@@ -539,6 +547,10 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
 
 <a id="tg-bubble" href="#" target="_blank" rel="noopener" aria-label="Telegram">
   <svg viewBox="0 0 24 24"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+</a>
+
+<a id="fb-bubble" href="#" target="_blank" rel="noopener" aria-label="Facebook">
+  <svg viewBox="0 0 24 24"><path d="M13.5 21.95v-7.7h2.59l.39-3h-2.98V9.32c0-.87.24-1.46 1.49-1.46h1.59V5.17c-.28-.04-1.22-.12-2.31-.12-2.29 0-3.86 1.4-3.86 3.96v2.21H7.82v3h2.59v7.7c.52.08 1.05.13 1.6.13.5 0 .99-.04 1.49-.12z"/></svg>
 </a>
 
 <div id="ss-warning" role="alertdialog">
@@ -883,10 +895,18 @@ async function loadSettings(){
   const { data } = await sb.from('site_settings').select('setting_key,setting_value');
   state.settings = Object.fromEntries((data||[]).map(r=>[r.setting_key,r.setting_value]));
   updateTelegramBubble();
+  updateFacebookBubble();
 }
 function updateTelegramBubble(){
   const link = state.settings?.telegram_group_link;
   const bubble = $('#tg-bubble');
+  if(!bubble) return;
+  if(link && /^https?:\/\//.test(link)){ bubble.href=link; bubble.classList.add('show'); }
+  else bubble.classList.remove('show');
+}
+function updateFacebookBubble(){
+  const link = state.settings?.facebook_page_url;
+  const bubble = $('#fb-bubble');
   if(!bubble) return;
   if(link && /^https?:\/\//.test(link)){ bubble.href=link; bubble.classList.add('show'); }
   else bubble.classList.remove('show');
@@ -930,7 +950,7 @@ function route(){
   _spinnerTimer = setTimeout(()=>{ if(!isStale()) $('#route-outlet').innerHTML=`<div class="center" style="padding:80px"><span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span></div>`; }, 150);
   const handlers = {'':renderHome, 'home':renderHome, 'book':renderBookDetail, 'library':renderLibrary, 'login':renderLogin, 'register':renderRegister, 'payment':renderPayment, 'read':renderReader};
   const h = handlers[r.name] || renderHome;
-  Promise.resolve(h(r.id, isStale)).catch(err=>{ if(isStale()) return; console.error(err); $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(err.message||String(err))}</div>`; }).finally(()=>{ if(_spinnerTimer){clearTimeout(_spinnerTimer);_spinnerTimer=null;} updateTelegramBubble(); window.scrollTo(0,0); });
+  Promise.resolve(h(r.id, isStale)).catch(err=>{ if(isStale()) return; console.error(err); $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(err.message||String(err))}</div>`; }).finally(()=>{ if(_spinnerTimer){clearTimeout(_spinnerTimer);_spinnerTimer=null;} updateTelegramBubble(); updateFacebookBubble(); window.scrollTo(0,0); });
 }
 window.addEventListener('hashchange', route);
 

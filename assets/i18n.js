@@ -108,6 +108,7 @@ const dict = {
     default_currency: "រូបិយប័ណ្ណលំនាំដើម",
     default_telegram_group_url: "តំណ Telegram លំនាំដើម",
     default_telegram_button_text: "អត្ថបទប៊ូតុង Telegram លំនាំដើម",
+    facebook_page_url: "តំណទំព័រ Facebook",
     payment_notice_kh: "សារជូនដំណឹងការទូទាត់ជាភាសាខ្មែរ",
     payment_notice_en: "សារជូនដំណឹងការទូទាត់ជាភាសាអង់គ្លេស"
   },
@@ -220,6 +221,7 @@ const dict = {
     default_currency: "Default currency",
     default_telegram_group_url: "Default Telegram group URL",
     default_telegram_button_text: "Default Telegram button text",
+    facebook_page_url: "Facebook Page URL",
     payment_notice_kh: "Payment notice KH",
     payment_notice_en: "Payment notice EN"
   }

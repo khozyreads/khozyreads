@@ -363,6 +363,13 @@ details.row-details .detail-body{margin-top:8px;padding:12px;background:var(--bg
         <div class="field"><label>Button text</label><input class="input" name="telegram_button_text"/></div>
       </div>
     </div>
+    <div class="form-section">
+      <h3>Social Links</h3>
+      <p class="section-desc">Floating bubble buttons shown to readers.</p>
+      <div class="form-grid">
+        <div class="field"><label>Facebook page URL</label><input class="input" name="facebook_page_url" type="url" placeholder="https://facebook.com/your-page"/></div>
+      </div>
+    </div>
   </form>
 </section>
 </template>
@@ -681,7 +688,7 @@ async function renderSettings(){
   showTemplate('tpl-settings');
   const form = $('#settings-form');
   // populate fields
-  ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text'].forEach(k=>{
+  ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text','facebook_page_url'].forEach(k=>{
     const el = form.elements[k]; if(el!=null) el.value = map[k]||'';
   });
   // QR preview
@@ -704,7 +711,7 @@ async function renderSettings(){
         if(error) throw error;
         await sb.from('site_settings').upsert({setting_key:'aba_qr_path',setting_value:path}, {onConflict:'setting_key'});
       }
-      const keys = ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text'];
+      const keys = ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text','facebook_page_url'];
       const updates = keys.map(k=>({setting_key:k,setting_value:String(fd.get(k)||'')}));
       const tok = fd.get('telegram_bot_token');
       if(tok && String(tok).trim()) updates.push({setting_key:'telegram_bot_token',setting_value:String(tok).trim()});
