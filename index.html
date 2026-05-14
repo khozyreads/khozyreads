@@ -69,7 +69,7 @@ html[lang="km"] .lede{font-family:var(--font-khmer);font-style:normal;font-size:
 .header-top{max-width:var(--maxw);margin:0 auto;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;gap:24px}
 .brand{display:flex;align-items:center;gap:14px;text-decoration:none;border:0;color:var(--fg)}
 .brand:hover{color:var(--primary);border:0}
-.brand-mark{width:42px;height:42px;color:var(--primary)}
+.brand-mark{width:42px;height:42px;color:var(--primary);border-radius:8px;object-fit:cover;background:var(--bg-elevated);display:block}
 .brand-name{font-family:var(--font-display);font-size:30px;font-weight:600;letter-spacing:.01em;line-height:1}
 .brand-tag{display:block;font-family:var(--font-khmer);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:4px}
 .header-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -513,7 +513,7 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
   <header class="site-header" id="site-header">
     <div class="header-top">
       <a class="brand" href="#/">
-        <svg class="brand-mark"><use href="#brand-mark"/></svg>
+        <img class="brand-mark" src="KhozyReads%20Logo.jpg" alt="KhozyReads logo"/>
         <div>
           <div class="brand-name">KhozyReads</div>
           <div class="brand-tag" data-i18n="brand.tag">ហាងសៀវភៅឌីជីថល</div>
@@ -585,7 +585,7 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       <svg class="hero-orn-top"><use href="#orn-crest"/></svg>
       <div class="eyebrow" data-i18n="home.eyebrow">បណ្ណាគារខ្មែរឌីជីថល · EST. 2026</div>
       <h1 class="display display-1" data-i18n="home.title">ហាងសៀវភៅឌីជីថល</h1>
-      <p class="lede" data-i18n="home.lede">អានរឿងស្នេហា ប្រវត្តិសាស្ត្រ និងសិល្បៈខ្មែរ — គ្រប់ពេលវេលា គ្រប់ទីកន្លែង។</p>
+      <p class="lede" data-i18n="home.lede">អានប្រលោម គ្រប់រសជាតិ គ្រប់ពេលវេលា និង ទីកន្លែង។</p>
     </div>
     <div class="section-head">
       <div class="left">
@@ -801,7 +801,7 @@ const I18N = {
   kh: {
     'brand.tag':'ហាងសៀវភៅឌីជីថល','nav.store':'ហាង','nav.library':'បណ្ណាល័យរបស់ខ្ញុំ','nav.login':'ចូល','nav.register':'ចុះឈ្មោះ','nav.logout':'ចេញ',
     'footer.tag':'សៀវភៅឌីជីថលដែលបន្ថែមភាពរីករាយក្នុងការអាន','footer.note':'បង្កើតដោយក្តីស្រឡាញ់ពីខ្មែរ',
-    'home.eyebrow':'បណ្ណាគារខ្មែរឌីជីថល · EST. 2026','home.title':'ហាងសៀវភៅឌីជីថល','home.lede':'អានរឿងស្នេហា ប្រវត្តិសាស្ត្រ និងសិល្បៈខ្មែរ — គ្រប់ពេលវេលា គ្រប់ទីកន្លែង។',
+    'home.eyebrow':'បណ្ណាគារខ្មែរឌីជីថល · EST. 2026','home.title':'ហាងសៀវភៅឌីជីថល','home.lede':'អានប្រលោម គ្រប់រសជាតិ គ្រប់ពេលវេលា និង ទីកន្លែង។',
     'home.all.eyebrow':'បណ្តុំសៀវភៅទាំងអស់','home.all.h':'ហាងសៀវភៅឌីជីថល','home.all.sort':'តម្រៀបតាម · ថ្មីបំផុត','home.empty':'មិនទាន់មានសៀវភៅទេ',
     'detail.eyebrow':'សៀវភៅ · ឆ្នាំ ២០២៦','detail.by':'និពន្ធដោយ','detail.priceNote':'តម្លៃតែម្តង · កាន់កាប់រហូត','detail.synopsis':'ដំណើររឿងសង្ខេប',
     'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន',
@@ -819,7 +819,7 @@ const I18N = {
   en: {
     'brand.tag':'Digital Book Store','nav.store':'Store','nav.library':'My Library','nav.login':'Sign In','nav.register':'Register','nav.logout':'Logout',
     'footer.tag':'Digital books that bring joy to reading','footer.note':'Crafted with love from Cambodia',
-    'home.eyebrow':'Khmer digital bookstore · EST. 2026','home.title':'Digital Book Store','home.lede':'Romance, history, and Khmer literature — wherever, whenever.',
+    'home.eyebrow':'Khmer digital bookstore · EST. 2026','home.title':'Digital Book Store','home.lede':'Read your favorite novel - wherever, whenever.',
     'home.all.eyebrow':'All books','home.all.h':'Digital Book Store','home.all.sort':'Sorted by · Newest','home.empty':'No books yet',
     'detail.eyebrow':'Book · 2026','detail.by':'by','detail.priceNote':'One-time purchase · yours forever','detail.synopsis':'Synopsis',
     'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Pending Verification','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled','cta.readFree':'Read for Free','cta.loginToRead':'Login to Read',
