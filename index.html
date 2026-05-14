@@ -721,14 +721,6 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       <div class="eyebrow" data-i18n="pay.eyebrow">ការទូទាត់សុវត្ថិភាព · ABA / KHQR</div>
       <h1 class="display display-2" data-i18n="pay.title">បញ្ចប់ការទិញរបស់អ្នក</h1>
     </div>
-    <div class="promo-panel" style="margin:16px 0 24px;padding:18px 20px;border:1px solid var(--border);border-radius:12px;background:var(--bg-elevated)">
-      <div class="eyebrow" data-i18n="pay.promo">មានកូដប្រូម៉ូ?</div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px">
-        <input id="promo-input" class="input" style="flex:1;min-width:160px;text-transform:uppercase" placeholder="WELCOME10" autocomplete="off"/>
-        <button id="promo-apply" class="btn btn-ghost" data-i18n="pay.applyPromo" type="button">Apply</button>
-      </div>
-      <div id="promo-result" style="margin-top:10px;font-size:14px"></div>
-    </div>
     <div class="pay-wrap">
       <div class="pay-card">
         <div class="eyebrow" data-i18n="pay.step1">ជំហានទី ១ · ស្កេន QR</div>
@@ -765,7 +757,15 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
             <input type="file" name="proof" accept="image/jpeg,image/png,image/webp,application/pdf" required/>
           </label>
           <div id="proof-msg"></div>
-          <div id="order-summary" class="order-summary" style="margin-top:20px;padding:16px 18px;border:1px solid var(--border);border-radius:10px;background:var(--bg-elevated)">
+          <div class="promo-panel" style="margin-top:18px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--bg-elevated)">
+            <div class="eyebrow" data-i18n="pay.promo">មានកូដប្រូម៉ូ?</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px">
+              <input id="promo-input" class="input" style="flex:1;min-width:140px;text-transform:uppercase" placeholder="WELCOME10" autocomplete="off"/>
+              <button id="promo-apply" class="btn btn-ghost btn-sm" data-i18n="pay.applyPromo" type="button">Apply</button>
+            </div>
+            <div id="promo-result" style="margin-top:8px;font-size:13px"></div>
+          </div>
+          <div id="order-summary" class="order-summary" style="margin-top:14px;padding:16px 18px;border:1px solid var(--border);border-radius:10px;background:var(--bg-elevated)">
             <div class="eyebrow" data-i18n="pay.review">សូមពិនិត្យមើលមុនពេលបញ្ជូន</div>
             <div class="sum-row" style="display:flex;justify-content:space-between;align-items:baseline;margin-top:10px"><span class="muted" data-i18n="pay.book">សៀវភៅ</span><span class="serif" id="sum-book"></span></div>
             <div class="sum-row" style="display:flex;justify-content:space-between;margin-top:6px"><span class="muted" data-i18n="pay.subtotal">សរុប​មុន​បញ្ចុះតម្លៃ</span><span id="sum-subtotal"></span></div>
@@ -1287,24 +1287,29 @@ async function renderPayment(orderId){
       if(!code){ promoResult.innerHTML = `<span style="color:#b00">Enter a code first</span>`; return; }
       promoApplyBtn.disabled = true;
       promoResult.innerHTML = `<span class="muted">Checking…</span>`;
-      // Race the RPC against an 8s timeout so user gets feedback even if backend hangs
-      const withTimeout = (p)=>Promise.race([p, new Promise(r=>setTimeout(()=>r({ data:null, error:{ message:'Request timed out', code:'TIMEOUT' } }), 8000))]);
+      // Race the RPC against a 15s timeout so user gets feedback even if backend hangs
+      const withTimeout = (p, label)=>Promise.race([p, new Promise(r=>setTimeout(()=>r({ data:null, error:{ message:`Request timed out (${label})`, code:'TIMEOUT' } }), 15000))]);
       const explainErr = (err)=>{
         if(!err) return 'Invalid code';
         const msg = String(err.message||'');
-        if(/function .* does not exist|could not find the function/i.test(msg)) return 'Promo system not yet activated (admin: please apply migration 009).';
-        if(err.code === 'TIMEOUT') return 'Request timed out — check your connection and try again.';
-        return msg || 'Invalid code';
+        if(/function .* does not exist|could not find the function|schema cache/i.test(msg)) return 'Promo system not activated yet — admin needs to run migration 009 in Supabase.';
+        if(err.code === '42501') return 'Access denied. Please re-login.';
+        if(err.code === 'TIMEOUT') return 'Server slow — please retry in a moment.';
+        return msg || 'Could not apply code';
       };
       try{
-        const { data:preview, error:pErr } = await withTimeout(sb.rpc('validate_promo_code', { p_code: code, p_amount: order.amount }));
+        const { data:preview, error:pErr } = await withTimeout(sb.rpc('validate_promo_code', { p_code: code, p_amount: order.amount }), 'validate');
+        if(pErr){ console.error('[promo] validate error:', pErr); }
+        else { console.log('[promo] validate result:', preview); }
         if(pErr || !preview?.valid){
           const errMap = { not_found:'Code not found', inactive:'Code disabled', expired:'Code expired', not_started:'Code not yet active', maxed_out:'Code limit reached', empty:'Enter a code' };
           promoResult.innerHTML = `<span style="color:#b00">${errMap[preview?.error] || explainErr(pErr)}</span>`;
           promoApplyBtn.disabled = false;
           return;
         }
-        const { data:res, error:aErr } = await withTimeout(sb.rpc('apply_promo_to_order', { p_order_id: order.id, p_code: code }));
+        const { data:res, error:aErr } = await withTimeout(sb.rpc('apply_promo_to_order', { p_order_id: order.id, p_code: code }), 'apply');
+        if(aErr){ console.error('[promo] apply error:', aErr); }
+        else { console.log('[promo] apply result:', res); }
         if(aErr || !res?.success){
           promoResult.innerHTML = `<span style="color:#b00">${explainErr(aErr)}</span>`;
           promoApplyBtn.disabled = false;
