@@ -1102,11 +1102,18 @@ async function renderHome(){
   showTemplate('tpl-home');
   const grid = $('#book-grid');
   if(!books||!books.length){ grid.innerHTML=`<div style="grid-column:1/-1" class="empty muted center">${esc(t('home.empty'))}</div>`; return; }
-  grid.innerHTML = books.map(b=>`
+  grid.innerHTML = books.map((b, i)=>{
+    // First 3 covers are above the fold → eager load + high priority for LCP.
+    // Rest are lazy-loaded.
+    const isAboveFold = i < 3;
+    const imgAttrs = isAboveFold
+      ? `loading="eager" fetchpriority="high"`
+      : `loading="lazy" decoding="async"`;
+    return `
     <a class="book-card" href="#/book/${b.id}">
       ${state.profile ? favBtnHtml(b.id, favIds.has(b.id)) : ''}
       <div class="book-cover" style="background:${b.cover_url?'var(--bg-deep)':pickColor(b.id)}">
-        ${b.cover_url ? `<img src="${esc(b.cover_url)}" alt="" loading="lazy"/>` : `<div class="placeholder">COVER</div><svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}
+        ${b.cover_url ? `<img src="${esc(b.cover_url)}" alt="${esc(b.title)}" width="242" height="322" ${imgAttrs}/>` : `<div class="placeholder">COVER</div><svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}
         ${b.is_free ? `<span class="free-badge">${state.lang==='kh'?'🎁 ឥតគិតថ្លៃ':'🎁 FREE'}</span>` : ''}
       </div>
       <div class="book-meta">
@@ -1115,7 +1122,7 @@ async function renderHome(){
         <span class="book-price">${b.is_free ? (state.lang==='kh'?'ឥតគិតថ្លៃ':'Free') : fmtMoney(b.price,b.currency)}</span>
       </div>
     </a>
-  `).join('');
+  `;}).join('');
   wireFavButtons(grid);
 }
 
