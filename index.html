@@ -765,9 +765,24 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
             <input type="file" name="proof" accept="image/jpeg,image/png,image/webp,application/pdf" required/>
           </label>
           <div id="proof-msg"></div>
-          <button class="btn btn-primary btn-lg" style="width:100%;margin-top:24px" type="submit" data-i18n="pay.submit">បញ្ជូនការបង់ប្រាក់</button>
+          <div id="order-summary" class="order-summary" style="margin-top:20px;padding:16px 18px;border:1px solid var(--border);border-radius:10px;background:var(--bg-elevated)">
+            <div class="eyebrow" data-i18n="pay.review">សូមពិនិត្យមើលមុនពេលបញ្ជូន</div>
+            <div class="sum-row" style="display:flex;justify-content:space-between;align-items:baseline;margin-top:10px"><span class="muted" data-i18n="pay.book">សៀវភៅ</span><span class="serif" id="sum-book"></span></div>
+            <div class="sum-row" style="display:flex;justify-content:space-between;margin-top:6px"><span class="muted" data-i18n="pay.subtotal">សរុប​មុន​បញ្ចុះតម្លៃ</span><span id="sum-subtotal"></span></div>
+            <div class="sum-row" id="sum-discount-row" style="display:none;justify-content:space-between;margin-top:6px;color:#2d6a4f"><span data-i18n="pay.discount">ការបញ្ចុះតម្លៃ</span><span id="sum-discount"></span></div>
+            <div class="sum-row" style="display:flex;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-weight:600;font-size:18px"><span data-i18n="pay.total">សរុបទាំងអស់</span><span id="sum-total" class="serif"></span></div>
+          </div>
+          <button class="btn btn-primary btn-lg" style="width:100%;margin-top:18px" type="submit" data-i18n="pay.submit">បញ្ជូនការបង់ប្រាក់</button>
         </form>
         <div id="payment-notice" class="alert alert-info" style="margin-top:18px;display:none"></div>
+        <a id="contact-admin-btn" href="#" target="_blank" rel="noopener" style="display:none;margin-top:16px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;text-decoration:none;color:var(--fg);background:var(--bg-elevated);display:flex;align-items:center;gap:12px;transition:transform .15s,box-shadow .15s">
+          <svg style="width:24px;height:24px;flex:0 0 24px;color:#229ED9" viewBox="0 0 24 24" fill="currentColor"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:14px" data-i18n="pay.contactAdmin">មានបញ្ហា? ទាក់ទងអ្នកគ្រប់គ្រង</div>
+            <div class="muted" style="font-size:12px;margin-top:2px" data-i18n="pay.contactAdminSub">ផ្ញើសារនៅ Telegram</div>
+          </div>
+          <svg style="width:16px;height:16px;color:var(--muted)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6 L15 12 L9 18"/></svg>
+        </a>
       </div>
     </div>
   </div>
@@ -841,7 +856,7 @@ const I18N = {
     'detail.eyebrow':'សៀវភៅ · ឆ្នាំ ២០២៦','detail.by':'និពន្ធដោយ','detail.priceNote':'តម្លៃតែម្តង · កាន់កាប់រហូត','detail.synopsis':'ដំណើររឿងសង្ខេប',
     'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន',
     'lib.eyebrow':'បណ្ណាល័យផ្ទាល់ខ្លួន','lib.title':'បណ្ណាល័យរបស់ខ្ញុំ','lib.lede':'សៀវភៅទាំងអស់ដែលអ្នកបានទិញ — រួចរាល់ចាប់ផ្តើមអាន។','lib.empty':'មិនទាន់មានការទិញ','lib.empty.favs':'មិនទាន់មានសៀវភៅដែលចូលចិត្ត','lib.tab.books':'សៀវភៅរបស់ខ្ញុំ','lib.tab.favs':'ចូលចិត្ត',
-    'pay.promo':'មានកូដប្រូម៉ូ?','pay.applyPromo':'អនុវត្ត',
+    'pay.promo':'មានកូដប្រូម៉ូ?','pay.applyPromo':'អនុវត្ត','pay.review':'សូមពិនិត្យមើលមុនពេលបញ្ជូន','pay.book':'សៀវភៅ','pay.subtotal':'សរុបមុនបញ្ចុះតម្លៃ','pay.discount':'ការបញ្ចុះតម្លៃ','pay.total':'សរុបទាំងអស់','pay.contactAdmin':'មានបញ្ហា? ទាក់ទងអ្នកគ្រប់គ្រង','pay.contactAdminSub':'ផ្ញើសារនៅ Telegram',
     'auth.welcome':'សូមស្វាគមន៍មកកាន់','auth.loginH':'ចូលគណនី','auth.loginSub':'បន្តការអានសៀវភៅដែលអ្នកស្រឡាញ់','auth.loginBtn':'ចូលគណនី','auth.noAcc':'មិនទាន់មានគណនី?','auth.haveAcc':'មានគណនីរួចហើយ?',
     'auth.join':'ចូលរួមជាមួយយើង','auth.registerH':'បង្កើតគណនី','auth.registerSub':'ចាប់ផ្តើមការដំណើរនៃការអានរបស់អ្នក','auth.registerBtn':'បង្កើតគណនី',
     'auth.user':'ឈ្មោះអ្នកប្រើ','auth.email':'អ៊ីមែល','auth.pass':'ពាក្យសម្ងាត់',
@@ -860,7 +875,7 @@ const I18N = {
     'detail.eyebrow':'Book · 2026','detail.by':'by','detail.priceNote':'One-time purchase · yours forever','detail.synopsis':'Synopsis',
     'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Pending Verification','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled','cta.readFree':'Read for Free','cta.loginToRead':'Login to Read',
     'lib.eyebrow':'Personal library','lib.title':'My Library','lib.lede':'All books you own — ready to read.','lib.empty':'No purchases yet','lib.empty.favs':'No favorites yet','lib.tab.books':'My Books','lib.tab.favs':'Favorites',
-    'pay.promo':'Have a promo code?','pay.applyPromo':'Apply',
+    'pay.promo':'Have a promo code?','pay.applyPromo':'Apply','pay.review':'Review before submitting','pay.book':'Book','pay.subtotal':'Subtotal','pay.discount':'Discount','pay.total':'Total','pay.contactAdmin':'Need help? Contact admin','pay.contactAdminSub':'Reach us on Telegram',
     'auth.welcome':'Welcome to','auth.loginH':'Sign In','auth.loginSub':'Continue reading what you love','auth.loginBtn':'Sign In','auth.noAcc':'No account yet?','auth.haveAcc':'Already have an account?',
     'auth.join':'Join us','auth.registerH':'Create Account','auth.registerSub':'Start your reading journey','auth.registerBtn':'Create Account',
     'auth.user':'Username','auth.email':'Email','auth.pass':'Password',
@@ -1230,6 +1245,31 @@ async function renderPayment(orderId){
   const promoApplyBtn = $('#promo-apply');
   const promoResult = $('#promo-result');
   const amtLabel = $('#pay-amount-label');
+
+  // Order summary panel — keeps subtotal/discount/total in sync
+  function refreshSummary(){
+    $('#sum-book').textContent = order.books?.title || '';
+    const base = order.original_amount && order.original_amount > 0 ? order.original_amount : order.amount;
+    const disc = order.discount_amount || 0;
+    $('#sum-subtotal').textContent = fmtMoney(base, order.currency);
+    if(disc > 0){
+      $('#sum-discount-row').style.display = 'flex';
+      $('#sum-discount').textContent = '− ' + fmtMoney(disc, order.currency);
+    } else {
+      $('#sum-discount-row').style.display = 'none';
+    }
+    $('#sum-total').textContent = fmtMoney(order.amount, order.currency);
+  }
+  refreshSummary();
+
+  // Contact Admin (Telegram) button — auto-shown when admin set telegram_group_link
+  const tgLink = state.settings?.telegram_group_link;
+  if(tgLink && /^https?:\/\//.test(tgLink)){
+    const btn = $('#contact-admin-btn');
+    btn.href = tgLink;
+    btn.style.display = 'flex';
+  }
+
   function showPromoSummary(percent, discount, finalAmt){
     promoResult.innerHTML = `<span style="color:var(--success,#2d6a4f);font-weight:600">✓ ${percent}% off applied</span> · <span class="muted">save ${fmtMoney(discount, order.currency)} · pay ${fmtMoney(finalAmt, order.currency)}</span>`;
     promoInput.disabled = true;
@@ -1247,24 +1287,41 @@ async function renderPayment(orderId){
       if(!code){ promoResult.innerHTML = `<span style="color:#b00">Enter a code first</span>`; return; }
       promoApplyBtn.disabled = true;
       promoResult.innerHTML = `<span class="muted">Checking…</span>`;
-      // Preview first (read-only)
-      const { data:preview, error:pErr } = await sb.rpc('validate_promo_code', { p_code: code, p_amount: order.amount });
-      if(pErr || !preview?.valid){
-        const errMap = { not_found:'Code not found', inactive:'Code disabled', expired:'Code expired', not_started:'Code not yet active', maxed_out:'Code limit reached', empty:'Enter a code' };
-        promoResult.innerHTML = `<span style="color:#b00">${errMap[preview?.error] || pErr?.message || 'Invalid code'}</span>`;
+      // Race the RPC against an 8s timeout so user gets feedback even if backend hangs
+      const withTimeout = (p)=>Promise.race([p, new Promise(r=>setTimeout(()=>r({ data:null, error:{ message:'Request timed out', code:'TIMEOUT' } }), 8000))]);
+      const explainErr = (err)=>{
+        if(!err) return 'Invalid code';
+        const msg = String(err.message||'');
+        if(/function .* does not exist|could not find the function/i.test(msg)) return 'Promo system not yet activated (admin: please apply migration 009).';
+        if(err.code === 'TIMEOUT') return 'Request timed out — check your connection and try again.';
+        return msg || 'Invalid code';
+      };
+      try{
+        const { data:preview, error:pErr } = await withTimeout(sb.rpc('validate_promo_code', { p_code: code, p_amount: order.amount }));
+        if(pErr || !preview?.valid){
+          const errMap = { not_found:'Code not found', inactive:'Code disabled', expired:'Code expired', not_started:'Code not yet active', maxed_out:'Code limit reached', empty:'Enter a code' };
+          promoResult.innerHTML = `<span style="color:#b00">${errMap[preview?.error] || explainErr(pErr)}</span>`;
+          promoApplyBtn.disabled = false;
+          return;
+        }
+        const { data:res, error:aErr } = await withTimeout(sb.rpc('apply_promo_to_order', { p_order_id: order.id, p_code: code }));
+        if(aErr || !res?.success){
+          promoResult.innerHTML = `<span style="color:#b00">${explainErr(aErr)}</span>`;
+          promoApplyBtn.disabled = false;
+          return;
+        }
+        order.amount = res.final_amount;
+        order.original_amount = res.original_amount;
+        order.discount_amount = res.discount_amount;
+        order.promo_code_id = 'set';
+        amtLabel.textContent = fmtMoney(res.final_amount, order.currency);
+        showPromoSummary(res.discount_percent, res.discount_amount, res.final_amount);
+        refreshSummary();
+      }catch(err){
+        console.error('Promo apply failed:', err);
+        promoResult.innerHTML = `<span style="color:#b00">${explainErr(err)}</span>`;
         promoApplyBtn.disabled = false;
-        return;
       }
-      // Commit
-      const { data:res, error:aErr } = await sb.rpc('apply_promo_to_order', { p_order_id: order.id, p_code: code });
-      if(aErr){ promoResult.innerHTML = `<span style="color:#b00">${aErr.message}</span>`; promoApplyBtn.disabled = false; return; }
-      // Reflect new amount in QR label
-      order.amount = res.final_amount;
-      order.original_amount = res.original_amount;
-      order.discount_amount = res.discount_amount;
-      order.promo_code_id = 'set';
-      amtLabel.textContent = fmtMoney(res.final_amount, order.currency);
-      showPromoSummary(res.discount_percent, res.discount_amount, res.final_amount);
     };
   }
 
