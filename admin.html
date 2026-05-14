@@ -606,7 +606,8 @@ async function renderOrders(){
 }
 
 async function renderUsers(){
-  const { data:users } = await sb.from('admin_users_view').select('*').order('created_at',{ascending:false});
+  const { data:users, error:usersErr } = await sb.rpc('admin_list_users');
+  if(usersErr){ console.error('admin_list_users failed:', usersErr); }
   showTemplate('tpl-users');
   $('#users-meta').textContent = `${(users||[]).length} total · ${(users||[]).filter(u=>u.status==='active').length} active`;
   $('#users-body').innerHTML = (users||[]).map(u=>{
