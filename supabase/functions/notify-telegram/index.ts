@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
 
     // Fetch order via REST (no JS client to avoid join issues)
     const orderRes = await fetch(
-      `${url}/rest/v1/orders?id=eq.${orderId}&select=id,amount,currency,payment_method,proof_url,created_at,user_id,book_id`,
+      `${url}/rest/v1/orders?id=eq.${orderId}&select=id,amount,original_amount,discount_amount,currency,payment_method,proof_url,created_at,user_id,book_id,promo_code_id`,
       {
         headers: {
           apikey: serviceKey,
@@ -71,39 +71,69 @@ Deno.serve(async (req) => {
     const order = orders[0];
     console.log("Order:", order);
 
-    // Fetch buyer username + book title (separate, to avoid join issues)
+    // Fetch buyer username + book title + (optional) promo info
     let username = "-";
     let bookTitle = "-";
+    let promoCode: string | null = null;
+    let promoNotes: string | null = null;
+    let promoDiscountPercent: number | null = null;
     try {
-      const [userRes, bookRes] = await Promise.all([
+      const fetches: Promise<Response>[] = [
         fetch(`${url}/rest/v1/users_profile?id=eq.${order.user_id}&select=username`, {
           headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
         }),
         fetch(`${url}/rest/v1/books?id=eq.${order.book_id}&select=title`, {
           headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
         }),
-      ]);
-      const userData = await userRes.json();
-      const bookData = await bookRes.json();
+      ];
+      if (order.promo_code_id) {
+        fetches.push(
+          fetch(`${url}/rest/v1/promo_codes?id=eq.${order.promo_code_id}&select=code,notes,discount_percent`, {
+            headers: { apikey: serviceKey, Authorization: `Bearer ${serviceKey}` },
+          })
+        );
+      }
+      const results = await Promise.all(fetches);
+      const userData = await results[0].json();
+      const bookData = await results[1].json();
       username = userData?.[0]?.username ?? "-";
       bookTitle = bookData?.[0]?.title ?? "-";
+      if (results[2]) {
+        const promoData = await results[2].json();
+        if (promoData?.[0]) {
+          promoCode = promoData[0].code ?? null;
+          promoNotes = promoData[0].notes ?? null;
+          promoDiscountPercent = promoData[0].discount_percent ?? null;
+        }
+      }
     } catch (e) {
-      console.error("User/book fetch warning:", e);
+      console.error("User/book/promo fetch warning:", e);
     }
 
     // Compose Telegram message (plain text, no markdown to avoid escape issues)
-    const msgText = [
+    const lines = [
       "🧾 New Payment Request",
       "",
       `Order ID: ${order.id}`,
       `Buyer: @${username}`,
       `Book: ${bookTitle}`,
-      `Amount: ${order.amount} ${order.currency}`,
-      `Payment: ${order.payment_method}`,
-      `Submitted: ${order.created_at}`,
-      "",
-      "Verify in ABA, then approve in admin dashboard.",
-    ].join("\n");
+    ];
+    if (promoCode) {
+      // Show original/discount/final breakdown so admin sees actual paid amount
+      const original = order.original_amount ?? order.amount;
+      const disc = order.discount_amount ?? 0;
+      lines.push(`Subtotal: ${original} ${order.currency}`);
+      lines.push(`🎟 Promo: ${promoCode} (-${promoDiscountPercent}% · -${disc} ${order.currency})`);
+      if (promoNotes) lines.push(`   Note: ${promoNotes}`);
+      lines.push(`Amount due: ${order.amount} ${order.currency}`);
+    } else {
+      lines.push(`Amount: ${order.amount} ${order.currency}`);
+    }
+    lines.push(`Payment: ${order.payment_method}`);
+    lines.push(`Submitted: ${order.created_at}`);
+    lines.push("");
+    lines.push("Verify in ABA, then approve in admin dashboard.");
+    const msgText = lines.join("\n");
 
     // Send Telegram message
     const tgRes = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {

@@ -303,7 +303,7 @@ details.row-details .detail-body{margin-top:8px;padding:12px;background:var(--bg
   </div>
   <div class="panel">
     <div class="panel-head"><div><h2 id="orders-title">Pending orders</h2><div class="meta">Awaiting verification</div></div></div>
-    <div class="panel-body"><table class="table"><thead><tr><th>Time</th><th>Reader</th><th>Book</th><th>Amount</th><th>Proof</th><th>Status</th><th></th></tr></thead><tbody id="orders-body"></tbody></table></div>
+    <div class="panel-body"><table class="table"><thead><tr><th>Time</th><th>Reader</th><th>Book</th><th>Amount</th><th>Promo</th><th>Proof</th><th>Status</th><th></th></tr></thead><tbody id="orders-body"></tbody></table></div>
   </div>
 </section>
 </template>
@@ -612,7 +612,15 @@ async function renderOrders(){
   $('#orders-title').textContent = filter.charAt(0).toUpperCase()+filter.slice(1)+' orders';
   $$('#order-tabs button').forEach(b=>{ b.classList.toggle('active', b.dataset.tab===filter); b.onclick=()=>{ location.hash = '#/orders?filter='+b.dataset.tab; }; });
   const { data:orders } = await sb.from('admin_orders_view').select('*').eq('status',filter).order('created_at',{ascending:false});
-  $('#orders-body').innerHTML = (orders||[]).map(o=>`<tr><td class="cell-mono">${esc(fmtDateShort(o.created_at))}</td><td><strong>@${esc(o.username||'-')}</strong></td><td><div class="cell-title">${esc(o.book_title||'-')}</div><div style="font-size:12px;color:var(--muted)">Order <span class="tag">${esc(o.order_id.slice(0,8))}</span></div></td><td>${fmtMoney(o.amount,o.currency)}</td><td>${o.proof_url?`<a href="${esc(o.proof_url)}" target="_blank" rel="noopener">View receipt</a>`:'<span class="muted">—</span>'}</td><td><span class="badge b-${o.status}"><span class="dot"></span>${esc(o.status)}</span>${o.reject_reason?`<div style="font-size:11px;color:var(--muted);margin-top:4px">${esc(o.reject_reason)}</div>`:''}</td><td>${o.status==='pending'?`<div style="display:flex;gap:6px"><button class="btn btn-success btn-sm" data-approve="${o.order_id}">Approve</button><button class="btn btn-danger btn-sm" data-reject="${o.order_id}">Reject</button></div>`:''}</td></tr>`).join('') || `<tr><td colspan="7" class="empty">No ${filter} orders</td></tr>`;
+  $('#orders-body').innerHTML = (orders||[]).map(o=>{
+    const amountCell = o.promo_code
+      ? `<div>${fmtMoney(o.amount,o.currency)}</div><div style="font-size:11px;color:var(--muted);text-decoration:line-through">${fmtMoney(o.original_amount||o.amount,o.currency)}</div>`
+      : fmtMoney(o.amount,o.currency);
+    const promoCell = o.promo_code
+      ? `<div><span class="tag" style="background:var(--accent,#d4a373);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${esc(o.promo_code)}</span> <span class="muted" style="font-size:11px">-${o.promo_discount_percent}%</span></div>${o.promo_notes?`<div style="font-size:11px;color:var(--muted);margin-top:4px;font-style:italic">${esc(o.promo_notes)}</div>`:''}`
+      : '<span class="muted">—</span>';
+    return `<tr><td class="cell-mono">${esc(fmtDateShort(o.created_at))}</td><td><strong>@${esc(o.username||'-')}</strong></td><td><div class="cell-title">${esc(o.book_title||'-')}</div><div style="font-size:12px;color:var(--muted)">Order <span class="tag">${esc(o.order_id.slice(0,8))}</span></div></td><td>${amountCell}</td><td>${promoCell}</td><td>${o.proof_url?`<a href="${esc(o.proof_url)}" target="_blank" rel="noopener">View receipt</a>`:'<span class="muted">—</span>'}</td><td><span class="badge b-${o.status}"><span class="dot"></span>${esc(o.status)}</span>${o.reject_reason?`<div style="font-size:11px;color:var(--muted);margin-top:4px">${esc(o.reject_reason)}</div>`:''}</td><td>${o.status==='pending'?`<div style="display:flex;gap:6px"><button class="btn btn-success btn-sm" data-approve="${o.order_id}">Approve</button><button class="btn btn-danger btn-sm" data-reject="${o.order_id}">Reject</button></div>`:''}</td></tr>`;
+  }).join('') || `<tr><td colspan="8" class="empty">No ${filter} orders</td></tr>`;
   $$('[data-approve]').forEach(b=>b.onclick=async ()=>{
     if(!confirm('Approve this order? Buyer will get access to the book.')) return;
     b.disabled=true;
