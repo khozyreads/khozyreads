@@ -139,7 +139,15 @@ html[lang="km"] .featured-info .author{font-family:var(--font-khmer);font-style:
 .book-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:48px 36px}
 @media (max-width:960px){.book-grid{grid-template-columns:repeat(2,1fr)}.featured{grid-template-columns:1fr;gap:32px}}
 @media (max-width:540px){.book-grid{grid-template-columns:repeat(2,1fr);gap:32px 18px}}
-.book-card{display:flex;flex-direction:column;gap:14px;text-decoration:none;color:var(--fg);border:0;transition:transform .25s ease;cursor:pointer}
+.book-card{display:flex;flex-direction:column;gap:14px;text-decoration:none;color:var(--fg);border:0;transition:transform .25s ease;cursor:pointer;position:relative}
+.fav-btn{position:absolute;top:10px;right:10px;z-index:5;width:36px;height:36px;border-radius:50%;background:rgba(20,15,12,.55);backdrop-filter:blur(6px);border:0;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform .15s ease,background .2s ease;padding:0}
+.fav-btn:hover{transform:scale(1.08);background:rgba(20,15,12,.78)}
+.fav-btn svg{width:18px;height:18px;transition:fill .2s ease}
+.fav-btn.is-fav svg{fill:#E63946;stroke:#E63946}
+.fav-btn:not(.is-fav) svg{fill:none;stroke:#fff;stroke-width:1.8}
+.fav-btn.busy{opacity:.55;pointer-events:none}
+.lib-tab.active{color:var(--fg)!important;border-bottom-color:var(--primary)!important;font-weight:600}
+.lib-tab:hover{color:var(--fg)}
 .book-card:hover{transform:translateY(-4px);border:0;color:var(--fg)}
 .book-cover{position:relative;aspect-ratio:3/4;background:linear-gradient(135deg,var(--bg-deep) 0%,#E8DCC0 100%);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow-sm);transition:box-shadow .25s}
 .book-card:hover .book-cover{box-shadow:var(--shadow-md)}
@@ -653,6 +661,10 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       <h1 class="display display-2" data-i18n="lib.title">បណ្ណាល័យរបស់ខ្ញុំ</h1>
       <p class="lede" data-i18n="lib.lede">សៀវភៅទាំងអស់ដែលអ្នកបានទិញ — រួចរាល់ចាប់ផ្តើមអាន។</p>
     </div>
+    <div class="lib-tabs" style="display:flex;gap:8px;justify-content:center;margin-bottom:24px;border-bottom:1px solid var(--border)">
+      <button class="lib-tab active" data-tab="books" style="background:none;border:0;padding:12px 20px;cursor:pointer;font-size:15px;color:var(--fg);border-bottom:2px solid transparent;transition:all .2s"><span data-i18n="lib.tab.books">My Books</span> <span class="muted" id="lib-count-books"></span></button>
+      <button class="lib-tab" data-tab="favs" style="background:none;border:0;padding:12px 20px;cursor:pointer;font-size:15px;color:var(--muted);border-bottom:2px solid transparent;transition:all .2s"><span data-i18n="lib.tab.favs">Favorites</span> <span class="muted" id="lib-count-favs"></span></button>
+    </div>
     <div class="book-grid" id="library-grid"></div>
   </div>
 </section>
@@ -709,6 +721,14 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       <div class="eyebrow" data-i18n="pay.eyebrow">ការទូទាត់សុវត្ថិភាព · ABA / KHQR</div>
       <h1 class="display display-2" data-i18n="pay.title">បញ្ចប់ការទិញរបស់អ្នក</h1>
     </div>
+    <div class="promo-panel" style="margin:16px 0 24px;padding:18px 20px;border:1px solid var(--border);border-radius:12px;background:var(--bg-elevated)">
+      <div class="eyebrow" data-i18n="pay.promo">មានកូដប្រូម៉ូ?</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px">
+        <input id="promo-input" class="input" style="flex:1;min-width:160px;text-transform:uppercase" placeholder="WELCOME10" autocomplete="off"/>
+        <button id="promo-apply" class="btn btn-ghost" data-i18n="pay.applyPromo" type="button">Apply</button>
+      </div>
+      <div id="promo-result" style="margin-top:10px;font-size:14px"></div>
+    </div>
     <div class="pay-wrap">
       <div class="pay-card">
         <div class="eyebrow" data-i18n="pay.step1">ជំហានទី ១ · ស្កេន QR</div>
@@ -717,7 +737,7 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
           <svg class="orn"><use href="#orn-divider"/></svg>
           <div id="qr-holder"><div class="qr-placeholder-fallback"></div></div>
           <svg class="orn" style="transform:rotate(180deg)"><use href="#orn-divider"/></svg>
-          <div class="qr-label"><span data-i18n="pay.amount">ចំនួន</span> · <span data-bind="amount"></span></div>
+          <div class="qr-label"><span data-i18n="pay.amount">ចំនួន</span> · <span id="pay-amount-label" data-bind="amount"></span></div>
         </div>
         <div class="row" style="margin-top:24px;justify-content:space-between">
           <div>
@@ -820,7 +840,8 @@ const I18N = {
     'home.all.eyebrow':'បណ្តុំសៀវភៅទាំងអស់','home.all.h':'ហាងសៀវភៅឌីជីថល','home.all.sort':'តម្រៀបតាម · ថ្មីបំផុត','home.empty':'មិនទាន់មានសៀវភៅទេ',
     'detail.eyebrow':'សៀវភៅ · ឆ្នាំ ២០២៦','detail.by':'និពន្ធដោយ','detail.priceNote':'តម្លៃតែម្តង · កាន់កាប់រហូត','detail.synopsis':'ដំណើររឿងសង្ខេប',
     'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន',
-    'lib.eyebrow':'បណ្ណាល័យផ្ទាល់ខ្លួន','lib.title':'បណ្ណាល័យរបស់ខ្ញុំ','lib.lede':'សៀវភៅទាំងអស់ដែលអ្នកបានទិញ — រួចរាល់ចាប់ផ្តើមអាន។','lib.empty':'មិនទាន់មានការទិញ',
+    'lib.eyebrow':'បណ្ណាល័យផ្ទាល់ខ្លួន','lib.title':'បណ្ណាល័យរបស់ខ្ញុំ','lib.lede':'សៀវភៅទាំងអស់ដែលអ្នកបានទិញ — រួចរាល់ចាប់ផ្តើមអាន។','lib.empty':'មិនទាន់មានការទិញ','lib.empty.favs':'មិនទាន់មានសៀវភៅដែលចូលចិត្ត','lib.tab.books':'សៀវភៅរបស់ខ្ញុំ','lib.tab.favs':'ចូលចិត្ត',
+    'pay.promo':'មានកូដប្រូម៉ូ?','pay.applyPromo':'អនុវត្ត',
     'auth.welcome':'សូមស្វាគមន៍មកកាន់','auth.loginH':'ចូលគណនី','auth.loginSub':'បន្តការអានសៀវភៅដែលអ្នកស្រឡាញ់','auth.loginBtn':'ចូលគណនី','auth.noAcc':'មិនទាន់មានគណនី?','auth.haveAcc':'មានគណនីរួចហើយ?',
     'auth.join':'ចូលរួមជាមួយយើង','auth.registerH':'បង្កើតគណនី','auth.registerSub':'ចាប់ផ្តើមការដំណើរនៃការអានរបស់អ្នក','auth.registerBtn':'បង្កើតគណនី',
     'auth.user':'ឈ្មោះអ្នកប្រើ','auth.email':'អ៊ីមែល','auth.pass':'ពាក្យសម្ងាត់',
@@ -838,7 +859,8 @@ const I18N = {
     'home.all.eyebrow':'All books','home.all.h':'Digital Book Store','home.all.sort':'Sorted by · Newest','home.empty':'No books yet',
     'detail.eyebrow':'Book · 2026','detail.by':'by','detail.priceNote':'One-time purchase · yours forever','detail.synopsis':'Synopsis',
     'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Pending Verification','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled','cta.readFree':'Read for Free','cta.loginToRead':'Login to Read',
-    'lib.eyebrow':'Personal library','lib.title':'My Library','lib.lede':'All books you own — ready to read.','lib.empty':'No purchases yet',
+    'lib.eyebrow':'Personal library','lib.title':'My Library','lib.lede':'All books you own — ready to read.','lib.empty':'No purchases yet','lib.empty.favs':'No favorites yet','lib.tab.books':'My Books','lib.tab.favs':'Favorites',
+    'pay.promo':'Have a promo code?','pay.applyPromo':'Apply',
     'auth.welcome':'Welcome to','auth.loginH':'Sign In','auth.loginSub':'Continue reading what you love','auth.loginBtn':'Sign In','auth.noAcc':'No account yet?','auth.haveAcc':'Already have an account?',
     'auth.join':'Join us','auth.registerH':'Create Account','auth.registerSub':'Start your reading journey','auth.registerBtn':'Create Account',
     'auth.user':'Username','auth.email':'Email','auth.pass':'Password',
@@ -970,14 +992,42 @@ function route(){
 window.addEventListener('hashchange', route);
 
 /* ========== Pages ========== */
+async function loadFavoriteIds(){
+  if(!state.profile) return new Set();
+  const { data } = await sb.from('book_favorites').select('book_id').eq('user_id', state.profile.id);
+  return new Set((data||[]).map(r=>r.book_id));
+}
+function favBtnHtml(bookId, isFav){
+  return `<button class="fav-btn ${isFav?'is-fav':''}" data-fav="${bookId}" aria-label="Favorite" type="button">
+    <svg viewBox="0 0 24 24" stroke-linejoin="round" stroke-linecap="round"><path d="M12 21s-7-4.5-9.5-9C0.5 8 3 4 6.5 4 8.7 4 10.5 5.2 12 7c1.5-1.8 3.3-3 5.5-3C21 4 23.5 8 21.5 12c-2.5 4.5-9.5 9-9.5 9z"/></svg>
+  </button>`;
+}
+function wireFavButtons(scope){
+  scope.querySelectorAll('[data-fav]').forEach(btn=>{
+    btn.onclick = async (e)=>{
+      e.preventDefault(); e.stopPropagation();
+      if(!state.profile){ location.hash = '#/login'; return; }
+      btn.classList.add('busy');
+      const { data, error } = await sb.rpc('toggle_favorite', { p_book_id: btn.dataset.fav });
+      btn.classList.remove('busy');
+      if(error){ console.error(error); return; }
+      btn.classList.toggle('is-fav', !!data?.favorited);
+    };
+  });
+}
+
 async function renderHome(){
-  const { data:books, error } = await sb.from('books').select('id,title,creator,price,currency,cover_url,is_buy_enabled,is_free').eq('status','active').order('created_at',{ascending:false});
+  const [{ data:books, error }, favIds] = await Promise.all([
+    sb.from('books').select('id,title,creator,price,currency,cover_url,is_buy_enabled,is_free').eq('status','active').order('created_at',{ascending:false}),
+    loadFavoriteIds()
+  ]);
   if(error) throw error;
   showTemplate('tpl-home');
   const grid = $('#book-grid');
   if(!books||!books.length){ grid.innerHTML=`<div style="grid-column:1/-1" class="empty muted center">${esc(t('home.empty'))}</div>`; return; }
   grid.innerHTML = books.map(b=>`
     <a class="book-card" href="#/book/${b.id}">
+      ${state.profile ? favBtnHtml(b.id, favIds.has(b.id)) : ''}
       <div class="book-cover" style="background:${b.cover_url?'var(--bg-deep)':pickColor(b.id)}">
         ${b.cover_url ? `<img src="${esc(b.cover_url)}" alt="" loading="lazy"/>` : `<div class="placeholder">COVER</div><svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}
         ${b.is_free ? `<span class="free-badge">${state.lang==='kh'?'🎁 ឥតគិតថ្លៃ':'🎁 FREE'}</span>` : ''}
@@ -989,6 +1039,7 @@ async function renderHome(){
       </div>
     </a>
   `).join('');
+  wireFavButtons(grid);
 }
 
 async function renderBookDetail(id){
@@ -1053,20 +1104,71 @@ async function renderBookDetail(id){
 
 async function renderLibrary(){
   if(!state.user){ location.hash='#/login'; return; }
-  const { data:lib } = await sb.from('user_library').select('id,access_status,book_id,books(id,title,creator,cover_url)').eq('user_id',state.profile.id);
-  const { data:orders } = await sb.from('orders').select('id,status,book_id,reject_reason,books(id,title,cover_url)').eq('user_id',state.profile.id).in('status',['pending','rejected']).order('created_at',{ascending:false});
+  const [{ data:lib }, { data:orders }, { data:favs }] = await Promise.all([
+    sb.from('user_library').select('id,access_status,book_id,books(id,title,creator,cover_url)').eq('user_id',state.profile.id),
+    sb.from('orders').select('id,status,book_id,reject_reason,books(id,title,cover_url)').eq('user_id',state.profile.id).in('status',['pending','rejected']).order('created_at',{ascending:false}),
+    sb.from('book_favorites').select('book_id,created_at,books(id,title,creator,cover_url,price,currency,is_free)').eq('user_id',state.profile.id).order('created_at',{ascending:false})
+  ]);
   showTemplate('tpl-library');
   const grid = $('#library-grid');
-  const items = [];
-  (lib||[]).filter(r=>r.access_status==='active').forEach(r=>items.push(`<a class="book-card" href="#/read/${r.books.id}"><div class="book-cover" style="background:${r.books.cover_url?'var(--bg-deep)':pickColor(r.books.id)}">${r.books.cover_url?`<img src="${esc(r.books.cover_url)}"/>`:`<svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}<span class="progress-pill"><span class="dot"></span>${t('badge.approved')}</span></div><div class="book-meta"><h3 class="book-title">${esc(r.books.title)}</h3><p class="book-author">${esc(r.books.creator||'-')}</p></div></a>`));
+
+  // Build "My Books" items
+  const ownedItems = [];
+  (lib||[]).filter(r=>r.access_status==='active').forEach(r=>ownedItems.push(`<a class="book-card" href="#/read/${r.books.id}"><div class="book-cover" style="background:${r.books.cover_url?'var(--bg-deep)':pickColor(r.books.id)}">${r.books.cover_url?`<img src="${esc(r.books.cover_url)}"/>`:`<svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}<span class="progress-pill"><span class="dot"></span>${t('badge.approved')}</span></div><div class="book-meta"><h3 class="book-title">${esc(r.books.title)}</h3><p class="book-author">${esc(r.books.creator||'-')}</p></div></a>`));
   (orders||[]).forEach(o=>{
     const isP = o.status==='pending';
     const badge = isP?`<span class="badge b-pending"><span class="dot"></span>${t('badge.pending')}</span>`:`<span class="badge b-rejected"><span class="dot"></span>${t('badge.rejected')}</span>`;
     const href = isP?`#/payment/${o.id}`:`#/book/${o.book_id}`;
-    items.push(`<a class="book-card" href="${href}"><div class="book-cover" style="background:${o.books?.cover_url?'var(--bg-deep)':pickColor(o.book_id)}">${o.books?.cover_url?`<img src="${esc(o.books.cover_url)}"/>`:`<svg class="corner-orn tl"><use href="#orn-corner"/></svg>`}<span class="progress-pill"><span class="dot"></span>${isP?t('badge.pending'):t('badge.rejected')}</span></div><div class="book-meta"><h3 class="book-title">${esc(o.books?.title||'')}</h3>${badge}${o.reject_reason?`<p class="book-author" style="margin-top:6px">${esc(o.reject_reason)}</p>`:''}</div></a>`);
+    ownedItems.push(`<a class="book-card" href="${href}"><div class="book-cover" style="background:${o.books?.cover_url?'var(--bg-deep)':pickColor(o.book_id)}">${o.books?.cover_url?`<img src="${esc(o.books.cover_url)}"/>`:`<svg class="corner-orn tl"><use href="#orn-corner"/></svg>`}<span class="progress-pill"><span class="dot"></span>${isP?t('badge.pending'):t('badge.rejected')}</span></div><div class="book-meta"><h3 class="book-title">${esc(o.books?.title||'')}</h3>${badge}${o.reject_reason?`<p class="book-author" style="margin-top:6px">${esc(o.reject_reason)}</p>`:''}</div></a>`);
   });
-  if(!items.length) grid.innerHTML=`<div style="grid-column:1/-1" class="empty muted center">${esc(t('lib.empty'))}</div>`;
-  else grid.innerHTML = items.join('');
+
+  // Build Favorites — auto-hide books already purchased OR with pending/approved orders
+  const ownedBookIds = new Set([
+    ...(lib||[]).filter(r=>r.access_status==='active').map(r=>r.book_id),
+    ...(orders||[]).filter(o=>o.status==='pending').map(o=>o.book_id)
+  ]);
+  const favItems = (favs||[]).filter(f=>f.books && !ownedBookIds.has(f.book_id)).map(f=>{
+    const b = f.books;
+    return `<a class="book-card" href="#/book/${b.id}">
+      ${favBtnHtml(b.id, true)}
+      <div class="book-cover" style="background:${b.cover_url?'var(--bg-deep)':pickColor(b.id)}">
+        ${b.cover_url?`<img src="${esc(b.cover_url)}" loading="lazy"/>`:`<svg class="corner-orn tl"><use href="#orn-corner"/></svg>`}
+        ${b.is_free?`<span class="free-badge">${state.lang==='kh'?'🎁 ឥតគិតថ្លៃ':'🎁 FREE'}</span>`:''}
+      </div>
+      <div class="book-meta">
+        <h3 class="book-title">${esc(b.title)}</h3>
+        <p class="book-author">${esc(b.creator||'-')}</p>
+        <span class="book-price">${b.is_free?(state.lang==='kh'?'ឥតគិតថ្លៃ':'Free'):fmtMoney(b.price,b.currency)}</span>
+      </div>
+    </a>`;
+  });
+
+  $('#lib-count-books').textContent = ownedItems.length ? `(${ownedItems.length})` : '';
+  $('#lib-count-favs').textContent = favItems.length ? `(${favItems.length})` : '';
+
+  const emptyMsg = (key)=>`<div style="grid-column:1/-1" class="empty muted center">${esc(t(key))}</div>`;
+  function showTab(which){
+    $$('.lib-tab').forEach(b=>b.classList.toggle('active', b.dataset.tab===which));
+    if(which==='books'){
+      grid.innerHTML = ownedItems.length ? ownedItems.join('') : emptyMsg('lib.empty');
+    } else {
+      grid.innerHTML = favItems.length ? favItems.join('') : emptyMsg('lib.empty.favs');
+      wireFavButtons(grid);
+      // When user un-favorites from this tab, remove the card so the list stays clean
+      grid.querySelectorAll('[data-fav]').forEach(btn=>{
+        const origHandler = btn.onclick;
+        btn.onclick = async (e)=>{
+          await origHandler.call(btn, e);
+          if(!btn.classList.contains('is-fav')){
+            const card = btn.closest('.book-card');
+            if(card){ card.style.transition='opacity .3s'; card.style.opacity='0'; setTimeout(()=>card.remove(),300); }
+          }
+        };
+      });
+    }
+  }
+  $$('.lib-tab').forEach(b=>b.onclick = ()=>showTab(b.dataset.tab));
+  showTab('books');
 }
 
 async function renderLogin(){
@@ -1121,6 +1223,51 @@ async function renderPayment(orderId){
   const noticeKey = state.lang==='kh'?'payment_notice_kh':'payment_notice_en';
   const notice = state.settings[noticeKey]||state.settings.payment_notice_en;
   if(notice){ const el=$('#payment-notice'); el.textContent=notice; el.style.display='block'; }
+
+  // Promo code section — hide input if already applied, else wire Apply button
+  const promoPanel = scope.querySelector('.promo-panel');
+  const promoInput = $('#promo-input');
+  const promoApplyBtn = $('#promo-apply');
+  const promoResult = $('#promo-result');
+  const amtLabel = $('#pay-amount-label');
+  function showPromoSummary(percent, discount, finalAmt){
+    promoResult.innerHTML = `<span style="color:var(--success,#2d6a4f);font-weight:600">✓ ${percent}% off applied</span> · <span class="muted">save ${fmtMoney(discount, order.currency)} · pay ${fmtMoney(finalAmt, order.currency)}</span>`;
+    promoInput.disabled = true;
+    promoApplyBtn.style.display = 'none';
+  }
+  if(order.promo_code_id){
+    showPromoSummary(
+      ((order.original_amount-order.amount)/order.original_amount*100).toFixed(0),
+      order.discount_amount,
+      order.amount
+    );
+  } else {
+    promoApplyBtn.onclick = async ()=>{
+      const code = (promoInput.value||'').trim().toUpperCase();
+      if(!code){ promoResult.innerHTML = `<span style="color:#b00">Enter a code first</span>`; return; }
+      promoApplyBtn.disabled = true;
+      promoResult.innerHTML = `<span class="muted">Checking…</span>`;
+      // Preview first (read-only)
+      const { data:preview, error:pErr } = await sb.rpc('validate_promo_code', { p_code: code, p_amount: order.amount });
+      if(pErr || !preview?.valid){
+        const errMap = { not_found:'Code not found', inactive:'Code disabled', expired:'Code expired', not_started:'Code not yet active', maxed_out:'Code limit reached', empty:'Enter a code' };
+        promoResult.innerHTML = `<span style="color:#b00">${errMap[preview?.error] || pErr?.message || 'Invalid code'}</span>`;
+        promoApplyBtn.disabled = false;
+        return;
+      }
+      // Commit
+      const { data:res, error:aErr } = await sb.rpc('apply_promo_to_order', { p_order_id: order.id, p_code: code });
+      if(aErr){ promoResult.innerHTML = `<span style="color:#b00">${aErr.message}</span>`; promoApplyBtn.disabled = false; return; }
+      // Reflect new amount in QR label
+      order.amount = res.final_amount;
+      order.original_amount = res.original_amount;
+      order.discount_amount = res.discount_amount;
+      order.promo_code_id = 'set';
+      amtLabel.textContent = fmtMoney(res.final_amount, order.currency);
+      showPromoSummary(res.discount_percent, res.discount_amount, res.final_amount);
+    };
+  }
+
   const fileInput = $('#proof-form input[name=proof]');
   fileInput.addEventListener('change',()=>{ const f=fileInput.files[0]; $('#proof-filename').textContent = f?f.name:''; });
   $('#proof-form').onsubmit = async e=>{

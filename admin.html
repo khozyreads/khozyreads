@@ -319,6 +319,31 @@ details.row-details .detail-body{margin-top:8px;padding:12px;background:var(--bg
 </section>
 </template>
 
+<template id="tpl-promos">
+<section class="route">
+  <div class="page-head"><div><div class="eyebrow">Marketing</div><h1>Promo Codes</h1></div></div>
+  <div id="promos-msg"></div>
+  <div class="panel" style="margin-bottom:20px">
+    <div class="panel-head"><div><h2>Create new code</h2><div class="meta">Buyer can apply this during checkout for a percentage discount.</div></div></div>
+    <div class="panel-body">
+      <form id="promo-form" class="form-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px">
+        <div class="field"><label>Code</label><input class="input" name="code" required placeholder="WELCOME10" style="text-transform:uppercase"/></div>
+        <div class="field"><label>Discount %</label><input class="input" name="discount_percent" type="number" min="1" max="100" step="0.5" required placeholder="10"/></div>
+        <div class="field"><label>Valid from (optional)</label><input class="input" name="valid_from" type="datetime-local"/></div>
+        <div class="field"><label>Valid until (optional)</label><input class="input" name="valid_until" type="datetime-local"/></div>
+        <div class="field"><label>Max uses (optional)</label><input class="input" name="max_uses" type="number" min="1" placeholder="Unlimited"/></div>
+        <div class="field" style="grid-column:1/-1"><label>Notes (e.g. "Influencer Sophea Channel")</label><input class="input" name="notes" placeholder="Internal note"/></div>
+        <div class="field" style="grid-column:1/-1;display:flex;justify-content:flex-end;gap:10px"><button type="submit" class="btn btn-primary">Create code</button></div>
+      </form>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><div><h2>All codes</h2><div class="meta" id="promos-meta">—</div></div></div>
+    <div class="panel-body"><table class="table"><thead><tr><th>Code</th><th>Discount</th><th>Usage</th><th>Approved revenue</th><th>Total discount given</th><th>Valid until</th><th>Status</th><th>Notes</th><th>Actions</th></tr></thead><tbody id="promos-body"></tbody></table></div>
+  </div>
+</section>
+</template>
+
 <template id="tpl-settings">
 <section class="route">
   <div class="page-head"><div><div class="eyebrow">Configuration</div><h1>Settings</h1></div><div class="right"><button class="btn btn-primary" id="save-settings">Save changes</button></div></div>
@@ -433,7 +458,7 @@ function renderTopNav(){
   if(!state.user || state.profile?.role!=='admin'){ nav.innerHTML=''; userNav.innerHTML=''; return; }
   const cur = (location.hash.replace(/^#\/?/,'').split('/')[0])||'dashboard';
   const link = (h,label)=>`<a class="nav-link ${cur===h?'active':''}" href="#/${h}" data-route="${h}">${label}</a>`;
-  nav.innerHTML = link('dashboard','Dashboard')+link('books','Books')+link('orders','Orders')+link('users','Users')+link('settings','Settings')+link('logs','Logs');
+  nav.innerHTML = link('dashboard','Dashboard')+link('books','Books')+link('orders','Orders')+link('users','Users')+link('promos','Promos')+link('settings','Settings')+link('logs','Logs');
   const u = state.profile.username||'';
   userNav.innerHTML = `<span class="user-chip"><span class="avatar">${esc(u.charAt(0).toUpperCase()||'A')}</span>@${esc(u)}</span><a class="btn btn-ghost btn-sm" href="#" id="logout-btn">Logout</a>`;
   $('#logout-btn').onclick = e=>{ e.preventDefault(); doLogout(); };
@@ -459,7 +484,7 @@ function route(){
   _spinnerTimer = setTimeout(()=>{ if(!isStale()) $('#route-outlet').innerHTML=`<div class="center" style="padding:80px"><span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span></div>`; }, 150);
   const hash = location.hash.replace(/^#\/?/,'');
   const [page] = hash.split('/');
-  const handlers = {'':renderDashboard, 'dashboard':renderDashboard, 'books':renderBooks, 'orders':renderOrders, 'users':renderUsers, 'settings':renderSettings, 'logs':renderLogs, 'login':renderLogin};
+  const handlers = {'':renderDashboard, 'dashboard':renderDashboard, 'books':renderBooks, 'orders':renderOrders, 'users':renderUsers, 'promos':renderPromos, 'settings':renderSettings, 'logs':renderLogs, 'login':renderLogin};
   const h = handlers[page] || renderDashboard;
   Promise.resolve(h()).catch(err=>{ if(isStale()) return; console.error(err); $('#route-outlet').innerHTML=`<div>${alertBox(err.message||String(err))}</div>`; }).finally(()=>{ if(_spinnerTimer){clearTimeout(_spinnerTimer);_spinnerTimer=null;} renderTopNav(); window.scrollTo(0,0); });
 }
@@ -683,6 +708,83 @@ async function renderUsers(){
       renderUsers();
     }catch(err){ alert(err.message); b.disabled = false; }
   });
+}
+
+function fmtMoneyAdmin(n){ return '$' + (Number(n)||0).toFixed(2); }
+function fmtDateAdmin(d){ if(!d) return '—'; try{ return new Date(d).toLocaleDateString(); }catch(_){ return '—'; } }
+
+async function renderPromos(){
+  showTemplate('tpl-promos');
+  const msg = $('#promos-msg');
+  const setMsg = (text, kind)=>{ msg.innerHTML = text ? alertBox(text, kind||'info') : ''; };
+
+  async function refresh(){
+    const { data:promos, error } = await sb.rpc('admin_list_promo_codes');
+    if(error){ setMsg(error.message, 'error'); return; }
+    const list = promos || [];
+    $('#promos-meta').textContent = `${list.length} total · ${list.filter(p=>p.is_active).length} active`;
+    const now = new Date();
+    $('#promos-body').innerHTML = list.length ? list.map(p=>{
+      const isExpired = p.valid_until && new Date(p.valid_until) < now;
+      const isMaxed = p.max_uses != null && p.used_count >= p.max_uses;
+      const inactive = !p.is_active;
+      let statusBadge;
+      if(inactive) statusBadge = `<span class="badge b-rejected"><span class="dot"></span>Disabled</span>`;
+      else if(isExpired) statusBadge = `<span class="badge b-rejected"><span class="dot"></span>Expired</span>`;
+      else if(isMaxed) statusBadge = `<span class="badge b-rejected"><span class="dot"></span>Maxed</span>`;
+      else statusBadge = `<span class="badge b-active"><span class="dot"></span>Active</span>`;
+      const usage = `${p.used_count}${p.max_uses?` / ${p.max_uses}`:''}`;
+      return `<tr>
+        <td><strong class="cell-mono">${esc(p.code)}</strong></td>
+        <td>${Number(p.discount_percent).toFixed(p.discount_percent%1?1:0)}%</td>
+        <td>${usage}${p.approved_uses>0?` <span class="muted" style="font-size:11px">(${p.approved_uses} paid)</span>`:''}</td>
+        <td class="cell-mono">${fmtMoneyAdmin(p.total_revenue)}</td>
+        <td class="cell-mono">${fmtMoneyAdmin(p.total_discount_given)}</td>
+        <td>${fmtDateAdmin(p.valid_until)}</td>
+        <td>${statusBadge}</td>
+        <td>${esc(p.notes||'')}</td>
+        <td><div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-ghost btn-sm" data-toggle-promo="${p.id}" data-active="${p.is_active}">${p.is_active?'Disable':'Enable'}</button>
+        </div></td>
+      </tr>`;
+    }).join('') : `<tr><td colspan="9" class="muted center">No promo codes yet. Create one above.</td></tr>`;
+
+    $$('[data-toggle-promo]').forEach(b=>b.onclick = async ()=>{
+      const id = b.dataset.togglePromo;
+      const willActivate = b.dataset.active === 'false';
+      b.disabled = true;
+      const { error } = await sb.from('promo_codes').update({ is_active: willActivate }).eq('id', id);
+      if(error){ setMsg(error.message, 'error'); b.disabled = false; return; }
+      refresh();
+    });
+  }
+
+  $('#promo-form').onsubmit = async (e)=>{
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const payload = {
+      code: String(fd.get('code')||'').trim().toUpperCase(),
+      discount_percent: Number(fd.get('discount_percent')),
+      valid_from: fd.get('valid_from') || null,
+      valid_until: fd.get('valid_until') || null,
+      max_uses: fd.get('max_uses') ? Number(fd.get('max_uses')) : null,
+      notes: fd.get('notes') || null,
+      is_active: true,
+      created_by: state.profile?.id || null
+    };
+    if(!payload.code){ setMsg('Code required', 'error'); return; }
+    if(!(payload.discount_percent>0 && payload.discount_percent<=100)){ setMsg('Discount must be 1-100', 'error'); return; }
+    const btn = e.target.querySelector('button[type=submit]');
+    btn.disabled = true;
+    const { error } = await sb.from('promo_codes').insert(payload);
+    btn.disabled = false;
+    if(error){ setMsg(error.message, 'error'); return; }
+    e.target.reset();
+    setMsg(`Code ${payload.code} created`, 'success');
+    refresh();
+  };
+
+  await refresh();
 }
 
 async function renderSettings(){
