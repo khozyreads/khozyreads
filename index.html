@@ -245,6 +245,17 @@ html[lang="km"] .reader-title{font-family:var(--font-khmer);font-weight:600;font
 #reader-canvas-wrap.blurred{filter:blur(20px)}
 .reader-page{width:min(820px,100%);background:var(--bg-elevated);padding:40px;box-shadow:var(--shadow-lg);position:relative;border:1px solid var(--border)}
 .reader-page canvas{display:block;max-width:100%;height:auto;-webkit-user-select:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.reader-page{perspective:1800px;perspective-origin:50% 50%}
+.page-flip-overlay{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;transform-style:preserve-3d;will-change:transform;backface-visibility:hidden;box-shadow:0 0 0 1px rgba(0,0,0,.04)}
+.page-flip-overlay img{display:block;width:100%;height:100%;object-fit:contain;background:var(--bg-elevated)}
+.page-flip-overlay::after{content:"";position:absolute;inset:0;background:linear-gradient(to right,rgba(0,0,0,0) 0%,rgba(0,0,0,0) 60%,rgba(0,0,0,.18) 100%);opacity:0;transition:opacity .35s ease;pointer-events:none}
+.page-flip-overlay.flipping-next{animation:pageFlipNext 700ms cubic-bezier(.4,.05,.25,1) forwards;transform-origin:0% 50%}
+.page-flip-overlay.flipping-prev{animation:pageFlipPrev 700ms cubic-bezier(.4,.05,.25,1) forwards;transform-origin:100% 50%}
+.page-flip-overlay.flipping-next::after,.page-flip-overlay.flipping-prev::after{animation:pageFlipShade 700ms ease forwards}
+@keyframes pageFlipNext{0%{transform:rotateY(0deg)}100%{transform:rotateY(-170deg)}}
+@keyframes pageFlipPrev{0%{transform:rotateY(0deg)}100%{transform:rotateY(170deg)}}
+@keyframes pageFlipShade{0%{opacity:0}40%{opacity:.9}100%{opacity:0}}
+@media (prefers-reduced-motion: reduce){.page-flip-overlay.flipping-next,.page-flip-overlay.flipping-prev{animation-duration:1ms!important}.page-flip-overlay::after{display:none}}
 .reader-page .loading{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;padding:60px;color:var(--muted)}
 .reader-disclaimer{position:sticky;top:0;z-index:20;background:linear-gradient(90deg,rgba(123,45,38,.95),rgba(184,133,74,.95));color:#fff;padding:8px 18px;font-family:var(--font-serif);font-size:13px;letter-spacing:.08em;text-align:center;display:flex;align-items:center;justify-content:center;gap:10px;border-bottom:1px solid var(--accent)}
 html[lang="km"] .reader-disclaimer{font-family:var(--font-khmer);letter-spacing:0;font-size:13px}
@@ -1170,9 +1181,56 @@ async function initReader(book, pdfUrl){
   let pdf=null, pageNum=1, scale=null, baseScale=1, fontMult=1;
   const wakeTimer = { handle:null };
 
+  let flipping = false;
+  const prefersReducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  async function flipAndRender(direction){
+    // direction: 'next' or 'prev'
+    if(flipping || !pdf) return;
+    const pageEl = $('.reader-page');
+    if(!pageEl || canvas.width===0 || prefersReducedMotion){
+      await renderPage();
+      return;
+    }
+    flipping = true;
+    // Snapshot current canvas as an image
+    let snapUrl;
+    try{ snapUrl = canvas.toDataURL('image/jpeg', 0.85); }
+    catch(_){ flipping = false; await renderPage(); return; }
+    const overlay = document.createElement('div');
+    overlay.className = 'page-flip-overlay';
+    const img = document.createElement('img');
+    img.src = snapUrl;
+    img.style.width = canvas.style.width;
+    img.style.height = canvas.style.height;
+    overlay.style.width = canvas.style.width;
+    overlay.style.height = canvas.style.height;
+    // Position overlay over the canvas inside reader-page (which has padding)
+    const canvasRect = canvas.getBoundingClientRect();
+    const pageRect = pageEl.getBoundingClientRect();
+    overlay.style.left = (canvasRect.left - pageRect.left) + 'px';
+    overlay.style.top = (canvasRect.top - pageRect.top) + 'px';
+    overlay.appendChild(img);
+    pageEl.appendChild(overlay);
+    // Trigger animation class
+    requestAnimationFrame(()=>{
+      overlay.classList.add(direction==='next' ? 'flipping-next' : 'flipping-prev');
+    });
+    // Re-render new page underneath while overlay is animating
+    const renderPromise = renderPage();
+    const animPromise = new Promise(resolve=>{
+      const cleanup = ()=>{ overlay.remove(); resolve(); };
+      overlay.addEventListener('animationend', cleanup, {once:true});
+      // Safety timeout in case animationend doesn't fire
+      setTimeout(cleanup, 1000);
+    });
+    await Promise.all([renderPromise, animPromise]);
+    flipping = false;
+  }
+
   $('#r-back').onclick = ()=>{ location.hash='#/library'; };
-  $('#r-prev').onclick = ()=>{ if(pdf && pageNum>1){ pageNum--; renderPage(); } };
-  $('#r-next').onclick = ()=>{ if(pdf && pageNum<pdf.numPages){ pageNum++; renderPage(); } };
+  $('#r-prev').onclick = ()=>{ if(pdf && !flipping && pageNum>1){ pageNum--; flipAndRender('prev'); } };
+  $('#r-next').onclick = ()=>{ if(pdf && !flipping && pageNum<pdf.numPages){ pageNum++; flipAndRender('next'); } };
   $('#r-zoomin').onclick = ()=>{ fontMult = Math.min(2.5, fontMult+0.15); renderPage(); };
   $('#r-zoomout').onclick = ()=>{ fontMult = Math.max(0.5, fontMult-0.15); renderPage(); };
   slider.oninput = ()=>{ if(pdf){ pageNum = parseInt(slider.value)||1; renderPage(); } };
