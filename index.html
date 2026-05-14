@@ -232,10 +232,11 @@ html[lang="km"] .qr-label{font-family:var(--font-khmer);letter-spacing:.06em}
 .step h4{margin:0 0 4px;font-family:var(--font-display);font-weight:500;font-size:20px}
 html[lang="km"] .step h4{font-family:var(--font-khmer);font-weight:600;font-size:17px}
 .step p{margin:0;color:var(--fg-soft);font-size:15px}
-.upload-zone{margin-top:24px;padding:32px;border:2px dashed var(--border-strong);text-align:center;border-radius:var(--radius);background:var(--bg);transition:border-color .2s,background .2s;cursor:pointer}
+.upload-zone{margin-top:24px;padding:32px;border:2px dashed var(--border-strong);text-align:center;border-radius:var(--radius);background:var(--bg);transition:border-color .2s,background .2s;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;box-sizing:border-box}
 .upload-zone:hover{border-color:var(--accent-deep);background:var(--bg-deep)}
-.upload-zone .ic{width:40px;height:40px;margin:0 auto 12px;color:var(--accent-deep)}
+.upload-zone .ic{width:40px;height:40px;margin:0 0 12px;color:var(--accent-deep);display:block;flex-shrink:0}
 .upload-zone input[type=file]{display:none}
+.upload-zone>div{max-width:100%}
 
 #reader-frame{position:fixed;inset:0;z-index:60;background:var(--bg);color:var(--fg);display:flex;flex-direction:column}
 .reader-progress{height:3px;background:var(--border);position:relative;overflow:hidden}
