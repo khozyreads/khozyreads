@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <url>
+    <loc>https://khozyreads.com/</loc>
+    <lastmod>2026-05-15</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="km" href="https://khozyreads.com/?lang=kh"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://khozyreads.com/?lang=en"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://khozyreads.com/"/>
+  </url>
+
+  <!--
+    NOTE: Individual book pages are dynamic (book.html?id=xxx).
+    To get each book indexed properly, generate a separate sitemap entry
+    per book from Supabase. See SEO-SETUP.md for a script you can run
+    periodically (or via Supabase edge function) to regenerate this file.
+  -->
+
+</urlset>

@@ -3,9 +3,49 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<meta name="referrer" content="no-referrer">
-<meta name="robots" content="noindex,nofollow">
-<title>KhozyReads · ហាងសៀវភៅឌីជីថល</title>
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="robots" content="index,follow">
+<meta name="googlebot" content="index,follow">
+<title>KhozyReads — Khmer Digital Bookstore | ហាងសៀវភៅឌីជីថលខ្មែរ</title>
+<meta name="description" content="Buy and read authentic Khmer digital books and PDF stories online. Secure payment via ABA / KHQR. ទិញ និងអាន​សៀវភៅ​ឌីជីថល​ខ្មែរ​ដោយ​សុវត្ថិភាព តាម​អ៊ីនធឺណិត។">
+<meta name="keywords" content="Khmer books, Cambodian ebooks, Khmer PDF, ហាងសៀវភៅ, សៀវភៅខ្មែរ, digital books Cambodia, KhozyReads">
+<meta name="author" content="KhozyReads">
+<link rel="canonical" href="https://khozyreads.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="KhozyReads">
+<meta property="og:url" content="https://khozyreads.com/">
+<meta property="og:title" content="KhozyReads — Khmer Digital Bookstore">
+<meta property="og:description" content="Buy and read authentic Khmer digital books and PDF stories online. Secure payment via ABA / KHQR.">
+<meta property="og:image" content="https://khozyreads.com/og-cover.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="km_KH">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="KhozyReads — Khmer Digital Bookstore">
+<meta name="twitter:description" content="Buy and read authentic Khmer digital books and PDF stories online.">
+<meta name="twitter:image" content="https://khozyreads.com/og-cover.jpg">
+<link rel="alternate" hreflang="km" href="https://khozyreads.com/?lang=kh">
+<link rel="alternate" hreflang="en" href="https://khozyreads.com/?lang=en">
+<link rel="alternate" hreflang="x-default" href="https://khozyreads.com/">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "OnlineStore",
+  "name": "KhozyReads",
+  "alternateName": "ហាងសៀវភៅឌីជីថល KhozyReads",
+  "url": "https://khozyreads.com/",
+  "logo": "https://khozyreads.com/apple-touch-icon-180.png",
+  "description": "Khmer digital bookstore selling authentic Khmer PDF books and stories with secure ABA / KHQR payment.",
+  "areaServed": "KH",
+  "inLanguage": ["km", "en"],
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": "https://khozyreads.com/?q={search_term_string}",
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
 <!-- PWA: installable app -->
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#7B2D26">
@@ -18,6 +58,9 @@
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://nqvnqykukecexcxapwdc.supabase.co" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="dns-prefetch" href="https://nqvnqykukecexcxapwdc.supabase.co">
 <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+Khmer:wght@400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -537,7 +580,7 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
   <header class="site-header" id="site-header">
     <div class="header-top">
       <a class="brand" href="#/">
-        <img class="brand-mark" src="KhozyReads%20Logo.png" alt="KhozyReads logo"/>
+        <img class="brand-mark" src="KhozyReads%20Logo.webp" alt="KhozyReads logo" width="42" height="42" decoding="async"/>
         <div>
           <div class="brand-name">KhozyReads</div>
           <div class="brand-tag" data-i18n="brand.tag">ហាងសៀវភៅឌីជីថល</div>
@@ -1435,7 +1478,15 @@ async function initReader(book, pdfUrl){
     const renderPromise = renderPage();
     const animPromise = new Promise(resolve=>{
       let done = false;
-      const cleanup = ()=>{ if(done) return; done = true; overlay.remove(); resolve(); };
+      const cleanup = ()=>{
+        if(done) return; done = true;
+        // Explicit memory cleanup: remove element + null out blob refs + release GPU hint
+        overlay.style.willChange = 'auto';
+        img.src = '';
+        img.remove();
+        overlay.remove();
+        resolve();
+      };
       overlay.addEventListener('animationend', cleanup, {once:true});
       // Safety timeout in case animationend doesn't fire
       setTimeout(cleanup, 1400);
@@ -1545,8 +1596,9 @@ async function initReader(book, pdfUrl){
     if(scale===null){ baseScale = Math.max(0.5, Math.min(3, containerW / v0.width)); }
     scale = baseScale * fontMult;
     const viewport = page.getViewport({scale});
-    // Use device pixel ratio for sharper render on mobile
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // Use device pixel ratio for sharper render — capped to 1.5 (sweet spot:
+    // text still sharp on retina, but 30-50% lighter render than DPR 2).
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     canvas.width = viewport.width * dpr;
     canvas.height = viewport.height * dpr;
     canvas.style.width = viewport.width + 'px';
@@ -1595,8 +1647,9 @@ async function initReader(book, pdfUrl){
     else if(dx > 0 && pageNum > 1){ pageNum--; flipAndRender('prev'); }
   }, {passive:true});
 
-  // Refresh watermark every 30s so timestamp keeps current
-  const wmInterval = setInterval(()=>{ if(pdf) renderPage(); }, 30000);
+  // Watermark contains username + user_id + book_id which is enough for forensic ID.
+  // Timestamp re-bakes only on page change (cheap), not on interval — saves CPU & battery.
+  const wmInterval = null;
 
   // Reader protection
   document.body.classList.add('reading');
@@ -1648,7 +1701,7 @@ async function initReader(book, pdfUrl){
     window.removeEventListener('orientationchange', onResize);
     clearTimeout(wakeTimer.handle);
     clearTimeout(_resizeT);
-    clearInterval(wmInterval);
+    if(wmInterval) clearInterval(wmInterval);
     document.body.classList.remove('reading');
     // Free PDF document to release memory
     try{ if(pdf && pdf.destroy) pdf.destroy(); }catch(e){}

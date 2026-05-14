@@ -1,0 +1,47 @@
+# ============================================================
+# Cloudflare Pages cache rules
+# ============================================================
+# Hashed/static assets cached aggressively (1 year). Visitors who
+# come back skip re-downloading the logo, icons, fonts, etc.
+# HTML files revalidate so layout/code updates appear instantly.
+
+# Logo + favicon + PWA icons — same image for everyone, forever
+/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+/*.png
+  Cache-Control: public, max-age=31536000, immutable
+/*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+/*.jpeg
+  Cache-Control: public, max-age=31536000, immutable
+/*.svg
+  Cache-Control: public, max-age=31536000, immutable
+/*.ico
+  Cache-Control: public, max-age=31536000, immutable
+
+# Static script/style files in assets/
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Manifest can be cached for a day (changes rarely, but might)
+/manifest.webmanifest
+  Cache-Control: public, max-age=86400
+
+# SEO files — revalidate daily, served as text/xml & text/plain
+/sitemap.xml
+  Cache-Control: public, max-age=3600
+  Content-Type: application/xml; charset=utf-8
+/robots.txt
+  Cache-Control: public, max-age=3600
+  Content-Type: text/plain; charset=utf-8
+
+# HTML: revalidate every visit so deploys are seen immediately,
+# but allow browser to use cached version while checking.
+/*.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+# Default for anything else
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin

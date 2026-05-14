@@ -1,0 +1,29 @@
+# robots.txt for KhozyReads
+# https://khozyreads.com/
+
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /book.html
+
+# Block private / authenticated pages
+Disallow: /login.html
+Disallow: /register.html
+Disallow: /payment.html
+Disallow: /library.html
+Disallow: /reader.html
+Disallow: /admin.html
+Disallow: /admin-books.html
+Disallow: /admin-orders.html
+Disallow: /admin-settings.html
+Disallow: /seller-login.html
+Disallow: /seller-dashboard.html
+
+# Block assets that don't need indexing
+Disallow: /assets/
+Disallow: /apps-script/
+Disallow: /supabase/
+Disallow: /.npm-cache/
+
+# Sitemap location
+Sitemap: https://khozyreads.com/sitemap.xml
