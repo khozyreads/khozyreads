@@ -1,6 +1,49 @@
 # robots.txt for KhozyReads
 # https://khozyreads.com/
 
+# Social media crawlers — explicitly allow so link preview works
+# on Facebook, Twitter/X, Telegram, WhatsApp, LinkedIn, Discord, Slack, etc.
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: facebookcatalog
+Allow: /
+
+User-agent: Facebot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: TelegramBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Discordbot
+Allow: /
+
+User-agent: Slackbot
+Allow: /
+
+User-agent: Slackbot-LinkExpanding
+Allow: /
+
+# Search engines — explicit allow for major ones
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# Default for everyone else
 User-agent: *
 Allow: /
 Allow: /index.html
