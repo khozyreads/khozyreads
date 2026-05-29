@@ -127,6 +127,10 @@ html[lang="km"] .btn{font-family:var(--font-khmer);font-weight:500}
 .btn-ghost{background:transparent;color:var(--primary);border-color:var(--border-strong)}
 .btn-ghost:hover{background:var(--bg-deep);border-color:var(--accent-deep)}
 .btn-gold{background:var(--accent);color:#3a2410;border-color:var(--accent)}
+.btn-pending{background:var(--bg-deep);color:var(--muted);border:1px dashed var(--border-strong);cursor:default;display:inline-flex;align-items:center;gap:10px;justify-content:center;pointer-events:auto}
+.btn-pending:hover{transform:none;background:var(--bg-deep)}
+.spin-circle{display:inline-block;width:16px;height:16px;border:2px solid var(--border-strong);border-top-color:var(--primary);border-radius:50%;animation:spin-pending .8s linear infinite;flex:0 0 16px}
+@keyframes spin-pending{to{transform:rotate(360deg)}}
 .btn-gold:hover{background:var(--accent-deep);color:#fff}
 .btn-lg{padding:16px 30px;min-height:56px;font-size:17px}
 .btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
@@ -914,7 +918,7 @@ const I18N = {
     'home.eyebrow':'បណ្ណាគារខ្មែរឌីជីថល · EST. 2026','home.title':'ហាងសៀវភៅឌីជីថល','home.lede':'អានប្រលោម គ្រប់ប្រភេទ គ្រប់ពេលវេលា និង គ្រប់ទីកន្លែង។',
     'home.all.eyebrow':'បណ្តុំសៀវភៅទាំងអស់','home.all.h':'ហាងសៀវភៅឌីជីថល','home.all.sort':'តម្រៀបតាម · ថ្មីបំផុត','home.empty':'មិនទាន់មានសៀវភៅទេ',
     'detail.eyebrow':'សៀវភៅ · ឆ្នាំ ២០២៦','detail.by':'និពន្ធដោយ','detail.priceNote':'តម្លៃតែម្តង · កាន់កាប់រហូត','detail.synopsis':'ដំណើររឿងសង្ខេប',
-    'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន',
+    'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់ការទូទាត់...','cta.pendingHint':'ចុចដើម្បីបង្ហោះវិក្កយបត្រឡើងវិញ','cta.pendingNote':'រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។ មិនអាចទិញម្តងទៀតបានទេនៅពេលនេះ។','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន',
     'lib.eyebrow':'បណ្ណាល័យផ្ទាល់ខ្លួន','lib.title':'បណ្ណាល័យរបស់ខ្ញុំ','lib.lede':'សៀវភៅទាំងអស់ដែលអ្នកបានទិញ — រួចរាល់ចាប់ផ្តើមអាន។','lib.empty':'មិនទាន់មានការទិញ','lib.empty.favs':'មិនទាន់មានសៀវភៅដែលចូលចិត្ត','lib.tab.books':'សៀវភៅរបស់ខ្ញុំ','lib.tab.favs':'ចូលចិត្ត',
     'pay.promo':'មានកូដប្រូម៉ូ?','pay.applyPromo':'អនុវត្ត','pay.review':'សូមពិនិត្យមើលមុនពេលបញ្ជូន','pay.book':'សៀវភៅ','pay.subtotal':'សរុបមុនបញ្ចុះតម្លៃ','pay.discount':'ការបញ្ចុះតម្លៃ','pay.total':'សរុបទាំងអស់','pay.contactAdmin':'មានបញ្ហា? ទាក់ទងអ្នកគ្រប់គ្រង','pay.contactAdminSub':'ផ្ញើសារនៅ Telegram',
     'auth.welcome':'សូមស្វាគមន៍មកកាន់','auth.loginH':'ចូលគណនី','auth.loginSub':'បន្តការអានសៀវភៅដែលអ្នកស្រឡាញ់','auth.loginBtn':'ចូលគណនី','auth.noAcc':'មិនទាន់មានគណនី?','auth.haveAcc':'មានគណនីរួចហើយ?','auth.signInGoogle':'បន្តជាមួយ Google','auth.signUpGoogle':'ចុះឈ្មោះជាមួយ Google','auth.googleSub':'សុវត្ថិភាព · ឥតគិតថ្លៃ · ការចូលរហ័ស',
@@ -933,7 +937,7 @@ const I18N = {
     'home.eyebrow':'Khmer digital bookstore · EST. 2026','home.title':'Digital Book Store','home.lede':'Read your favorite novel - wherever, whenever.',
     'home.all.eyebrow':'All books','home.all.h':'Digital Book Store','home.all.sort':'Sorted by · Newest','home.empty':'No books yet',
     'detail.eyebrow':'Book · 2026','detail.by':'by','detail.priceNote':'One-time purchase · yours forever','detail.synopsis':'Synopsis',
-    'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Pending Verification','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled','cta.readFree':'Read for Free','cta.loginToRead':'Login to Read',
+    'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Verifying payment...','cta.pendingHint':'Click to re-upload your payment proof','cta.pendingNote':'Waiting for admin verification. You cannot buy again right now.','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled','cta.readFree':'Read for Free','cta.loginToRead':'Login to Read',
     'lib.eyebrow':'Personal library','lib.title':'My Library','lib.lede':'All books you own — ready to read.','lib.empty':'No purchases yet','lib.empty.favs':'No favorites yet','lib.tab.books':'My Books','lib.tab.favs':'Favorites',
     'pay.promo':'Have a promo code?','pay.applyPromo':'Apply','pay.review':'Review before submitting','pay.book':'Book','pay.subtotal':'Subtotal','pay.discount':'Discount','pay.total':'Total','pay.contactAdmin':'Need help? Contact admin','pay.contactAdminSub':'Reach us on Telegram',
     'auth.welcome':'Welcome to','auth.loginH':'Sign In','auth.loginSub':'Continue reading what you love','auth.loginBtn':'Sign In','auth.noAcc':'No account yet?','auth.haveAcc':'Already have an account?','auth.signInGoogle':'Continue with Google','auth.signUpGoogle':'Sign up with Google','auth.googleSub':'Secure · Free · One-tap access',
@@ -1180,7 +1184,7 @@ async function renderBookDetail(id){
     buy: `<button class="btn btn-primary btn-lg" id="buy-btn">${t('cta.buy')} · ${fmtMoney(book.price,book.currency)}</button>`,
     buyAgain: `<button class="btn btn-primary btn-lg" id="buy-btn">${t('cta.buyAgain')}</button>`,
     claim_free: `<button class="btn btn-gold btn-lg" id="claim-btn">🎁 ${t('cta.readFree')}</button>`,
-    pending: `<a class="btn btn-ghost btn-lg" href="#/payment/${orderId}"><span class="badge b-pending"><span class="dot"></span>${t('cta.pending')}</span></a>`,
+    pending: `<a class="btn btn-pending btn-lg" href="#/payment/${orderId}" title="${t('cta.pendingHint')}"><span class="spin-circle" aria-hidden="true"></span><span>${t('cta.pending')}</span></a><div class="pending-note muted" style="margin-top:10px;font-size:13px;text-align:center">${t('cta.pendingNote')}</div>`,
     read: `<a class="btn btn-primary btn-lg" href="#/read/${id}">${t('cta.read')}</a>`,
     disabled: `<button class="btn btn-ghost btn-lg" disabled>${t('cta.disabled')}${book.buy_disabled_remark?` — ${esc(book.buy_disabled_remark)}`:''}</button>`
   };
