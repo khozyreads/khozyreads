@@ -688,9 +688,13 @@ async function renderUsers(){
     const roleBadge = u.role==='admin'
       ? `<span class="badge b-info"><span class="dot"></span>Admin</span>`
       : `<span class="muted">buyer</span>`;
+    const roleAction = u.role === 'admin'
+      ? `<button class="btn btn-ghost btn-sm" data-demote="${u.id}" data-uname="${esc(u.username)}">Demote</button>`
+      : `<button class="btn btn-info btn-sm" data-promote="${u.id}" data-uname="${esc(u.username)}">Make Admin</button>`;
     const actions = isMe
       ? `<span class="muted" style="font-size:12px;font-style:italic">(you)</span>`
       : `<div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${roleAction}
           <button class="btn btn-ghost btn-sm" data-reset="${u.id}" data-uname="${esc(u.username)}">Reset password</button>
           ${status==='disabled' || banned
             ? `<button class="btn btn-success btn-sm" data-enable="${u.id}" data-uname="${esc(u.username)}">Enable</button>`
@@ -706,6 +710,24 @@ async function renderUsers(){
       <td>${actions}</td>
     </tr>`;
   }).join('') || `<tr><td colspan="7" class="empty">No users yet</td></tr>`;
+
+  $$('[data-promote]').forEach(b=>b.onclick = async ()=>{
+    const username = b.dataset.uname;
+    if(!confirm(`Promote @${username} to admin? They will get full admin access.`)) return;
+    b.disabled = true;
+    const { error } = await sb.rpc('admin_set_user_role', { p_target_user_id: b.dataset.promote, p_new_role: 'admin' });
+    if(error){ alert(error.message); b.disabled = false; return; }
+    renderUsers();
+  });
+
+  $$('[data-demote]').forEach(b=>b.onclick = async ()=>{
+    const username = b.dataset.uname;
+    if(!confirm(`Demote @${username} back to buyer? They will lose admin access.`)) return;
+    b.disabled = true;
+    const { error } = await sb.rpc('admin_set_user_role', { p_target_user_id: b.dataset.demote, p_new_role: 'buyer' });
+    if(error){ alert(error.message); b.disabled = false; return; }
+    renderUsers();
+  });
 
   $$('[data-reset]').forEach(b=>b.onclick = async ()=>{
     const username = b.dataset.uname;
