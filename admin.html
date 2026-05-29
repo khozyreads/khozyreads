@@ -659,14 +659,25 @@ async function renderOrders(){
   $$('[data-approve]').forEach(b=>b.onclick=async ()=>{
     if(!confirm('Approve this order? Buyer will get access to the book.')) return;
     b.disabled=true;
-    // Optimistic UI: remove the row immediately so admin sees instant feedback
     const row = b.closest('tr');
     if(row) row.style.opacity = '0.4';
     const {error} = await sb.rpc('admin_approve_order',{p_order_id:b.dataset.approve});
-    if(error){ alert(error.message); b.disabled=false; if(row) row.style.opacity='1'; return; }
-    // Small delay to let DB commit propagate, then re-fetch fresh data
-    await new Promise(r=>setTimeout(r, 250));
-    await renderOrders();
+    if(error){
+      console.error('admin_approve_order failed:', error);
+      alert(error.message);
+      b.disabled=false;
+      if(row) row.style.opacity='1';
+      return;
+    }
+    console.log('[approve] order approved:', b.dataset.approve);
+    // Instant UI: remove row + decrement meta counter
+    if(row){
+      row.style.transition='opacity .25s';
+      row.style.opacity='0';
+      setTimeout(()=>row.remove(), 250);
+    }
+    // Re-fetch in background after a tick so DB commit is visible
+    setTimeout(()=>{ renderOrders().catch(e=>console.error('refresh failed', e)); }, 400);
   });
   $$('[data-reject]').forEach(b=>b.onclick=async ()=>{
     const reason = prompt('Reject reason (optional):', '');
@@ -675,9 +686,20 @@ async function renderOrders(){
     const row = b.closest('tr');
     if(row) row.style.opacity = '0.4';
     const {error} = await sb.rpc('admin_reject_order',{p_order_id:b.dataset.reject, p_reason:reason||null});
-    if(error){ alert(error.message); b.disabled=false; if(row) row.style.opacity='1'; return; }
-    await new Promise(r=>setTimeout(r, 250));
-    await renderOrders();
+    if(error){
+      console.error('admin_reject_order failed:', error);
+      alert(error.message);
+      b.disabled=false;
+      if(row) row.style.opacity='1';
+      return;
+    }
+    console.log('[reject] order rejected:', b.dataset.reject);
+    if(row){
+      row.style.transition='opacity .25s';
+      row.style.opacity='0';
+      setTimeout(()=>row.remove(), 250);
+    }
+    setTimeout(()=>{ renderOrders().catch(e=>console.error('refresh failed', e)); }, 400);
   });
 }
 
