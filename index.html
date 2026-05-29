@@ -116,7 +116,7 @@ html[lang="km"] .lede{font-family:var(--font-khmer);font-style:normal;font-size:
 .brand:hover{color:var(--primary);border:0}
 .brand-mark{width:42px;height:42px;color:var(--primary);object-fit:contain;display:block}
 .brand-name{font-family:var(--font-display);font-size:30px;font-weight:600;letter-spacing:.01em;line-height:1}
-.brand-tag{display:block;font-family:var(--font-khmer);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.brand-tag{display:block;font-family:var(--font-serif);font-size:13px;letter-spacing:.01em;text-transform:none;color:var(--muted);margin-top:4px;font-style:italic;max-width:300px;line-height:1.3}
 .header-nav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .nav-link{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:6px;font-size:15px;color:var(--fg);border:0;transition:background .2s,color .2s}
 .nav-link:hover{background:var(--bg-deep);color:var(--primary);border:0}
@@ -391,7 +391,7 @@ html[lang="km"] .ss-card p{font-family:var(--font-khmer);font-style:normal}
   .header-top{padding:14px 16px;gap:12px;flex-wrap:wrap}
   .brand-mark{width:36px;height:36px}
   .brand-name{font-size:24px}
-  .brand-tag{font-size:10px;letter-spacing:.12em}
+  .brand-tag{font-size:11px;letter-spacing:.01em;max-width:200px}
   .header-nav{gap:6px;width:100%;justify-content:space-between;order:3;border-top:1px solid var(--border);padding-top:10px;margin-top:6px}
   .nav-link{padding:8px 10px;font-size:14px}
   #lang-switcher button{padding:4px 10px;font-size:12px}
@@ -594,7 +594,7 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
         <img class="brand-mark" src="KhozyReads%20Logo.webp?v=2" alt="KhozyReads logo" width="42" height="42" decoding="async"/>
         <div>
           <div class="brand-name">KhozyReads</div>
-          <div class="brand-tag" data-i18n="brand.tag">ហាងសៀវភៅឌីជីថល</div>
+          <div class="brand-tag" data-i18n="brand.tag">ពាក្យគឺជាពណ៌នៃអាថ៌កំបាំងដួងចិត្ត។</div>
         </div>
       </a>
       <nav class="header-nav">
@@ -915,7 +915,7 @@ const state = { user:null, profile:null, settings:{}, lang: localStorage.getItem
 /* ========== i18n ========== */
 const I18N = {
   kh: {
-    'brand.tag':'ហាងសៀវភៅឌីជីថល','nav.store':'ហាង','nav.library':'បណ្ណាល័យរបស់ខ្ញុំ','nav.login':'ចូល','nav.register':'ចុះឈ្មោះ','nav.logout':'ចេញ',
+    'brand.tag':'ពាក្យគឺជាពណ៌នៃអាថ៌កំបាំងដួងចិត្ត។','nav.store':'ហាង','nav.library':'បណ្ណាល័យរបស់ខ្ញុំ','nav.login':'ចូល','nav.register':'ចុះឈ្មោះ','nav.logout':'ចេញ',
     'footer.tag':'សៀវភៅឌីជីថលដែលបន្ថែមភាពរីករាយក្នុងការអាន','footer.note':'បង្កើតដោយក្តីស្រឡាញ់ពីខ្មែរ',
     'home.eyebrow':'បណ្ណាគារខ្មែរឌីជីថល · EST. 2026','home.title':'ហាងសៀវភៅឌីជីថល','home.lede':'ពាក្យគឺជាពណ៌នៃអាថ៌កំបាំងដួងចិត្ត។',
     'home.all.eyebrow':'បណ្តុំសៀវភៅទាំងអស់','home.all.h':'ហាងសៀវភៅឌីជីថល','home.all.sort':'តម្រៀបតាម · ថ្មីបំផុត','home.empty':'មិនទាន់មានសៀវភៅទេ',
@@ -934,7 +934,7 @@ const I18N = {
     'ss.title':'ការការពារមាតិកាបានបើក','ss.body':'មិនអនុញ្ញាតិឱ្យថតរូប, ថតវីដេអូ ឬធ្វើការចែកចាយបន្តដោយគ្មានការអនុញ្ញាតិជាលាយលក្ខណ៍អក្សរពីខូហ្ស៊ីរីដ។','ss.dismiss':'ខ្ញុំយល់ហើយ','pwa.install':'ដំឡើងកម្មវិធី'
   },
   en: {
-    'brand.tag':'Digital Book Store','nav.store':'Store','nav.library':'My Library','nav.login':'Sign In','nav.register':'Register','nav.logout':'Logout',
+    'brand.tag':'Words Are Colors Of The Unspoken Soul.','nav.store':'Store','nav.library':'My Library','nav.login':'Sign In','nav.register':'Register','nav.logout':'Logout',
     'footer.tag':'Digital books that bring joy to reading','footer.note':'Crafted with love from Cambodia',
     'home.eyebrow':'Khmer digital bookstore · EST. 2026','home.title':'Digital Book Store','home.lede':'Words Are Colors Of The Unspoken Soul.',
     'home.all.eyebrow':'All books','home.all.h':'Digital Book Store','home.all.sort':'Sorted by · Newest','home.empty':'No books yet',
