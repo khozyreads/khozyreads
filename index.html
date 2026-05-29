@@ -129,7 +129,9 @@ html[lang="km"] .btn{font-family:var(--font-khmer);font-weight:500}
 .btn-gold{background:var(--accent);color:#3a2410;border-color:var(--accent)}
 .btn-pending{background:var(--bg-deep);color:var(--muted);border:1px dashed var(--border-strong);cursor:default;display:inline-flex;align-items:center;gap:10px;justify-content:center;pointer-events:auto}
 .btn-pending:hover{transform:none;background:var(--bg-deep)}
-.spin-circle{display:inline-block;width:16px;height:16px;border:2px solid var(--border-strong);border-top-color:var(--primary);border-radius:50%;animation:spin-pending .8s linear infinite;flex:0 0 16px}
+.spin-circle{display:inline-block;width:16px;height:16px;border:2px solid var(--border-strong);border-top-color:var(--primary);border-radius:50%;animation:spin-pending .8s linear infinite;flex:0 0 16px;vertical-align:middle}
+.spin-circle.spin-small{width:10px;height:10px;border-width:1.5px;margin-right:4px}
+.spin-circle.spin-on-dark{border-color:rgba(255,255,255,.3);border-top-color:#fff;width:10px;height:10px;border-width:1.5px;margin-right:5px}
 @keyframes spin-pending{to{transform:rotate(360deg)}}
 .btn-gold:hover{background:var(--accent-deep);color:#fff}
 .btn-lg{padding:16px 30px;min-height:56px;font-size:17px}
@@ -1227,9 +1229,14 @@ async function renderLibrary(){
   });
   (orders||[]).forEach(o=>{
     const isP = o.status==='pending';
-    const badge = isP?`<span class="badge b-pending"><span class="dot"></span>${t('badge.pending')}</span>`:`<span class="badge b-rejected"><span class="dot"></span>${t('badge.rejected')}</span>`;
+    const pillContent = isP
+      ? `<span class="spin-circle spin-on-dark" aria-hidden="true"></span>${t('badge.pending')}`
+      : `<span class="dot"></span>${t('badge.rejected')}`;
+    const badge = isP
+      ? `<span class="badge b-pending"><span class="spin-circle spin-small" aria-hidden="true"></span>${t('badge.pending')}</span>`
+      : `<span class="badge b-rejected"><span class="dot"></span>${t('badge.rejected')}</span>`;
     const href = isP?`#/payment/${o.id}`:`#/book/${o.book_id}`;
-    ownedItems.push(`<a class="book-card" href="${href}"><div class="book-cover" style="background:${o.books?.cover_url?'var(--bg-deep)':pickColor(o.book_id)}">${o.books?.cover_url?`<img src="${esc(o.books.cover_url)}"/>`:`<svg class="corner-orn tl"><use href="#orn-corner"/></svg>`}<span class="progress-pill"><span class="dot"></span>${isP?t('badge.pending'):t('badge.rejected')}</span></div><div class="book-meta"><h3 class="book-title">${esc(o.books?.title||'')}</h3>${badge}${o.reject_reason?`<p class="book-author" style="margin-top:6px">${esc(o.reject_reason)}</p>`:''}</div></a>`);
+    ownedItems.push(`<a class="book-card" href="${href}"><div class="book-cover" style="background:${o.books?.cover_url?'var(--bg-deep)':pickColor(o.book_id)}">${o.books?.cover_url?`<img src="${esc(o.books.cover_url)}"/>`:`<svg class="corner-orn tl"><use href="#orn-corner"/></svg>`}<span class="progress-pill">${pillContent}</span></div><div class="book-meta"><h3 class="book-title">${esc(o.books?.title||'')}</h3>${badge}${o.reject_reason?`<p class="book-author" style="margin-top:6px">${esc(o.reject_reason)}</p>`:''}</div></a>`);
   });
 
   // Build Favorites — auto-hide books already purchased OR with pending/approved orders
