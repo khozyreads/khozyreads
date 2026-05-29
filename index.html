@@ -1214,9 +1214,13 @@ async function renderLibrary(){
   showTemplate('tpl-library');
   const grid = $('#library-grid');
 
-  // Build "My Books" items
+  // Build "My Books" items — skip rows where the related book is missing
+  // (e.g. book was archived → RLS hides it from non-admins → r.books is null)
   const ownedItems = [];
-  (lib||[]).filter(r=>r.access_status==='active').forEach(r=>ownedItems.push(`<a class="book-card" href="#/read/${r.books.id}"><div class="book-cover" style="background:${r.books.cover_url?'var(--bg-deep)':pickColor(r.books.id)}">${r.books.cover_url?`<img src="${esc(r.books.cover_url)}"/>`:`<svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}<span class="progress-pill"><span class="dot"></span>${t('badge.approved')}</span></div><div class="book-meta"><h3 class="book-title">${esc(r.books.title)}</h3><p class="book-author">${esc(r.books.creator||'-')}</p></div></a>`));
+  (lib||[]).filter(r=>r.access_status==='active' && r.books).forEach(r=>{
+    const b = r.books;
+    ownedItems.push(`<a class="book-card" href="#/read/${b.id}"><div class="book-cover" style="background:${b.cover_url?'var(--bg-deep)':pickColor(b.id)}">${b.cover_url?`<img src="${esc(b.cover_url)}"/>`:`<svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}<span class="progress-pill"><span class="dot"></span>${t('badge.approved')}</span></div><div class="book-meta"><h3 class="book-title">${esc(b.title)}</h3><p class="book-author">${esc(b.creator||'-')}</p></div></a>`);
+  });
   (orders||[]).forEach(o=>{
     const isP = o.status==='pending';
     const badge = isP?`<span class="badge b-pending"><span class="dot"></span>${t('badge.pending')}</span>`:`<span class="badge b-rejected"><span class="dot"></span>${t('badge.rejected')}</span>`;

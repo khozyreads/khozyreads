@@ -659,17 +659,25 @@ async function renderOrders(){
   $$('[data-approve]').forEach(b=>b.onclick=async ()=>{
     if(!confirm('Approve this order? Buyer will get access to the book.')) return;
     b.disabled=true;
+    // Optimistic UI: remove the row immediately so admin sees instant feedback
+    const row = b.closest('tr');
+    if(row) row.style.opacity = '0.4';
     const {error} = await sb.rpc('admin_approve_order',{p_order_id:b.dataset.approve});
-    if(error){ alert(error.message); b.disabled=false; return; }
-    renderOrders();
+    if(error){ alert(error.message); b.disabled=false; if(row) row.style.opacity='1'; return; }
+    // Small delay to let DB commit propagate, then re-fetch fresh data
+    await new Promise(r=>setTimeout(r, 250));
+    await renderOrders();
   });
   $$('[data-reject]').forEach(b=>b.onclick=async ()=>{
     const reason = prompt('Reject reason (optional):', '');
     if(reason===null) return;
     b.disabled=true;
+    const row = b.closest('tr');
+    if(row) row.style.opacity = '0.4';
     const {error} = await sb.rpc('admin_reject_order',{p_order_id:b.dataset.reject, p_reason:reason||null});
-    if(error){ alert(error.message); b.disabled=false; return; }
-    renderOrders();
+    if(error){ alert(error.message); b.disabled=false; if(row) row.style.opacity='1'; return; }
+    await new Promise(r=>setTimeout(r, 250));
+    await renderOrders();
   });
 }
 
