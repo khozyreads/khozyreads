@@ -149,6 +149,8 @@ html[lang="km"] .btn{font-family:var(--font-khmer);font-weight:500}
 .site-footer .divider-orn{margin:0 auto 20px;max-width:380px}
 .site-footer p{margin:6px 0;font-size:14px}
 .site-footer .brand-name{font-size:22px;color:var(--fg)}
+.site-footer .footer-links a{color:var(--primary);text-decoration:none;transition:color .2s}
+.site-footer .footer-links a:hover{color:var(--accent);text-decoration:underline}
 
 .container{max-width:var(--maxw);margin:0 auto;padding:0 28px}
 .hero{position:relative;padding:80px 0 60px;text-align:center;overflow:hidden}
@@ -619,6 +621,13 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
     <div class="divider-orn"><svg><use href="#orn-divider"/></svg></div>
     <div class="brand-name">KhozyReads</div>
     <p data-i18n="footer.tag">សៀវភៅឌីជីថលដែលបន្ថែមភាពរីករាយក្នុងការអាន</p>
+    <p class="footer-links" style="margin-top:14px;font-size:13px">
+      <a href="/privacy.html" data-i18n="footer.privacy">Privacy Policy</a>
+      <span class="muted" style="margin:0 8px">·</span>
+      <a href="/terms.html" data-i18n="footer.terms">Terms of Service</a>
+      <span class="muted" style="margin:0 8px">·</span>
+      <a href="mailto:semsokanha15@gmail.com" data-i18n="footer.contact">Contact</a>
+    </p>
     <p class="muted">© 2026 · <span data-i18n="footer.note">បង្កើតដោយក្តីស្រឡាញ់ពីខ្មែរ</span></p>
   </footer>
 </div>
@@ -916,7 +925,7 @@ const state = { user:null, profile:null, settings:{}, lang: localStorage.getItem
 const I18N = {
   kh: {
     'brand.tag':'ពាក្យគឺជាពណ៌នៃអាថ៌កំបាំងដួងចិត្ត។','nav.store':'ហាង','nav.library':'បណ្ណាល័យរបស់ខ្ញុំ','nav.login':'ចូល','nav.register':'ចុះឈ្មោះ','nav.logout':'ចេញ',
-    'footer.tag':'សៀវភៅឌីជីថលដែលបន្ថែមភាពរីករាយក្នុងការអាន','footer.note':'បង្កើតដោយក្តីស្រឡាញ់ពីខ្មែរ',
+    'footer.tag':'សៀវភៅឌីជីថលដែលបន្ថែមភាពរីករាយក្នុងការអាន','footer.note':'បង្កើតដោយក្តីស្រឡាញ់ពីខ្មែរ','footer.privacy':'គោលនយោបាយឯកជនភាព','footer.terms':'លក្ខខណ្ឌនៃសេវាកម្ម','footer.contact':'ទាក់ទងយើង',
     'home.eyebrow':'បណ្ណាគារខ្មែរឌីជីថល · EST. 2026','home.title':'ហាងសៀវភៅឌីជីថល','home.lede':'ពាក្យគឺជាពណ៌នៃអាថ៌កំបាំងដួងចិត្ត។',
     'home.all.eyebrow':'បណ្តុំសៀវភៅទាំងអស់','home.all.h':'ហាងសៀវភៅឌីជីថល','home.all.sort':'តម្រៀបតាម · ថ្មីបំផុត','home.empty':'មិនទាន់មានសៀវភៅទេ',
     'detail.eyebrow':'សៀវភៅ · ឆ្នាំ ២០២៦','detail.by':'និពន្ធដោយ','detail.priceNote':'តម្លៃតែម្តង · កាន់កាប់រហូត','detail.synopsis':'ដំណើររឿងសង្ខេប',
@@ -935,7 +944,7 @@ const I18N = {
   },
   en: {
     'brand.tag':'Words Are Colors Of The Unspoken Soul.','nav.store':'Store','nav.library':'My Library','nav.login':'Sign In','nav.register':'Register','nav.logout':'Logout',
-    'footer.tag':'Digital books that bring joy to reading','footer.note':'Crafted with love from Cambodia',
+    'footer.tag':'Digital books that bring joy to reading','footer.note':'Crafted with love from Cambodia','footer.privacy':'Privacy Policy','footer.terms':'Terms of Service','footer.contact':'Contact',
     'home.eyebrow':'Khmer digital bookstore · EST. 2026','home.title':'Digital Book Store','home.lede':'Words Are Colors Of The Unspoken Soul.',
     'home.all.eyebrow':'All books','home.all.h':'Digital Book Store','home.all.sort':'Sorted by · Newest','home.empty':'No books yet',
     'detail.eyebrow':'Book · 2026','detail.by':'by','detail.priceNote':'One-time purchase · yours forever','detail.synopsis':'Synopsis',
