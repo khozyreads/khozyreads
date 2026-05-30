@@ -626,7 +626,7 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       <span class="muted" style="margin:0 8px">·</span>
       <a href="/terms.html" data-i18n="footer.terms">Terms of Service</a>
       <span class="muted" style="margin:0 8px">·</span>
-      <a href="mailto:semsokanha15@gmail.com" data-i18n="footer.contact">Contact</a>
+      <a id="footer-contact-link" href="#" target="_blank" rel="noopener" data-i18n="footer.contact">Contact us on Telegram</a>
     </p>
     <p class="muted">© 2026 · <span data-i18n="footer.note">បង្កើតដោយក្តីស្រឡាញ់ពីខ្មែរ</span></p>
   </footer>
@@ -925,7 +925,7 @@ const state = { user:null, profile:null, settings:{}, lang: localStorage.getItem
 const I18N = {
   kh: {
     'brand.tag':'ពាក្យគឺជាពណ៌នៃអាថ៌កំបាំងដួងចិត្ត។','nav.store':'ហាង','nav.library':'បណ្ណាល័យរបស់ខ្ញុំ','nav.login':'ចូល','nav.register':'ចុះឈ្មោះ','nav.logout':'ចេញ',
-    'footer.tag':'សៀវភៅឌីជីថលដែលបន្ថែមភាពរីករាយក្នុងការអាន','footer.note':'បង្កើតដោយក្តីស្រឡាញ់ពីខ្មែរ','footer.privacy':'គោលនយោបាយឯកជនភាព','footer.terms':'លក្ខខណ្ឌនៃសេវាកម្ម','footer.contact':'ទាក់ទងយើង',
+    'footer.tag':'សៀវភៅឌីជីថលដែលបន្ថែមភាពរីករាយក្នុងការអាន','footer.note':'បង្កើតដោយក្តីស្រឡាញ់ពីខ្មែរ','footer.privacy':'គោលនយោបាយឯកជនភាព','footer.terms':'លក្ខខណ្ឌនៃសេវាកម្ម','footer.contact':'ទាក់ទងតាម Telegram',
     'home.eyebrow':'បណ្ណាគារខ្មែរឌីជីថល · EST. 2026','home.title':'ហាងសៀវភៅឌីជីថល','home.lede':'ពាក្យគឺជាពណ៌នៃអាថ៌កំបាំងដួងចិត្ត។',
     'home.all.eyebrow':'បណ្តុំសៀវភៅទាំងអស់','home.all.h':'ហាងសៀវភៅឌីជីថល','home.all.sort':'តម្រៀបតាម · ថ្មីបំផុត','home.empty':'មិនទាន់មានសៀវភៅទេ',
     'detail.eyebrow':'សៀវភៅ · ឆ្នាំ ២០២៦','detail.by':'និពន្ធដោយ','detail.priceNote':'តម្លៃតែម្តង · កាន់កាប់រហូត','detail.synopsis':'ដំណើររឿងសង្ខេប',
@@ -944,7 +944,7 @@ const I18N = {
   },
   en: {
     'brand.tag':'Words Are Colors Of The Unspoken Soul.','nav.store':'Store','nav.library':'My Library','nav.login':'Sign In','nav.register':'Register','nav.logout':'Logout',
-    'footer.tag':'Digital books that bring joy to reading','footer.note':'Crafted with love from Cambodia','footer.privacy':'Privacy Policy','footer.terms':'Terms of Service','footer.contact':'Contact',
+    'footer.tag':'Digital books that bring joy to reading','footer.note':'Crafted with love from Cambodia','footer.privacy':'Privacy Policy','footer.terms':'Terms of Service','footer.contact':'Contact via Telegram',
     'home.eyebrow':'Khmer digital bookstore · EST. 2026','home.title':'Digital Book Store','home.lede':'Words Are Colors Of The Unspoken Soul.',
     'home.all.eyebrow':'All books','home.all.h':'Digital Book Store','home.all.sort':'Sorted by · Newest','home.empty':'No books yet',
     'detail.eyebrow':'Book · 2026','detail.by':'by','detail.priceNote':'One-time purchase · yours forever','detail.synopsis':'Synopsis',
@@ -1043,6 +1043,16 @@ async function loadSettings(){
 function updateTelegramBubble(){
   const link = state.settings?.telegram_group_link;
   const bubble = $('#tg-bubble');
+  const footerLink = $('#footer-contact-link');
+  if(footerLink){
+    if(link && /^https?:\/\//.test(link)){
+      footerLink.href = link;
+      footerLink.style.display = '';
+    } else {
+      // Fallback to email if Telegram link not configured
+      footerLink.href = 'mailto:semsokanha15@gmail.com';
+    }
+  }
   if(!bubble) return;
   if(link && /^https?:\/\//.test(link)){ bubble.href=link; bubble.classList.add('show'); }
   else bubble.classList.remove('show');
