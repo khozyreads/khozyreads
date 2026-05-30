@@ -1,6 +1,2 @@
-# Clean URLs for legal pages
-# Maps /privacy → privacy.html, /terms → terms.html
-# Status 200 = rewrite (URL stays clean in browser bar)
-
-/privacy   /privacy.html   200
-/terms     /terms.html     200
+# No redirects configured.
+# Legal pages are accessed directly: /privacy.html and /terms.html
