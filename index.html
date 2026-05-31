@@ -187,6 +187,31 @@ html[lang="km"] .featured-info .author{font-family:var(--font-khmer);font-style:
 .featured-info .price{margin:24px 0;font-family:var(--font-display);font-size:32px;color:var(--primary);font-weight:500}
 .featured-cta{display:flex;gap:12px;flex-wrap:wrap}
 
+.book-toolbar{margin:-12px 0 28px;display:flex;flex-direction:column;gap:16px}
+.search-wrap{position:relative;max-width:520px;width:100%}
+.search-wrap .search-ic{position:absolute;left:16px;top:50%;transform:translateY(-50%);width:18px;height:18px;color:var(--muted);pointer-events:none}
+.search-wrap input{width:100%;padding:12px 16px 12px 46px;border:1px solid var(--border-strong);background:var(--bg-elevated);color:var(--fg);font-family:inherit;font-size:15px;border-radius:24px;transition:border-color .2s,box-shadow .2s;box-sizing:border-box}
+.search-wrap input:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(123,45,38,.12)}
+.search-wrap input::placeholder{color:var(--muted);opacity:.8}
+.genre-chips{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.genre-chip{padding:6px 14px;border-radius:20px;border:1px solid var(--border-strong);background:transparent;color:var(--fg-soft);font-family:inherit;font-size:13px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.genre-chip:hover{border-color:var(--primary);color:var(--primary)}
+.genre-chip.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.book-genre-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.book-genre-tags span{font-size:10px;letter-spacing:.06em;color:var(--accent-deep);text-transform:uppercase;background:rgba(212,163,115,.18);padding:2px 7px;border-radius:8px}
+.search-empty{grid-column:1/-1;padding:60px 20px;text-align:center;color:var(--muted)}
+.detail-genres{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 4px}
+.detail-genre-link{text-decoration:none}
+.detail-genres span{font-size:11px;letter-spacing:.08em;color:var(--accent-deep);text-transform:uppercase;background:rgba(212,163,115,.18);padding:4px 11px;border-radius:12px;display:inline-block;transition:background .15s}
+.detail-genres a:hover span{background:rgba(212,163,115,.35)}
+.apply-creator-banner{margin:64px 0 24px;background:var(--bg-elevated);border:1px solid var(--border);padding:36px 40px;position:relative;overflow:hidden}
+.apply-creator-banner::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 0%,rgba(212,163,115,.08) 50%,transparent 100%);pointer-events:none}
+.acb-inner{display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap;position:relative}
+.acb-text{flex:1 1 360px}
+.acb-text h3{margin:6px 0 8px;color:var(--primary)}
+.acb-text p{color:var(--fg-soft);font-size:16px;margin:0;max-width:560px}
+.acb-inner .btn{white-space:nowrap;flex-shrink:0}
+@media (max-width:600px){.apply-creator-banner{padding:24px 22px;margin:40px 0 16px}.acb-text h3{font-size:22px}.acb-inner{gap:16px}}
 .book-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:48px 36px}
 @media (max-width:960px){.book-grid{grid-template-columns:repeat(2,1fr)}.featured{grid-template-columns:1fr;gap:32px}}
 @media (max-width:540px){.book-grid{grid-template-columns:repeat(2,1fr);gap:32px 18px}}
@@ -627,6 +652,8 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       <a href="/terms.html" data-i18n="footer.terms">Terms of Service</a>
       <span class="muted" style="margin:0 8px">·</span>
       <a id="footer-contact-link" href="#" target="_blank" rel="noopener" data-i18n="footer.contact">Contact us on Telegram</a>
+      <span class="muted" style="margin:0 8px" id="footer-apply-sep">·</span>
+      <a id="footer-apply-creator" href="#" target="_blank" rel="noopener" data-i18n="footer.applyCreator" style="display:none">Apply as Creator</a>
     </p>
     <p class="muted">© 2026 · <span data-i18n="footer.note">បង្កើតដោយក្តីស្រឡាញ់ពីខ្មែរ</span></p>
   </footer>
@@ -681,7 +708,24 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       </div>
       <div class="right"><span data-i18n="home.all.sort">តម្រៀបតាម · ថ្មីបំផុត</span></div>
     </div>
+    <div class="book-toolbar">
+      <div class="search-wrap">
+        <svg class="search-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M16 16 L21 21" stroke-linecap="round"/></svg>
+        <input type="search" id="book-search" data-i18n-placeholder="home.search" placeholder="ស្វែងរកសៀវភៅ ឬអ្នកនិពន្ធ..." autocomplete="off"/>
+      </div>
+      <div class="genre-chips" id="genre-chips"></div>
+    </div>
     <div class="book-grid" id="book-grid"></div>
+    <aside class="apply-creator-banner" id="apply-creator-banner" style="display:none">
+      <div class="acb-inner">
+        <div class="acb-text">
+          <div class="eyebrow" data-i18n="acb.eyebrow">សម្រាប់អ្នកនិពន្ធ</div>
+          <h3 class="display display-3" data-i18n="acb.title">ចង់ផ្សព្វផ្សាយសៀវភៅរបស់អ្នកនៅ KhozyReads?</h3>
+          <p data-i18n="acb.sub">ដាក់ស្នើដើម្បីក្លាយជាអ្នកនិពន្ធ ហើយចែករំលែករឿងរបស់អ្នកជាមួយអ្នកអានខ្មែរ។</p>
+        </div>
+        <a id="acb-cta" class="btn btn-primary btn-lg" href="#" target="_blank" rel="noopener" data-i18n="acb.cta">ដាក់ពាក្យជាអ្នកនិពន្ធ</a>
+      </div>
+    </aside>
   </div>
 </section>
 </template>
@@ -703,6 +747,7 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
         <span class="eyebrow" data-i18n="detail.eyebrow">ប្រលោមលោក · ឆ្នាំ ២០២៦</span>
         <h1 data-bind="title"></h1>
         <div class="author"><span data-i18n="detail.by">និពន្ធដោយ</span> <em data-bind="creator"></em></div>
+        <div class="detail-genres" data-bind="genreTags"></div>
         <div class="price-row">
           <span class="price" data-bind="price"></span>
           <span class="price-note" data-i18n="detail.priceNote">តម្លៃតែម្តង · កាន់កាប់រហូត</span>
@@ -925,9 +970,9 @@ const state = { user:null, profile:null, settings:{}, lang: localStorage.getItem
 const I18N = {
   kh: {
     'brand.tag':'ពាក្យគឺជាពណ៌នៃអាថ៌កំបាំងដួងចិត្ត។','nav.store':'ហាង','nav.library':'បណ្ណាល័យរបស់ខ្ញុំ','nav.login':'ចូល','nav.register':'ចុះឈ្មោះ','nav.logout':'ចេញ',
-    'footer.tag':'សៀវភៅឌីជីថលដែលបន្ថែមភាពរីករាយក្នុងការអាន','footer.note':'បង្កើតដោយក្តីស្រឡាញ់ពីខ្មែរ','footer.privacy':'គោលនយោបាយឯកជនភាព','footer.terms':'លក្ខខណ្ឌនៃសេវាកម្ម','footer.contact':'ទាក់ទងតាម Telegram',
+    'footer.tag':'សៀវភៅឌីជីថលដែលបន្ថែមភាពរីករាយក្នុងការអាន','footer.note':'បង្កើតដោយក្តីស្រឡាញ់ពីខ្មែរ','footer.privacy':'គោលនយោបាយឯកជនភាព','footer.terms':'លក្ខខណ្ឌនៃសេវាកម្ម','footer.contact':'ទាក់ទងតាម Telegram','footer.applyCreator':'ដាក់ពាក្យជាអ្នកនិពន្ធ','acb.eyebrow':'សម្រាប់អ្នកនិពន្ធ','acb.title':'ចង់ផ្សព្វផ្សាយសៀវភៅរបស់អ្នកនៅ KhozyReads?','acb.sub':'ដាក់ស្នើដើម្បីក្លាយជាអ្នកនិពន្ធ ហើយចែករំលែករឿងរបស់អ្នកជាមួយអ្នកអានខ្មែរ។','acb.cta':'ដាក់ពាក្យជាអ្នកនិពន្ធ',
     'home.eyebrow':'បណ្ណាគារខ្មែរឌីជីថល · EST. 2026','home.title':'ហាងសៀវភៅឌីជីថល','home.lede':'ពាក្យគឺជាពណ៌នៃអាថ៌កំបាំងដួងចិត្ត។',
-    'home.all.eyebrow':'បណ្តុំសៀវភៅទាំងអស់','home.all.h':'ហាងសៀវភៅឌីជីថល','home.all.sort':'តម្រៀបតាម · ថ្មីបំផុត','home.empty':'មិនទាន់មានសៀវភៅទេ',
+    'home.all.eyebrow':'បណ្តុំសៀវភៅទាំងអស់','home.all.h':'ហាងសៀវភៅឌីជីថល','home.all.sort':'តម្រៀបតាម · ថ្មីបំផុត','home.empty':'មិនទាន់មានសៀវភៅទេ','home.search':'ស្វែងរកសៀវភៅ ឬអ្នកនិពន្ធ...',
     'detail.eyebrow':'សៀវភៅ · ឆ្នាំ ២០២៦','detail.by':'និពន្ធដោយ','detail.priceNote':'តម្លៃតែម្តង · កាន់កាប់រហូត','detail.synopsis':'ដំណើររឿងសង្ខេប',
     'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់ការទូទាត់...','cta.pendingHint':'ចុចដើម្បីបង្ហោះវិក្កយបត្រឡើងវិញ','cta.pendingNote':'រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។ មិនអាចទិញម្តងទៀតបានទេនៅពេលនេះ។','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន',
     'lib.eyebrow':'បណ្ណាល័យផ្ទាល់ខ្លួន','lib.title':'បណ្ណាល័យរបស់ខ្ញុំ','lib.lede':'សៀវភៅទាំងអស់ដែលអ្នកបានទិញ — រួចរាល់ចាប់ផ្តើមអាន។','lib.empty':'មិនទាន់មានការទិញ','lib.empty.favs':'មិនទាន់មានសៀវភៅដែលចូលចិត្ត','lib.tab.books':'សៀវភៅរបស់ខ្ញុំ','lib.tab.favs':'ចូលចិត្ត',
@@ -944,9 +989,9 @@ const I18N = {
   },
   en: {
     'brand.tag':'Words Are Colors Of The Unspoken Soul.','nav.store':'Store','nav.library':'My Library','nav.login':'Sign In','nav.register':'Register','nav.logout':'Logout',
-    'footer.tag':'Digital books that bring joy to reading','footer.note':'Crafted with love from Cambodia','footer.privacy':'Privacy Policy','footer.terms':'Terms of Service','footer.contact':'Contact via Telegram',
+    'footer.tag':'Digital books that bring joy to reading','footer.note':'Crafted with love from Cambodia','footer.privacy':'Privacy Policy','footer.terms':'Terms of Service','footer.contact':'Contact via Telegram','footer.applyCreator':'Apply as Creator','acb.eyebrow':'For Authors & Publishers','acb.title':'Want to publish your book on KhozyReads?','acb.sub':'Apply to become a creator and share your stories with Khmer readers worldwide.','acb.cta':'Apply as Creator',
     'home.eyebrow':'Khmer digital bookstore · EST. 2026','home.title':'Digital Book Store','home.lede':'Words Are Colors Of The Unspoken Soul.',
-    'home.all.eyebrow':'All books','home.all.h':'Digital Book Store','home.all.sort':'Sorted by · Newest','home.empty':'No books yet',
+    'home.all.eyebrow':'All books','home.all.h':'Digital Book Store','home.all.sort':'Sorted by · Newest','home.empty':'No books yet','home.search':'Search books or authors...',
     'detail.eyebrow':'Book · 2026','detail.by':'by','detail.priceNote':'One-time purchase · yours forever','detail.synopsis':'Synopsis',
     'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Verifying payment...','cta.pendingHint':'Click to re-upload your payment proof','cta.pendingNote':'Waiting for admin verification. You cannot buy again right now.','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled','cta.readFree':'Read for Free','cta.loginToRead':'Login to Read',
     'lib.eyebrow':'Personal library','lib.title':'My Library','lib.lede':'All books you own — ready to read.','lib.empty':'No purchases yet','lib.empty.favs':'No favorites yet','lib.tab.books':'My Books','lib.tab.favs':'Favorites',
@@ -1039,6 +1084,7 @@ async function loadSettings(){
   state.settings = Object.fromEntries((data||[]).map(r=>[r.setting_key,r.setting_value]));
   updateTelegramBubble();
   updateFacebookBubble();
+  updateApplyCreatorLinks();
 }
 function updateTelegramBubble(){
   const link = state.settings?.telegram_group_link;
@@ -1063,6 +1109,24 @@ function updateFacebookBubble(){
   if(!bubble) return;
   if(link && /^https?:\/\//.test(link)){ bubble.href=link; bubble.classList.add('show'); }
   else bubble.classList.remove('show');
+}
+function updateApplyCreatorLinks(){
+  const link = state.settings?.apply_creator_link;
+  const valid = link && /^https?:\/\//.test(link);
+  // Homepage banner
+  const banner = $('#apply-creator-banner');
+  const cta = $('#acb-cta');
+  if(banner && cta){
+    if(valid){ cta.href = link; banner.style.display = ''; }
+    else banner.style.display = 'none';
+  }
+  // Footer link
+  const footerA = $('#footer-apply-creator');
+  const footerSep = $('#footer-apply-sep');
+  if(footerA){
+    if(valid){ footerA.href = link; footerA.style.display = ''; if(footerSep) footerSep.style.display = ''; }
+    else { footerA.style.display = 'none'; if(footerSep) footerSep.style.display = 'none'; }
+  }
 }
 
 /* ========== Lang ========== */
@@ -1105,7 +1169,7 @@ function route(){
   resetPageMeta();
   const handlers = {'':renderHome, 'home':renderHome, 'book':renderBookDetail, 'library':renderLibrary, 'login':renderLogin, 'register':renderRegister, 'payment':renderPayment, 'read':renderReader};
   const h = handlers[r.name] || renderHome;
-  Promise.resolve(h(r.id, isStale)).catch(err=>{ if(isStale()) return; console.error(err); $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(err.message||String(err))}</div>`; }).finally(()=>{ if(_spinnerTimer){clearTimeout(_spinnerTimer);_spinnerTimer=null;} updateTelegramBubble(); updateFacebookBubble(); window.scrollTo(0,0); });
+  Promise.resolve(h(r.id, isStale)).catch(err=>{ if(isStale()) return; console.error(err); $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(err.message||String(err))}</div>`; }).finally(()=>{ if(_spinnerTimer){clearTimeout(_spinnerTimer);_spinnerTimer=null;} updateTelegramBubble(); updateFacebookBubble(); updateApplyCreatorLinks(); window.scrollTo(0,0); });
 }
 window.addEventListener('hashchange', route);
 
@@ -1136,35 +1200,94 @@ function wireFavButtons(scope){
 
 async function renderHome(){
   const [{ data:books, error }, favIds] = await Promise.all([
-    sb.from('books').select('id,title,creator,price,currency,cover_url,is_buy_enabled,is_free').eq('status','active').order('created_at',{ascending:false}),
+    sb.from('books').select('id,title,creator,synopsis,price,currency,cover_url,is_buy_enabled,is_free,genre').eq('status','active').order('created_at',{ascending:false}),
     loadFavoriteIds()
   ]);
   if(error) throw error;
   showTemplate('tpl-home');
   const grid = $('#book-grid');
+  const searchInput = $('#book-search');
+  const chipsBox = $('#genre-chips');
+
   if(!books||!books.length){ grid.innerHTML=`<div style="grid-column:1/-1" class="empty muted center">${esc(t('home.empty'))}</div>`; return; }
-  grid.innerHTML = books.map((b, i)=>{
-    // First 3 covers are above the fold → eager load + high priority for LCP.
-    // Rest are lazy-loaded.
-    const isAboveFold = i < 3;
-    const imgAttrs = isAboveFold
-      ? `loading="eager" fetchpriority="high"`
-      : `loading="lazy" decoding="async"`;
-    return `
-    <a class="book-card" href="#/book/${b.id}">
-      ${state.profile ? favBtnHtml(b.id, favIds.has(b.id)) : ''}
-      <div class="book-cover" style="background:${b.cover_url?'var(--bg-deep)':pickColor(b.id)}">
-        ${b.cover_url ? `<img src="${esc(b.cover_url)}" alt="${esc(b.title)}" width="242" height="322" ${imgAttrs}/>` : `<div class="placeholder">COVER</div><svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}
-        ${b.is_free ? `<span class="free-badge">${state.lang==='kh'?'🎁 ឥតគិតថ្លៃ':'🎁 FREE'}</span>` : ''}
-      </div>
-      <div class="book-meta">
-        <h3 class="book-title">${esc(b.title)}</h3>
-        <p class="book-author">${esc(b.creator||'-')}</p>
-        <span class="book-price">${b.is_free ? (state.lang==='kh'?'ឥតគិតថ្លៃ':'Free') : fmtMoney(b.price,b.currency)}</span>
-      </div>
-    </a>
-  `;}).join('');
-  wireFavButtons(grid);
+
+  // Build unique genre list (case-insensitive dedupe, preserve original case)
+  const genreMap = new Map();
+  books.forEach(b => (b.genre||[]).forEach(g => {
+    const k = String(g).trim().toLowerCase();
+    if(k && !genreMap.has(k)) genreMap.set(k, String(g).trim());
+  }));
+  const allGenres = [...genreMap.values()].sort((a,b)=>a.localeCompare(b));
+
+  // UI state — read initial genre filter from URL (e.g. #/?genre=Romance)
+  const hashQuery = (location.hash.split('?')[1]||'');
+  const urlGenre = new URLSearchParams(hashQuery).get('genre');
+  let activeGenre = urlGenre || null;
+  let searchQuery = '';
+
+  function renderChips(){
+    const chips = [`<button class="genre-chip ${activeGenre===null?'active':''}" data-genre="">${state.lang==='kh'?'ទាំងអស់':'All'}</button>`]
+      .concat(allGenres.map(g=>`<button class="genre-chip ${activeGenre===g?'active':''}" data-genre="${esc(g)}">${esc(g)}</button>`));
+    chipsBox.innerHTML = chips.join('');
+    chipsBox.querySelectorAll('.genre-chip').forEach(c=>c.onclick = ()=>{
+      activeGenre = c.dataset.genre || null;
+      renderChips();
+      renderGrid();
+    });
+  }
+
+  function renderGrid(){
+    const q = searchQuery.trim().toLowerCase();
+    const filtered = books.filter(b=>{
+      if(activeGenre){
+        const has = (b.genre||[]).some(g => String(g).toLowerCase() === activeGenre.toLowerCase());
+        if(!has) return false;
+      }
+      if(q){
+        const haystack = [b.title, b.creator, b.synopsis].filter(Boolean).join(' ').toLowerCase();
+        if(!haystack.includes(q)) return false;
+      }
+      return true;
+    });
+
+    if(!filtered.length){
+      grid.innerHTML = `<div class="search-empty">${q?(state.lang==='kh'?`រកមិនឃើញសម្រាប់ "<strong>${esc(searchQuery)}</strong>"`:`No results for "<strong>${esc(searchQuery)}</strong>"`):esc(t('home.empty'))}</div>`;
+      return;
+    }
+
+    grid.innerHTML = filtered.map((b, i)=>{
+      const isAboveFold = i < 3;
+      const imgAttrs = isAboveFold ? `loading="eager" fetchpriority="high"` : `loading="lazy" decoding="async"`;
+      const genreTags = (b.genre||[]).slice(0,3).map(g=>`<span>${esc(g)}</span>`).join('');
+      return `
+      <a class="book-card" href="#/book/${b.id}">
+        ${state.profile ? favBtnHtml(b.id, favIds.has(b.id)) : ''}
+        <div class="book-cover" style="background:${b.cover_url?'var(--bg-deep)':pickColor(b.id)}">
+          ${b.cover_url ? `<img src="${esc(b.cover_url)}" alt="${esc(b.title)}" width="242" height="322" ${imgAttrs}/>` : `<div class="placeholder">COVER</div><svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}
+          ${b.is_free ? `<span class="free-badge">${state.lang==='kh'?'🎁 ឥតគិតថ្លៃ':'🎁 FREE'}</span>` : ''}
+        </div>
+        <div class="book-meta">
+          <h3 class="book-title">${esc(b.title)}</h3>
+          <p class="book-author">${esc(b.creator||'-')}</p>
+          ${genreTags?`<div class="book-genre-tags">${genreTags}</div>`:''}
+          <span class="book-price">${b.is_free ? (state.lang==='kh'?'ឥតគិតថ្លៃ':'Free') : fmtMoney(b.price,b.currency)}</span>
+        </div>
+      </a>`;
+    }).join('');
+    wireFavButtons(grid);
+  }
+
+  // Debounce search (gak ngeguya rerender tiap keystroke)
+  let searchT = null;
+  searchInput.addEventListener('input', e=>{
+    searchQuery = e.target.value;
+    clearTimeout(searchT);
+    searchT = setTimeout(renderGrid, 150);
+  });
+
+  // Only show chips if there are any genres set
+  if(allGenres.length) renderChips();
+  renderGrid();
 }
 
 async function renderBookDetail(id){
@@ -1195,6 +1318,14 @@ async function renderBookDetail(id){
   bindData(scope,'creator',book.creator||'-');
   bindData(scope,'price',fmtMoney(book.price,book.currency));
   bindData(scope,'synopsis',book.synopsis||'');
+  // Render genre tags in detail page (if any)
+  const genreSlot = scope.querySelector('[data-bind="genreTags"]');
+  if(genreSlot){
+    const tags = (book.genre||[]);
+    genreSlot.innerHTML = tags.length
+      ? tags.map(g=>`<a class="detail-genre-link" href="#/?genre=${encodeURIComponent(g)}"><span>${esc(g)}</span></a>`).join('')
+      : '';
+  }
   const cover = scope.querySelector('[data-bind="cover"]');
   if(book.cover_url){ cover.innerHTML = `<img src="${esc(book.cover_url)}" alt=""/>`; }
   else { cover.style.background = pickColor(book.id); cover.innerHTML = `<svg style="position:absolute;width:54px;height:54px;top:14px;left:14px;color:var(--accent);opacity:.9"><use href="#orn-corner"/></svg><svg style="position:absolute;width:54px;height:54px;bottom:14px;right:14px;color:var(--accent);opacity:.9;transform:rotate(180deg)"><use href="#orn-corner"/></svg>`; }

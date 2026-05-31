@@ -399,6 +399,13 @@ details.row-details .detail-body{margin-top:8px;padding:12px;background:var(--bg
         <div class="field"><label>Facebook page URL</label><input class="input" name="facebook_page_url" type="url" placeholder="https://facebook.com/your-page"/></div>
       </div>
     </div>
+    <div class="form-section">
+      <h3>Creator Application</h3>
+      <p class="section-desc">Where authors / publishers go when they click "Apply as Creator". Usually a Telegram contact.</p>
+      <div class="form-grid">
+        <div class="field"><label>Apply Creator URL</label><input class="input" name="apply_creator_link" type="url" placeholder="https://t.me/yourbot or your Telegram contact"/></div>
+      </div>
+    </div>
   </form>
 </section>
 </template>
@@ -567,7 +574,10 @@ async function renderBooks(){
   const active = (books||[]).filter(b=>b.status==='active').length;
   const archived = (books||[]).filter(b=>b.status==='archived').length;
   $('#books-meta').textContent = `${active} active · ${archived} archived`;
-  $('#books-body').innerHTML = (books||[]).map(b=>`<tr><td><div class="thumb">${b.cover_url?`<img src="${esc(b.cover_url)}"/>`:''}</div></td><td><div class="cell-title">${esc(b.title)} ${b.is_free?`<span class="badge b-info" style="margin-left:6px">🎁 FREE</span>`:''}</div><div style="font-size:12px;color:var(--muted);margin-top:4px">${b.pdf_path?`<span class="tag">📄 PDF uploaded</span>`:`<span class="tag" style="color:var(--danger)">⚠ No PDF</span>`}</div></td><td>${esc(b.creator||'-')}</td><td>${b.is_free?'<span style="color:var(--accent-deep);font-weight:600">FREE</span>':fmtMoney(b.price,b.currency)}</td><td>${b.is_buy_enabled?'<span style="color:var(--success)">✓ Enabled</span>':'<span class="muted">— Disabled</span>'}</td><td><span class="badge b-${b.status==='active'?'active':'archived'}"><span class="dot"></span>${esc(b.status)}</span></td><td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" data-edit="${b.id}">Edit</button><button class="btn btn-ghost btn-sm" data-archive="${b.id}">${b.status==='active'?'Archive':'Restore'}</button></div></td></tr>`).join('') || `<tr><td colspan="7" class="empty">No books yet</td></tr>`;
+  $('#books-body').innerHTML = (books||[]).map(b=>{
+    const genreTags = (b.genre||[]).slice(0,4).map(g=>`<span class="tag" style="background:rgba(212,163,115,.18);color:var(--accent-deep);padding:2px 8px;border-radius:10px;font-size:11px;margin-right:4px">${esc(g)}</span>`).join('');
+    return `<tr><td><div class="thumb">${b.cover_url?`<img src="${esc(b.cover_url)}"/>`:''}</div></td><td><div class="cell-title">${esc(b.title)} ${b.is_free?`<span class="badge b-info" style="margin-left:6px">🎁 FREE</span>`:''}</div><div style="font-size:12px;color:var(--muted);margin-top:4px">${b.pdf_path?`<span class="tag">📄 PDF uploaded</span>`:`<span class="tag" style="color:var(--danger)">⚠ No PDF</span>`}</div>${genreTags?`<div style="margin-top:6px">${genreTags}</div>`:''}</td><td>${esc(b.creator||'-')}</td><td>${b.is_free?'<span style="color:var(--accent-deep);font-weight:600">FREE</span>':fmtMoney(b.price,b.currency)}</td><td>${b.is_buy_enabled?'<span style="color:var(--success)">✓ Enabled</span>':'<span class="muted">— Disabled</span>'}</td><td><span class="badge b-${b.status==='active'?'active':'archived'}"><span class="dot"></span>${esc(b.status)}</span></td><td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" data-edit="${b.id}">Edit</button><button class="btn btn-ghost btn-sm" data-archive="${b.id}">${b.status==='active'?'Archive':'Restore'}</button></div></td></tr>`;
+  }).join('') || `<tr><td colspan="7" class="empty">No books yet</td></tr>`;
   $('#new-book-btn').onclick = ()=>openBookForm(null);
   $$('[data-edit]').forEach(b=>b.onclick=()=>openBookForm(b.dataset.edit));
   $$('[data-archive]').forEach(b=>b.onclick=async ()=>{
@@ -588,6 +598,7 @@ async function openBookForm(id){
       <div class="field"><label>Title *</label><input class="input" name="title" value="${esc(book.title)}" required/></div>
       <div class="field"><label>Creator</label><input class="input" name="creator" value="${esc(book.creator||'')}"/></div>
       <div class="field"><label>Synopsis</label><textarea class="input" name="synopsis">${esc(book.synopsis||'')}</textarea></div>
+      <div class="field"><label>Genre (comma-separated)</label><input class="input" name="genre" value="${esc((book.genre||[]).join(', '))}" placeholder="Romance, Drama, Historical"/><div class="hint muted" style="font-size:12px;margin-top:4px">Multiple genres dipisah pakai koma. Contoh: <em>Romance, Historical, Drama</em></div></div>
       <div class="form-grid">
         <div class="field"><label>Price *</label><input class="input" name="price" type="number" step="0.01" min="0" value="${book.price||0}" required/></div>
         <div class="field"><label>Currency</label><select class="input" name="currency"><option ${book.currency==='USD'?'selected':''}>USD</option><option ${book.currency==='KHR'?'selected':''}>KHR</option></select></div>
@@ -609,7 +620,16 @@ async function openBookForm(id){
     const fd = new FormData(e.target);
     const btn = e.target.querySelector('button[type=submit]'); btn.disabled=true;
     try{
-      const payload = { title:fd.get('title').trim(), creator:fd.get('creator').trim()||null, synopsis:fd.get('synopsis').trim()||null, price:Number(fd.get('price')), currency:fd.get('currency'), is_buy_enabled:!!fd.get('buy_enabled'), is_free:!!fd.get('is_free'), buy_disabled_remark:fd.get('remark').trim()||null, status:book.status||'active' };
+      // Parse genre input: "Romance, Drama, Historical" → ['Romance','Drama','Historical']
+      // Strip empties + dedupe (case-insensitive)
+      const genreRaw = (fd.get('genre')||'').toString();
+      const genreSet = new Set();
+      const genreArr = [];
+      genreRaw.split(',').map(s=>s.trim()).filter(Boolean).forEach(g=>{
+        const k = g.toLowerCase();
+        if(!genreSet.has(k)){ genreSet.add(k); genreArr.push(g); }
+      });
+      const payload = { title:fd.get('title').trim(), creator:fd.get('creator').trim()||null, synopsis:fd.get('synopsis').trim()||null, genre:genreArr, price:Number(fd.get('price')), currency:fd.get('currency'), is_buy_enabled:!!fd.get('buy_enabled'), is_free:!!fd.get('is_free'), buy_disabled_remark:fd.get('remark').trim()||null, status:book.status||'active' };
       let bookId = id;
       if(!bookId){ const {data,error} = await sb.from('books').insert(payload).select('id').single(); if(error) throw error; bookId = data.id; }
       else { const {error} = await sb.from('books').update(payload).eq('id',bookId); if(error) throw error; }
@@ -888,7 +908,7 @@ async function renderSettings(){
   showTemplate('tpl-settings');
   const form = $('#settings-form');
   // populate fields
-  ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text','facebook_page_url'].forEach(k=>{
+  ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text','facebook_page_url','apply_creator_link'].forEach(k=>{
     const el = form.elements[k]; if(el!=null) el.value = map[k]||'';
   });
   // QR preview
@@ -911,7 +931,7 @@ async function renderSettings(){
         if(error) throw error;
         await sb.from('site_settings').upsert({setting_key:'aba_qr_path',setting_value:path}, {onConflict:'setting_key'});
       }
-      const keys = ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text','facebook_page_url'];
+      const keys = ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text','facebook_page_url','apply_creator_link'];
       const updates = keys.map(k=>({setting_key:k,setting_value:String(fd.get(k)||'')}));
       const tok = fd.get('telegram_bot_token');
       if(tok && String(tok).trim()) updates.push({setting_key:'telegram_bot_token',setting_value:String(tok).trim()});
