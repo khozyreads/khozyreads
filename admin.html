@@ -514,31 +514,21 @@ async function extractAndUploadPages(pdfFile, bookId, onProgress){
     const blob = await new Promise(r => canvas.toBlob(r, 'image/webp', 0.80));
     if(!blob) throw new Error(`Failed to encode page ${pageNum}`);
 
-    // Get signed PUT URL from edge function
-    const signRes = await fetch(`${CFG.SUPABASE_URL}/functions/v1/r2-sign-upload`, {
+    // Upload blob directly through edge function (server-to-server to R2, no browser CORS)
+    const uploadRes = await fetch(`${CFG.SUPABASE_URL}/functions/v1/r2-sign-upload?book_id=${encodeURIComponent(bookId)}&page_num=${pageNum}`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${jwt}`,
         'apikey': CFG.SUPABASE_ANON_KEY,
-        'Content-Type': 'application/json',
+        'Content-Type': 'image/webp',
       },
-      body: JSON.stringify({ book_id: bookId, page_num: pageNum, content_type: 'image/webp' }),
-    });
-    if(!signRes.ok){
-      const errTxt = await signRes.text();
-      throw new Error(`Sign URL failed for page ${pageNum}: ${errTxt}`);
-    }
-    const { upload_url, object_key } = await signRes.json();
-
-    // PUT blob directly to R2
-    const putRes = await fetch(upload_url, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'image/webp' },
       body: blob,
     });
-    if(!putRes.ok){
-      throw new Error(`R2 upload failed for page ${pageNum}: ${putRes.status}`);
+    if(!uploadRes.ok){
+      const errTxt = await uploadRes.text();
+      throw new Error(`Upload failed for page ${pageNum}: ${errTxt}`);
     }
+    const { object_key } = await uploadRes.json();
 
     // Insert row in book_pages
     const { error: insErr } = await sb.from('book_pages').insert({

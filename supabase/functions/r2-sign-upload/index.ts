@@ -1,13 +1,18 @@
 // ============================================================
-// Edge Function: r2-sign-upload
+// Edge Function: r2-sign-upload  (now a server-side proxy)
 // ============================================================
-// Returns a short-lived presigned PUT URL so the browser can upload
-// a single page image straight to Cloudflare R2 without proxying
-// the file through Supabase (which would hit edge function limits).
+// Receives an image blob from the browser and uploads it to
+// Cloudflare R2 server-side. This bypasses browser CORS entirely
+// because the browser only talks to Supabase (which it already
+// trusts), and the edge function talks to R2 server-to-server.
 //
 // Auth: caller must be an admin (verified via Supabase JWT).
-// Input: { book_id: uuid, page_num: integer, content_type: string }
-// Output: { upload_url: string, object_key: string, public_url: string }
+//
+// Input:
+//   - Query params: ?book_id=<uuid>&page_num=<int>
+//   - Body: raw blob (Content-Type: image/webp)
+//
+// Output: { success: true, object_key: "<path>" }
 // ============================================================
 
 import { AwsClient } from "https://esm.sh/aws4fetch@1.0.20";
@@ -23,16 +28,27 @@ Deno.serve(async (req) => {
 
   try {
     // ---- Env ----
-    const accountId = Deno.env.get("R2_ACCOUNT_ID");
+    const accountIdRaw = Deno.env.get("R2_ACCOUNT_ID") || "";
     const accessKey = Deno.env.get("R2_ACCESS_KEY_ID");
     const secretKey = Deno.env.get("R2_SECRET_ACCESS_KEY");
     const bucket = Deno.env.get("R2_BUCKET");
-    const publicBase = Deno.env.get("R2_PUBLIC_URL");
     const supabaseUrl = Deno.env.get("SUPABASE_URL");
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
 
-    if (!accountId || !accessKey || !secretKey || !bucket || !publicBase) {
-      return json({ error: "R2 secrets not configured" }, 500);
+    // Defensive: extract just the account ID hex even if user set the full
+    // endpoint URL (e.g. "https://abc123.r2.cloudflarestorage.com") as the secret.
+    const accountId = accountIdRaw
+      .replace(/^https?:\/\//, "")
+      .replace(/\.r2\.cloudflarestorage\.com.*$/, "")
+      .replace(/\/.*$/, "")
+      .trim();
+
+    if (!accountId || !accessKey || !secretKey || !bucket) {
+      return json({ error: "R2 secrets not configured (need R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET)", account_id_seen: accountId ? "<set>" : "<empty>" }, 500);
+    }
+    // Sanity check: account ID should be 32-char hex
+    if (!/^[a-f0-9]{32}$/i.test(accountId)) {
+      return json({ error: `R2_ACCOUNT_ID looks malformed (parsed as "${accountId}"). It should be a 32-char hex string, not the full URL.` }, 500);
     }
     if (!supabaseUrl || !supabaseAnonKey) {
       return json({ error: "Supabase env missing" }, 500);
@@ -45,7 +61,7 @@ Deno.serve(async (req) => {
     }
     const userJwt = authHeader.slice(7);
 
-    // Verify admin role using Supabase's auth + RLS-protected RPC
+    // Verify admin role using Supabase's auth + is_admin RPC
     const adminCheckRes = await fetch(`${supabaseUrl}/rest/v1/rpc/is_admin`, {
       method: "POST",
       headers: {
@@ -58,57 +74,68 @@ Deno.serve(async (req) => {
     if (!adminCheckRes.ok) {
       const txt = await adminCheckRes.text();
       console.error("is_admin check failed:", txt);
-      return json({ error: "Could not verify admin" }, 401);
+      return json({ error: "Could not verify admin", details: txt }, 401);
     }
     const isAdmin = await adminCheckRes.json();
     if (isAdmin !== true) {
       return json({ error: "Admin only" }, 403);
     }
 
-    // ---- Parse body ----
-    const body = await req.json().catch(() => null) as
-      | { book_id?: string; page_num?: number; content_type?: string }
-      | null;
-    if (!body || !body.book_id || !body.page_num) {
-      return json({ error: "book_id and page_num required" }, 400);
+    // ---- Parse query params ----
+    const url = new URL(req.url);
+    const bookId = url.searchParams.get("book_id");
+    const pageNumStr = url.searchParams.get("page_num");
+    if (!bookId || !pageNumStr) {
+      return json({ error: "book_id and page_num query params required" }, 400);
     }
-    if (!/^[0-9a-fA-F-]{36}$/.test(body.book_id)) {
+    if (!/^[0-9a-fA-F-]{36}$/.test(bookId)) {
       return json({ error: "Invalid book_id format" }, 400);
     }
-    if (!Number.isInteger(body.page_num) || body.page_num < 1 || body.page_num > 5000) {
+    const pageNum = parseInt(pageNumStr, 10);
+    if (!Number.isInteger(pageNum) || pageNum < 1 || pageNum > 5000) {
       return json({ error: "page_num must be 1..5000" }, 400);
     }
-    const contentType = body.content_type || "image/webp";
+
+    // ---- Get blob from body ----
+    const contentType = req.headers.get("Content-Type") || "image/webp";
     if (!/^image\/(webp|png|jpeg)$/.test(contentType)) {
-      return json({ error: "Unsupported content_type" }, 400);
+      return json({ error: "Unsupported Content-Type, must be image/webp/png/jpeg" }, 400);
+    }
+    const blobBytes = new Uint8Array(await req.arrayBuffer());
+    if (blobBytes.length === 0) {
+      return json({ error: "Empty body" }, 400);
+    }
+    if (blobBytes.length > 5_000_000) {
+      return json({ error: "Page image too large (>5MB)" }, 400);
     }
 
-    // ---- Build object key (zero-padded page number for natural sort) ----
-    const objectKey = `${body.book_id}/page-${String(body.page_num).padStart(4, "0")}.webp`;
+    // ---- Build object key (zero-padded for natural sort) ----
+    const objectKey = `${bookId}/page-${String(pageNum).padStart(4, "0")}.webp`;
     const r2Endpoint = `https://${accountId}.r2.cloudflarestorage.com/${bucket}/${objectKey}`;
 
-    // ---- Sign a 15-minute PUT URL ----
+    // ---- Upload to R2 (server-to-server, no browser CORS) ----
     const aws = new AwsClient({
       accessKeyId: accessKey,
       secretAccessKey: secretKey,
       service: "s3",
       region: "auto",
     });
-    const signedReq = await aws.sign(
-      new Request(r2Endpoint, {
-        method: "PUT",
-        headers: { "Content-Type": contentType },
-      }),
-      { aws: { signQuery: true } }
-    );
+    const uploadRes = await aws.fetch(r2Endpoint, {
+      method: "PUT",
+      headers: { "Content-Type": contentType },
+      body: blobBytes,
+    });
 
-    const publicUrl = `${publicBase.replace(/\/$/, "")}/${objectKey}`;
+    if (!uploadRes.ok) {
+      const errText = await uploadRes.text();
+      console.error("R2 upload failed:", uploadRes.status, errText);
+      return json({ error: "R2 upload failed", status: uploadRes.status, details: errText }, 500);
+    }
 
     return json({
-      upload_url: signedReq.url,
+      success: true,
       object_key: objectKey,
-      public_url: publicUrl,
-      content_type: contentType,
+      byte_size: blobBytes.length,
     });
   } catch (err) {
     console.error("Unhandled error:", err);
