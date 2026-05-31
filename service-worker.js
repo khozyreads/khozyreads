@@ -2,7 +2,7 @@
 // Strategy: network-first (fresh content), fallback to cache when offline.
 // Bump CACHE_VERSION whenever you deploy a major change.
 
-const CACHE_VERSION = 'khozy-v1';
+const CACHE_VERSION = 'khozy-v2-reader';
 const CORE_ASSETS = [
   '/',
   '/index.html',
