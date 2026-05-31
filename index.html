@@ -341,8 +341,9 @@ html[lang="km"] .reader-title{font-family:var(--font-khmer);font-weight:600;font
 .ir-btn:hover{background:rgba(255,255,255,.16)}
 .ir-title{font-family:var(--font-display),'Cormorant Garamond',serif;font-size:17px;letter-spacing:.01em;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ir-spacer{width:38px;flex-shrink:0}
-.ir-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:pan-y pinch-zoom}
-#ir-image{max-width:100%;max-height:100%;object-fit:contain;display:block;transition:opacity .25s;pointer-events:none;-webkit-user-drag:none;user-drag:none}
+.ir-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:pan-y pinch-zoom;width:100%;min-height:0}
+#ir-image{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block;transition:opacity .25s;pointer-events:none;-webkit-user-drag:none;user-drag:none;background:transparent}
+#ir-image:not([src]){opacity:0}
 #ir-image.loading{opacity:.3}
 .ir-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .2s;color:var(--accent)}
 .ir-loading.show{opacity:1}
@@ -1745,29 +1746,52 @@ async function initImageReader(book, pages){
     });
   }
 
+  let loadTimeout = null;
   function renderPage(num, animateDir){
     if(num < 1 || num > total) return;
     current = num;
     counter.textContent = `${num} / ${total}`;
     fill.style.width = (num/total*100) + '%';
+    const newSrc = pageUrl(num);
+    if(!newSrc){
+      console.error('No page URL for', num);
+      return;
+    }
+
+    // Show loading indicator while img loads
     img.classList.add('loading');
     loading.classList.add('show');
-    const newSrc = pageUrl(num);
-    const tmp = new Image();
-    tmp.decoding = 'async';
-    tmp.onload = () => {
-      img.src = newSrc;
+
+    // Safety: hide loading after 12s even if onload never fires
+    clearTimeout(loadTimeout);
+    loadTimeout = setTimeout(()=>{
+      img.classList.remove('loading');
+      loading.classList.remove('show');
+      console.warn('Page load timeout for', num, newSrc);
+    }, 12000);
+
+    // Set img src directly + listen on img itself (more reliable on mobile)
+    img.onload = () => {
+      clearTimeout(loadTimeout);
       img.classList.remove('loading');
       loading.classList.remove('show');
       // Preload next & previous pages for smooth nav
       preload(num+1); preload(num+2); preload(num-1);
     };
-    tmp.onerror = () => {
+    img.onerror = (e) => {
+      clearTimeout(loadTimeout);
       img.classList.remove('loading');
       loading.classList.remove('show');
-      console.error('Failed to load page', num, newSrc);
+      console.error('Failed to load page', num, newSrc, e);
     };
-    tmp.src = newSrc;
+
+    // Edge case: if src is same URL, onload won't fire. Force re-trigger.
+    if(img.src === newSrc){
+      img.onload();
+    } else {
+      img.src = newSrc;
+    }
+
     showUiTransiently();
   }
 
