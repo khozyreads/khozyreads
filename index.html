@@ -347,7 +347,7 @@ html[lang="km"] .reader-title{font-family:var(--font-khmer);font-weight:600;font
 .ir-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .2s;color:var(--accent)}
 .ir-loading.show{opacity:1}
 .ir-watermark{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3;mix-blend-mode:difference}
-.ir-watermark::before{content:attr(data-text);position:absolute;inset:-15% -15%;transform:rotate(-18deg);font-size:14px;letter-spacing:.32em;color:rgba(180,180,180,.55);font-family:monospace;white-space:nowrap;word-spacing:50px;line-height:88px;font-weight:600}
+.ir-watermark::before{content:attr(data-text);position:absolute;inset:-40% -40%;transform:rotate(-22deg);transform-origin:center;font-size:13px;letter-spacing:.28em;color:rgba(170,170,170,.6);font-family:monospace;white-space:pre;word-spacing:24px;line-height:70px;font-weight:600;text-align:center}
 .ir-tap-zone{position:absolute;top:0;bottom:0;background:transparent;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .ir-tap-left{left:0;width:30%}
 .ir-tap-right{right:0;width:30%}
@@ -1827,10 +1827,15 @@ async function initImageReader(book, pages){
 
   // Watermark — includes username + user_id + book_id + timestamp + page for forensic ID.
   // Re-bake on every page change so each leak shows when it happened.
+  // Multi-line grid: each line repeats horizontally, stacked vertically, rotated diagonally.
   function refreshWatermark(pageNum){
     const ts = new Date().toLocaleString();
-    const wmText = `KhozyReads · @${state.profile.username} · ${state.profile.id.slice(0,8)} · ${book.id.slice(0,8)} · p${pageNum} · ${ts}  `;
-    watermark.setAttribute('data-text', wmText.repeat(80));
+    const wmText = `KhozyReads · @${state.profile.username} · ${state.profile.id.slice(0,8)} · ${book.id.slice(0,8)} · p${pageNum} · ${ts}`;
+    // 1 horizontal line ≈ wmText × 8 to span width even when rotated
+    // Then stack 30 lines vertically to cover height (line-height:70px ≈ 2100px tall)
+    const line = (wmText + '   ').repeat(8);
+    const grid = Array(30).fill(line).join('\n');
+    watermark.setAttribute('data-text', grid);
   }
   refreshWatermark(1);
 
