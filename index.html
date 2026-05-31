@@ -354,9 +354,31 @@ html[lang="km"] .reader-title{font-family:var(--font-khmer);font-weight:600;font
 .ir-tap-center{left:30%;right:30%}
 .ir-bottombar{position:absolute;bottom:0;left:0;right:0;padding:16px 24px 24px;background:linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 100%);z-index:5;transition:opacity .3s,transform .3s;color:#e8d9b5}
 .ir-bottombar.hidden{opacity:0;transform:translateY(100%);pointer-events:none}
-.ir-page-counter{display:block;text-align:center;font-family:var(--font-display),'Cormorant Garamond',serif;font-size:15px;letter-spacing:.08em;margin-bottom:10px;color:#e8d9b5}
-.ir-progress-bar{width:100%;max-width:520px;margin:0 auto;height:3px;background:rgba(255,255,255,.12);border-radius:2px;overflow:hidden}
-#ir-progress-fill{height:100%;background:var(--accent);transition:width .25s;width:0%}
+.ir-page-counter{display:block;margin:0 auto 10px;background:transparent;border:0;text-align:center;font-family:var(--font-display),'Cormorant Garamond',serif;font-size:15px;letter-spacing:.08em;color:#e8d9b5;cursor:pointer;padding:4px 14px;border-radius:14px;transition:background .15s}
+.ir-page-counter:hover{background:rgba(255,255,255,.08)}
+.ir-progress-bar{position:relative;width:100%;max-width:520px;margin:0 auto;height:18px;display:flex;align-items:center}
+.ir-progress-bar::before{content:'';position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);height:3px;background:rgba(255,255,255,.12);border-radius:2px}
+#ir-progress-fill{position:absolute;left:0;top:50%;transform:translateY(-50%);height:3px;background:var(--accent);transition:width .25s;width:0%;border-radius:2px;pointer-events:none}
+.ir-page-slider{position:absolute;left:0;right:0;top:0;width:100%;height:100%;margin:0;background:transparent;appearance:none;-webkit-appearance:none;cursor:pointer;opacity:0}
+.ir-page-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--accent);cursor:pointer}
+.ir-page-slider::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--accent);border:0;cursor:pointer}
+.ir-progress-bar:hover .ir-page-slider,.ir-progress-bar:focus-within .ir-page-slider{opacity:1}
+/* Jump modal */
+.ir-jump-modal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);padding:20px}
+.ir-jump-box{background:#1a1410;border:1px solid rgba(232,217,181,.18);border-radius:14px;padding:24px 22px;max-width:340px;width:100%;box-shadow:0 18px 40px rgba(0,0,0,.5);text-align:center}
+.ir-jump-label{display:block;font-family:var(--font-display),'Cormorant Garamond',serif;font-size:17px;color:#e8d9b5;margin-bottom:14px;letter-spacing:.04em}
+.ir-jump-input{width:100%;background:#0a0807;color:#e8d9b5;border:1px solid rgba(232,217,181,.25);padding:11px 14px;border-radius:8px;font-size:18px;text-align:center;outline:0;font-family:inherit;letter-spacing:.04em}
+.ir-jump-input:focus{border-color:var(--accent)}
+.ir-jump-hint{margin-top:8px;color:rgba(232,217,181,.55);font-size:13px}
+.ir-jump-actions{margin-top:18px;display:flex;gap:10px}
+.ir-jump-btn{flex:1;padding:10px;border-radius:8px;font-weight:600;cursor:pointer;font-size:14px;border:0;transition:opacity .15s}
+.ir-jump-btn:hover{opacity:.85}
+.ir-jump-cancel{background:rgba(255,255,255,.08);color:#e8d9b5}
+.ir-jump-go{background:var(--accent);color:#0a0807}
+/* Reader blurred state (visibility/focus protection) */
+#ir-frame.blurred .ir-stage{filter:blur(24px)}
+/* Body.reading reinforces no-select on the whole reader */
+body.reading #ir-frame,body.reading #ir-frame *{user-select:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none}
 @media (max-width:600px){.ir-title{font-size:15px}.ir-bottombar{padding:14px 16px 20px}.ir-page-counter{font-size:13px}.ir-topbar{padding:12px 14px}}
 #reader-canvas-wrap.blurred{filter:blur(20px)}
 .reader-page{width:min(880px,100%);background:var(--bg-elevated);padding:24px;box-shadow:var(--shadow-lg);position:relative;border:1px solid var(--border);box-sizing:border-box}
@@ -1001,8 +1023,23 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
   </div>
   <!-- Bottom bar -->
   <div class="ir-bottombar" id="ir-bottombar">
-    <span class="ir-page-counter" id="ir-page-counter">— / —</span>
-    <div class="ir-progress-bar"><div id="ir-progress-fill"></div></div>
+    <button class="ir-page-counter" id="ir-page-counter" type="button" aria-label="Jump to page">— / —</button>
+    <div class="ir-progress-bar">
+      <input class="ir-page-slider" id="ir-page-slider" type="range" min="1" max="1" value="1" aria-label="Page slider"/>
+      <div id="ir-progress-fill"></div>
+    </div>
+  </div>
+  <!-- Page jump modal -->
+  <div class="ir-jump-modal" id="ir-jump-modal" style="display:none">
+    <div class="ir-jump-box">
+      <label class="ir-jump-label">Jump to page</label>
+      <input class="ir-jump-input" id="ir-jump-input" type="number" inputmode="numeric" min="1" max="1" placeholder="1"/>
+      <div class="ir-jump-hint" id="ir-jump-hint">of —</div>
+      <div class="ir-jump-actions">
+        <button class="ir-jump-btn ir-jump-cancel" id="ir-jump-cancel" type="button">Cancel</button>
+        <button class="ir-jump-btn ir-jump-go" id="ir-jump-go" type="button">Go</button>
+      </div>
+    </div>
   </div>
 </div>
 </template>
@@ -1727,6 +1764,7 @@ async function initImageReader(book, pages){
   const bottombar = $('#ir-bottombar');
   const watermark = $('#ir-watermark');
   const loading = $('#ir-loading');
+  const slider = $('#ir-page-slider');
 
   function pageUrl(num){
     const p = pages.find(x => x.page_num === num);
@@ -1746,16 +1784,19 @@ async function initImageReader(book, pages){
   }
 
   function renderPage(num, animateDir){
-    if(num < 1 || num > total) return;
+    num = Math.max(1, Math.min(total, num|0));
     current = num;
     counter.textContent = `${num} / ${total}`;
     fill.style.width = (num/total*100) + '%';
+    if(slider) slider.value = num;
     img.classList.add('loading');
     loading.classList.add('show');
     const newSrc = pageUrl(num);
     img.onload = () => {
       img.classList.remove('loading');
       loading.classList.remove('show');
+      // Refresh watermark with new timestamp on every page (forensic trace)
+      refreshWatermark(num);
       // Preload next & previous pages for smooth nav
       preload(num+1); preload(num+2); preload(num-1);
     };
@@ -1784,9 +1825,53 @@ async function initImageReader(book, pages){
     else { topbar.classList.add('hidden'); bottombar.classList.add('hidden'); clearTimeout(uiTimer); }
   }
 
-  // Watermark text — includes username + user_id for forensic tracking
-  const wmText = `KhozyReads · @${state.profile.username} · ${state.profile.id.slice(0,8)} · ${book.id.slice(0,8)}  `;
-  watermark.setAttribute('data-text', wmText.repeat(80));
+  // Watermark — includes username + user_id + book_id + timestamp + page for forensic ID.
+  // Re-bake on every page change so each leak shows when it happened.
+  function refreshWatermark(pageNum){
+    const ts = new Date().toLocaleString();
+    const wmText = `KhozyReads · @${state.profile.username} · ${state.profile.id.slice(0,8)} · ${book.id.slice(0,8)} · p${pageNum} · ${ts}  `;
+    watermark.setAttribute('data-text', wmText.repeat(80));
+  }
+  refreshWatermark(1);
+
+  // Slider
+  if(slider){
+    slider.min = 1; slider.max = total; slider.value = 1;
+    slider.addEventListener('input', e => {
+      const n = parseInt(e.target.value, 10);
+      counter.textContent = `${n} / ${total}`;
+      fill.style.width = (n/total*100) + '%';
+      showUiTransiently();
+    });
+    slider.addEventListener('change', e => renderPage(parseInt(e.target.value, 10)));
+  }
+
+  // Page jump modal
+  const jumpModal = $('#ir-jump-modal');
+  const jumpInput = $('#ir-jump-input');
+  const jumpHint = $('#ir-jump-hint');
+  if(jumpInput){ jumpInput.max = total; }
+  if(jumpHint){ jumpHint.textContent = `of ${total}`; }
+  function openJump(){
+    if(!jumpModal) return;
+    jumpInput.value = current;
+    jumpModal.style.display = 'flex';
+    setTimeout(()=>{ jumpInput.focus(); jumpInput.select(); }, 50);
+  }
+  function closeJump(){ if(jumpModal) jumpModal.style.display = 'none'; }
+  function commitJump(){
+    const n = parseInt(jumpInput.value, 10);
+    if(!isNaN(n)) renderPage(n);
+    closeJump();
+  }
+  counter.addEventListener('click', openJump);
+  $('#ir-jump-cancel')?.addEventListener('click', closeJump);
+  $('#ir-jump-go')?.addEventListener('click', commitJump);
+  jumpInput?.addEventListener('keydown', e => {
+    if(e.key === 'Enter'){ e.preventDefault(); commitJump(); }
+    else if(e.key === 'Escape'){ e.preventDefault(); closeJump(); }
+  });
+  jumpModal?.addEventListener('click', e => { if(e.target === jumpModal) closeJump(); });
 
   // Tap zones
   $('#ir-tap-prev').onclick = () => renderPage(current - 1, 'prev');
@@ -1817,34 +1902,58 @@ async function initImageReader(book, pages){
     else if(dx > 0 && current > 1) renderPage(current-1, 'prev');
   }, {passive:true});
 
-  // Keyboard nav (desktop)
-  const onKey = (e)=>{
-    if(e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' '){ e.preventDefault(); renderPage(current+1); }
-    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); renderPage(current-1); }
-    else if(e.key === 'Escape'){ location.hash = '#/library'; }
+  // Anti-screenshot protection — full set, matches reader lama
+  document.body.classList.add('reading');
+  const frame = $('#ir-frame');
+  const isJumpOpen = () => jumpModal && jumpModal.style.display !== 'none';
+
+  const isFormField = el => el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA');
+  const onContext = e => { if(isFormField(e.target)) return; e.preventDefault(); showScreenshotWarning('right-click'); };
+  const onSelect = e => { if(isFormField(e.target)) return; e.preventDefault(); };
+  const onCopy = e => { if(isFormField(e.target)) return; e.preventDefault(); showScreenshotWarning('copy'); };
+  const onCut = e => { if(isFormField(e.target)) return; e.preventDefault(); showScreenshotWarning('cut'); };
+  const onKey = (e) => {
+    // Don't intercept typing in jump-input
+    if(isJumpOpen() && e.target && e.target.tagName === 'INPUT') return;
+    const k = (e.key || '').toLowerCase();
+    const ctrl = e.ctrlKey || e.metaKey;
+    if(ctrl && ['c','x','s','p','u','a'].includes(k)){ e.preventDefault(); showScreenshotWarning('Ctrl+' + k.toUpperCase()); return; }
+    if(k === 'f12'){ e.preventDefault(); showScreenshotWarning('F12'); return; }
+    if(ctrl && e.shiftKey && ['i','j','c'].includes(k)){ e.preventDefault(); showScreenshotWarning('DevTools'); return; }
+    if(e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' '){ e.preventDefault(); renderPage(current + 1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); renderPage(current - 1); }
+    else if(e.key === 'Home'){ e.preventDefault(); renderPage(1); }
+    else if(e.key === 'End'){ e.preventDefault(); renderPage(total); }
+    else if(e.key === 'Escape'){ if(isJumpOpen()) closeJump(); else location.hash = '#/library'; }
   };
-  window.addEventListener('keydown', onKey);
+  const onVis = () => { if(document.hidden) frame.classList.add('blurred'); else frame.classList.remove('blurred'); };
+  const onBlur = () => frame.classList.add('blurred');
+  const onFocus = () => frame.classList.remove('blurred');
+
+  document.addEventListener('contextmenu', onContext);
+  document.addEventListener('selectstart', onSelect);
+  document.addEventListener('copy', onCopy);
+  document.addEventListener('cut', onCut);
+  document.addEventListener('keydown', onKey);
+  document.addEventListener('visibilitychange', onVis);
+  window.addEventListener('blur', onBlur);
+  window.addEventListener('focus', onFocus);
 
   // Cleanup on route change
   const cleanup = () => {
-    window.removeEventListener('keydown', onKey);
+    document.body.classList.remove('reading');
+    document.removeEventListener('contextmenu', onContext);
+    document.removeEventListener('selectstart', onSelect);
+    document.removeEventListener('copy', onCopy);
+    document.removeEventListener('cut', onCut);
+    document.removeEventListener('keydown', onKey);
+    document.removeEventListener('visibilitychange', onVis);
+    window.removeEventListener('blur', onBlur);
+    window.removeEventListener('focus', onFocus);
     clearTimeout(uiTimer);
     window.removeEventListener('hashchange', cleanup);
   };
   window.addEventListener('hashchange', cleanup, { once: true });
-
-  // Anti-screenshot protection (same as PDF.js reader)
-  document.body.classList.add('reading');
-  const onContext = e=>e.preventDefault();
-  const onCopy = e=>e.preventDefault();
-  document.addEventListener('contextmenu', onContext);
-  document.addEventListener('copy', onCopy);
-  const cleanupProt = () => {
-    document.body.classList.remove('reading');
-    document.removeEventListener('contextmenu', onContext);
-    document.removeEventListener('copy', onCopy);
-  };
-  window.addEventListener('hashchange', cleanupProt, { once: true });
 
   // Initial render
   renderPage(1);
