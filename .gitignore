@@ -21,3 +21,18 @@ node_modules/
 .supabase/
 supabase/.temp/
 supabase/.branches/
+
+# Credentials / secrets — NEVER commit these
+*.env
+*.env.*
+.env*
+secrets.txt
+*secret*.txt
+*credentials*.txt
+*R2*.txt
+*api*key*.txt
+*token*.txt
+*.pem
+*.keystore
+*.jks
+signing-key-info.txt
