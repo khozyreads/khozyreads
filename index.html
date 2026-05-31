@@ -341,17 +341,11 @@ html[lang="km"] .reader-title{font-family:var(--font-khmer);font-weight:600;font
 .ir-btn:hover{background:rgba(255,255,255,.16)}
 .ir-title{font-family:var(--font-display),'Cormorant Garamond',serif;font-size:17px;letter-spacing:.01em;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ir-spacer{width:38px;flex-shrink:0}
-.ir-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:pan-y pinch-zoom;width:100%;min-height:0}
-#ir-image{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block;transition:opacity .25s;pointer-events:none;-webkit-user-drag:none;user-drag:none;background:transparent}
-#ir-image:not([src]){opacity:0}
+.ir-stage{flex:1;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden;touch-action:pan-y pinch-zoom}
+#ir-image{max-width:100%;max-height:100%;object-fit:contain;display:block;transition:opacity .25s;pointer-events:none;-webkit-user-drag:none;user-drag:none}
 #ir-image.loading{opacity:.3}
 .ir-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .2s;color:var(--accent)}
 .ir-loading.show{opacity:1}
-.ir-error{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;color:#e8d9b5;background:rgba(10,8,7,.94);z-index:10}
-.ir-error-icon{font-size:48px;margin-bottom:12px;color:#e74c3c}
-.ir-error-msg{font-size:16px;margin-bottom:12px;max-width:90%}
-.ir-error-url{font-size:11px;font-family:monospace;color:#bbb;word-break:break-all;max-width:95%;margin-bottom:20px;padding:10px;background:rgba(255,255,255,.06);border-radius:4px;user-select:text;-webkit-user-select:text;line-height:1.5}
-.ir-error-btn{background:var(--accent);color:#0a0807;border:0;padding:10px 24px;border-radius:6px;font-weight:600;cursor:pointer;font-size:14px}
 .ir-watermark{position:absolute;inset:0;pointer-events:none;background-repeat:repeat;background-size:auto;opacity:.18;color:rgba(232,217,181,.15);overflow:hidden}
 .ir-watermark::before{content:attr(data-text);position:absolute;inset:-20% -20%;background:repeating-linear-gradient(-12deg,transparent 0,transparent 70px,rgba(232,217,181,0.05) 70px,rgba(232,217,181,0.05) 71px);transform:rotate(-12deg);font-size:13px;letter-spacing:.4em;color:rgba(232,217,181,.18);font-family:monospace;white-space:nowrap;word-spacing:60px;line-height:90px}
 .ir-tap-zone{position:absolute;top:0;bottom:0;background:transparent;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
@@ -1733,21 +1727,6 @@ async function initImageReader(book, pages){
   const bottombar = $('#ir-bottombar');
   const watermark = $('#ir-watermark');
   const loading = $('#ir-loading');
-  const errorBox = $('#ir-error');
-  const errorMsg = $('#ir-error-msg');
-  const errorUrl = $('#ir-error-url');
-  const retryBtn = $('#ir-retry-btn');
-
-  function showError(message, url){
-    if(errorMsg) errorMsg.textContent = message;
-    if(errorUrl) errorUrl.textContent = url || '';
-    if(errorBox) errorBox.style.display = 'flex';
-    loading.classList.remove('show');
-    img.classList.remove('loading');
-  }
-  function hideError(){
-    if(errorBox) errorBox.style.display = 'none';
-  }
 
   function pageUrl(num){
     const p = pages.find(x => x.page_num === num);
@@ -1766,52 +1745,26 @@ async function initImageReader(book, pages){
     });
   }
 
-  let loadTimeout = null;
   function renderPage(num, animateDir){
     if(num < 1 || num > total) return;
     current = num;
     counter.textContent = `${num} / ${total}`;
     fill.style.width = (num/total*100) + '%';
-    const newSrc = pageUrl(num);
-    if(!newSrc){
-      console.error('No page URL for', num);
-      return;
-    }
-
-    // Show loading indicator while img loads
-    hideError();
     img.classList.add('loading');
     loading.classList.add('show');
-
-    // Safety: show error after 15s if image never fires onload
-    clearTimeout(loadTimeout);
-    loadTimeout = setTimeout(()=>{
-      console.warn('Page load timeout for', num, newSrc);
-      showError(`Loading timeout (15s). Image bisa diakses gak dari URL ini?`, newSrc);
-    }, 15000);
-
-    // Set img src directly + listen on img itself (more reliable on mobile)
+    const newSrc = pageUrl(num);
     img.onload = () => {
-      clearTimeout(loadTimeout);
       img.classList.remove('loading');
       loading.classList.remove('show');
-      hideError();
       // Preload next & previous pages for smooth nav
       preload(num+1); preload(num+2); preload(num-1);
     };
-    img.onerror = (e) => {
-      clearTimeout(loadTimeout);
-      console.error('Failed to load page', num, newSrc, e);
-      showError(`Gagal load image (page ${num}). Coba copy URL ini & buka di tab baru:`, newSrc);
+    img.onerror = () => {
+      img.classList.remove('loading');
+      loading.classList.remove('show');
+      console.error('Failed to load page', num, newSrc);
     };
-
-    // Force fresh fetch to bypass any stale cache
-    img.removeAttribute('src');
     img.src = newSrc;
-
-    // Retry button
-    if(retryBtn) retryBtn.onclick = () => renderPage(num);
-
     showUiTransiently();
   }
 
