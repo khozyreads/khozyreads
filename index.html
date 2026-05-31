@@ -346,14 +346,16 @@ html[lang="km"] .reader-title{font-family:var(--font-khmer);font-weight:600;font
 #ir-image.loading{opacity:.3}
 .ir-loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;transition:opacity .2s;color:var(--accent)}
 .ir-loading.show{opacity:1}
-.ir-watermark{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3}
+/* Wrapper that matches IMAGE bounds (positioned via JS on every page render + resize) */
+.ir-image-overlay{position:absolute;pointer-events:none;z-index:3;overflow:hidden}
+.ir-watermark{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .ir-watermark::before{content:attr(data-text);position:absolute;inset:-20% -20%;transform:rotate(-20deg);transform-origin:center;font-size:13px;letter-spacing:.12em;color:rgba(120,40,40,.16);font-family:'Crimson Pro','Noto Serif Khmer',serif;font-style:italic;white-space:pre;word-spacing:140px;line-height:130px}
 /* Corner stamps — always-visible brand + user + timestamp (matches reader lama) */
-.ir-wm-corners{position:absolute;inset:0;pointer-events:none;z-index:4;color:rgba(120,40,40,.42);font-family:'Cormorant Garamond','Crimson Pro',serif;letter-spacing:.04em}
-.ir-wm-tl{position:absolute;top:60px;left:16px}
-.ir-wm-brand{font-weight:600;font-size:15px;line-height:1.1}
-.ir-wm-user{font-style:italic;font-size:13px;margin-top:2px;font-family:'Crimson Pro',serif}
-.ir-wm-br{position:absolute;bottom:64px;right:16px;font-size:12px;font-family:'Crimson Pro',monospace;text-align:right;line-height:1.3;white-space:pre-line}
+.ir-wm-corners{position:absolute;inset:0;pointer-events:none;color:rgba(120,40,40,.42);font-family:'Cormorant Garamond','Crimson Pro',serif;letter-spacing:.04em}
+.ir-wm-tl{position:absolute;top:14px;left:14px}
+.ir-wm-brand{font-weight:600;font-size:14px;line-height:1.1}
+.ir-wm-user{font-style:italic;font-size:12px;margin-top:2px;font-family:'Crimson Pro',serif}
+.ir-wm-br{position:absolute;bottom:14px;right:14px;font-size:11px;font-family:'Crimson Pro',monospace;text-align:right;line-height:1.3;white-space:pre-line}
 .ir-tap-zone{position:absolute;top:0;bottom:0;background:transparent;border:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .ir-tap-left{left:0;width:30%}
 .ir-tap-right{right:0;width:30%}
@@ -1020,15 +1022,16 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
     <div class="ir-loading" id="ir-loading">
       <span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span>
     </div>
-    <!-- Watermark overlay (CSS, dynamic per user) -->
-    <div class="ir-watermark" id="ir-watermark" aria-hidden="true"></div>
-    <!-- Corner stamps (clearly visible: brand + user + timestamp) -->
-    <div class="ir-wm-corners" aria-hidden="true">
-      <div class="ir-wm-tl">
-        <div class="ir-wm-brand">KhozyReads</div>
-        <div class="ir-wm-user" id="ir-wm-user">@username</div>
+    <!-- Watermark + corner stamps — wrapper sized dynamically to match IMAGE bounds (not full stage) -->
+    <div class="ir-image-overlay" id="ir-image-overlay" aria-hidden="true">
+      <div class="ir-watermark" id="ir-watermark"></div>
+      <div class="ir-wm-corners">
+        <div class="ir-wm-tl">
+          <div class="ir-wm-brand">KhozyReads</div>
+          <div class="ir-wm-user" id="ir-wm-user">@username</div>
+        </div>
+        <div class="ir-wm-br" id="ir-wm-ts">—</div>
       </div>
-      <div class="ir-wm-br" id="ir-wm-ts">—</div>
     </div>
     <!-- Tap zones for prev/next navigation -->
     <button class="ir-tap-zone ir-tap-left" id="ir-tap-prev" aria-label="Previous page"></button>
@@ -1779,6 +1782,20 @@ async function initImageReader(book, pages){
   const watermark = $('#ir-watermark');
   const loading = $('#ir-loading');
   const slider = $('#ir-page-slider');
+  const overlay = $('#ir-image-overlay');
+  const stage = $('#ir-stage');
+
+  // Match overlay (watermark + corner stamps) to current image bounds inside stage.
+  // Call after image load + on resize so watermark stays glued to the page area.
+  function positionOverlay(){
+    if(!img.complete || !img.naturalWidth) return;
+    const stageRect = stage.getBoundingClientRect();
+    const imgRect = img.getBoundingClientRect();
+    overlay.style.top = (imgRect.top - stageRect.top) + 'px';
+    overlay.style.left = (imgRect.left - stageRect.left) + 'px';
+    overlay.style.width = imgRect.width + 'px';
+    overlay.style.height = imgRect.height + 'px';
+  }
 
   function pageUrl(num){
     const p = pages.find(x => x.page_num === num);
@@ -1809,6 +1826,8 @@ async function initImageReader(book, pages){
     img.onload = () => {
       img.classList.remove('loading');
       loading.classList.remove('show');
+      // Position overlay (watermark + corner stamps) to match this image's bounds
+      positionOverlay();
       // Refresh watermark with new timestamp on every page (forensic trace)
       refreshWatermark(num);
       // Preload next & previous pages for smooth nav
@@ -1901,7 +1920,6 @@ async function initImageReader(book, pages){
   $('#ir-tap-center').onclick = () => toggleUi();
 
   // Swipe gesture
-  const stage = $('#ir-stage');
   stage.addEventListener('touchstart', (e)=>{
     if(e.touches.length !== 1) return;
     touchStartX = e.touches[0].clientX;
@@ -1952,6 +1970,12 @@ async function initImageReader(book, pages){
   const onBlur = () => frame.classList.add('blurred');
   const onFocus = () => frame.classList.remove('blurred');
 
+  // Re-position overlay on resize / orientation change so watermark stays on the image
+  let resizeT = null;
+  const onResize = () => { clearTimeout(resizeT); resizeT = setTimeout(positionOverlay, 80); };
+  window.addEventListener('resize', onResize);
+  window.addEventListener('orientationchange', onResize);
+
   document.addEventListener('contextmenu', onContext);
   document.addEventListener('selectstart', onSelect);
   document.addEventListener('copy', onCopy);
@@ -1972,7 +1996,10 @@ async function initImageReader(book, pages){
     document.removeEventListener('visibilitychange', onVis);
     window.removeEventListener('blur', onBlur);
     window.removeEventListener('focus', onFocus);
+    window.removeEventListener('resize', onResize);
+    window.removeEventListener('orientationchange', onResize);
     clearTimeout(uiTimer);
+    clearTimeout(resizeT);
     window.removeEventListener('hashchange', cleanup);
   };
   window.addEventListener('hashchange', cleanup, { once: true });
