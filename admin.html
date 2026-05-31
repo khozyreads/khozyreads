@@ -406,6 +406,13 @@ details.row-details .detail-body{margin-top:8px;padding:12px;background:var(--bg
         <div class="field"><label>Apply Creator URL</label><input class="input" name="apply_creator_link" type="url" placeholder="https://t.me/yourbot or your Telegram contact"/></div>
       </div>
     </div>
+    <div class="form-section">
+      <h3>Modern Reader (R2)</h3>
+      <p class="section-desc">Public URL of your Cloudflare R2 bucket for pre-rendered book pages. Set up once per docs/R2_SETUP.md.</p>
+      <div class="form-grid">
+        <div class="field"><label>R2 Public URL</label><input class="input" name="r2_public_url" type="url" placeholder="https://pub-xxxxxxxxxx.r2.dev"/></div>
+      </div>
+    </div>
   </form>
 </section>
 </template>
@@ -452,6 +459,108 @@ const fmtMoney = (a,c)=>`${Number(a||0).toFixed(2)} ${c||'USD'}`;
 const fmtDate = s => s?new Date(s).toLocaleString():'';
 const fmtDateShort = s => s?new Date(s).toLocaleString([], {month:'numeric',day:'numeric',hour:'numeric',minute:'2-digit'}):'';
 function alertBox(m,type='error'){ return `<div class="alert alert-${type}">${esc(m)}</div>`; }
+// Load PDF.js library on demand. Cached after first call.
+let _pdfjsLoaded = null;
+function loadPdfJs(){
+  if(_pdfjsLoaded) return _pdfjsLoaded;
+  _pdfjsLoaded = new Promise((resolve, reject)=>{
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
+    s.onload = ()=>{
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+      resolve(window.pdfjsLib);
+    };
+    s.onerror = ()=>reject(new Error('PDF.js failed to load'));
+    document.head.appendChild(s);
+  });
+  return _pdfjsLoaded;
+}
+
+// Convert a PDF File to per-page WebP images and upload them to R2.
+// Calls onProgress(currentPage, totalPages) on each completed page.
+// Sequential upload avoids overwhelming network on big books.
+async function extractAndUploadPages(pdfFile, bookId, onProgress){
+  const pdfjsLib = await loadPdfJs();
+  const arrayBuffer = await pdfFile.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const totalPages = pdf.numPages;
+
+  // Clear existing pages rows for this book (re-extract scenario)
+  await sb.from('book_pages').delete().eq('book_id', bookId);
+
+  // Save total_pages + r2_prefix early so reader can detect "processing"
+  const r2Prefix = `${bookId}`;
+  await sb.from('books').update({ total_pages: totalPages, r2_prefix: r2Prefix }).eq('id', bookId);
+
+  // Get user JWT for edge function auth
+  const { data: { session } } = await sb.auth.getSession();
+  const jwt = session?.access_token;
+  if(!jwt) throw new Error('Not authenticated');
+
+  // Render canvas reused across pages (avoid memory churn)
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d', { alpha: false });
+
+  for(let pageNum = 1; pageNum <= totalPages; pageNum++){
+    const page = await pdf.getPage(pageNum);
+    // Render at 1.5x scale of the standard 72dpi viewport ≈ 108dpi.
+    // Good balance: text readable on mobile retina, ~80-120KB WebP per page.
+    const viewport = page.getViewport({ scale: 1.5 });
+    canvas.width = Math.round(viewport.width);
+    canvas.height = Math.round(viewport.height);
+    await page.render({ canvasContext: ctx, viewport }).promise;
+
+    // Convert canvas to WebP blob (quality 0.80 — sweet spot)
+    const blob = await new Promise(r => canvas.toBlob(r, 'image/webp', 0.80));
+    if(!blob) throw new Error(`Failed to encode page ${pageNum}`);
+
+    // Get signed PUT URL from edge function
+    const signRes = await fetch(`${CFG.SUPABASE_URL}/functions/v1/r2-sign-upload`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${jwt}`,
+        'apikey': CFG.SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ book_id: bookId, page_num: pageNum, content_type: 'image/webp' }),
+    });
+    if(!signRes.ok){
+      const errTxt = await signRes.text();
+      throw new Error(`Sign URL failed for page ${pageNum}: ${errTxt}`);
+    }
+    const { upload_url, object_key } = await signRes.json();
+
+    // PUT blob directly to R2
+    const putRes = await fetch(upload_url, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'image/webp' },
+      body: blob,
+    });
+    if(!putRes.ok){
+      throw new Error(`R2 upload failed for page ${pageNum}: ${putRes.status}`);
+    }
+
+    // Insert row in book_pages
+    const { error: insErr } = await sb.from('book_pages').insert({
+      book_id: bookId,
+      page_num: pageNum,
+      object_key,
+      width: canvas.width,
+      height: canvas.height,
+      byte_size: blob.size,
+    });
+    if(insErr) throw new Error(`DB insert failed for page ${pageNum}: ${insErr.message}`);
+
+    // Free PDF.js page memory
+    page.cleanup();
+
+    if(onProgress) onProgress(pageNum, totalPages);
+  }
+
+  // Final cleanup
+  await pdf.destroy();
+}
+
 // Resize + compress an image File to WebP, returning a Blob ready to upload.
 // Preserves aspect ratio. If image already fits within max dimensions, just re-encodes.
 async function compressBookCover(file, maxW=600, maxH=800, quality=0.85){
@@ -649,10 +758,31 @@ async function openBookForm(id){
       if(pdfFile && pdfFile.size){
         if(pdfFile.type !== 'application/pdf') throw new Error('PDF only');
         const path = `book_${bookId}_${Date.now()}.pdf`;
+        $('#bf-msg').innerHTML = `<div class="notice">📤 Uploading PDF to storage...</div>`;
         const {error:e2} = await sb.storage.from('book-pdfs').upload(path,pdfFile,{upsert:false,contentType:'application/pdf'});
         if(e2) throw e2;
         if(book.pdf_path) sb.storage.from('book-pdfs').remove([book.pdf_path]).catch(()=>{});
-        await sb.from('books').update({pdf_path:path,pdf_filename:pdfFile.name,pdf_size_bytes:pdfFile.size}).eq('id',bookId);
+        await sb.from('books').update({pdf_path:path,pdf_filename:pdfFile.name,pdf_size_bytes:pdfFile.size, pages_status:'processing'}).eq('id',bookId);
+
+        // ── Extract PDF pages → upload to R2 (modern image-based reader) ──
+        try {
+          await extractAndUploadPages(pdfFile, bookId, (current, total) => {
+            const pct = Math.round(current / total * 100);
+            $('#bf-msg').innerHTML = `<div class="notice">
+              📖 Extracting page ${current} of ${total} (${pct}%)
+              <div style="margin-top:6px;background:var(--bg-deep);height:6px;border-radius:3px;overflow:hidden">
+                <div style="width:${pct}%;height:100%;background:var(--primary);transition:width .2s"></div>
+              </div>
+            </div>`;
+          });
+          await sb.from('books').update({ pages_status:'ready' }).eq('id', bookId);
+          $('#bf-msg').innerHTML = `<div class="notice success">✅ Pages extracted successfully!</div>`;
+        } catch(extractErr) {
+          console.error('Page extraction failed:', extractErr);
+          await sb.from('books').update({ pages_status:'failed' }).eq('id', bookId);
+          $('#bf-msg').innerHTML = `<div class="notice" style="background:#FFF1D6">⚠ PDF saved but page extraction failed. Reader will fall back to PDF.js. Error: ${esc(extractErr.message)}</div>`;
+          // Don't throw — book is still usable via PDF.js fallback
+        }
       }
       sb.from('activity_logs').insert({action:id?'book.update':'book.create', actor_user_id:state.profile.id, actor_username:state.profile.username, target_type:'book', target_id:bookId, details:{title:payload.title}}).then(()=>{}).catch(()=>{});
       closeModal();
@@ -908,7 +1038,7 @@ async function renderSettings(){
   showTemplate('tpl-settings');
   const form = $('#settings-form');
   // populate fields
-  ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text','facebook_page_url','apply_creator_link'].forEach(k=>{
+  ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text','facebook_page_url','apply_creator_link','r2_public_url'].forEach(k=>{
     const el = form.elements[k]; if(el!=null) el.value = map[k]||'';
   });
   // QR preview
@@ -931,7 +1061,7 @@ async function renderSettings(){
         if(error) throw error;
         await sb.from('site_settings').upsert({setting_key:'aba_qr_path',setting_value:path}, {onConflict:'setting_key'});
       }
-      const keys = ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text','facebook_page_url','apply_creator_link'];
+      const keys = ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text','facebook_page_url','apply_creator_link','r2_public_url'];
       const updates = keys.map(k=>({setting_key:k,setting_value:String(fd.get(k)||'')}));
       const tok = fd.get('telegram_bot_token');
       if(tok && String(tok).trim()) updates.push({setting_key:'telegram_bot_token',setting_value:String(tok).trim()});
