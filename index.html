@@ -244,6 +244,9 @@ html[lang="km"] .book-author{font-family:var(--font-khmer);font-style:normal;fon
 html[lang="km"] .free-badge{font-family:var(--font-khmer);letter-spacing:.02em;font-size:12px}
 .progress-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
 html[lang="km"] .progress-pill{font-family:var(--font-khmer)}
+/* Thin reading progress bar — shown on book card when last_page > 1 */
+.read-progress{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(0,0,0,.18);z-index:4}
+.read-progress-fill{height:100%;background:var(--accent);transition:width .3s ease}
 
 .breadcrumbs{padding:24px 0 8px;font-family:var(--font-serif);font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 html[lang="km"] .breadcrumbs{font-family:var(--font-khmer);letter-spacing:.06em;font-size:13px}
@@ -1095,7 +1098,7 @@ const I18N = {
     'pay.eyebrow':'ការទូទាត់សុវត្ថិភាព · ABA / KHQR','pay.title':'បញ្ចប់ការទិញរបស់អ្នក','pay.crumb':'បង់ប្រាក់','pay.step1':'ជំហានទី ១ · ស្កេន QR','pay.scan':'ស្កេនកូដខាងក្រោម','pay.amount':'ចំនួន',
     'pay.acc':'ឈ្មោះគណនី','pay.num':'លេខគណនី','pay.s1h':'ស្កេន QR និងបង់ប្រាក់','pay.s1b':'បើកកម្មវិធី ABA Mobile ហើយស្កេនកូដខាងស្តាំ ឬផ្ទេរប្រាក់ដោយផ្ទាល់ទៅគណនី។','pay.s2h':'បន្ទាប់​មក​បង្ហោះ​វិក្កយបត្រ','pay.s2b':'ថត​អេក្រង់​នៃ​ការបង់ប្រាក់ និង​បង្ហោះ​នៅ​ក្នុង​ប្រអប់​ខាង​ក្រោម។','pay.s3h':'រង់​ចាំ​ការ​អនុម័ត','pay.s3b':'ក្រុមការងារ​នឹង​ផ្ទៀង​ផ្ទាត់​ក្នុង​រយៈពេល ១ ទៅ ២ ម៉ោង។','pay.upload':'បង្ហោះវិក្កយបត្រ','pay.uploadSub':'JPG · PNG · PDF · អតិបរមា 8MB','pay.submit':'បញ្ជូនការបង់ប្រាក់','pay.success':'ដាក់ស្នើដោយជោគជ័យ! រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។',
     'reader.loading':'កំពុងផ្ទុក PDF…','reader.failed':'មិនអាចផ្ទុក PDF បានទេ','reader.licensed':'ផ្តល់សិទ្ធិឱ្យ','reader.tracked':'ការថត និងការថតវីដេអូត្រូវបានតាមដាន',
-    'badge.pending':'កំពុងរង់ចាំ','badge.approved':'យល់ព្រម','badge.rejected':'បដិសេធ',
+    'badge.pending':'កំពុងរង់ចាំ','badge.approved':'យល់ព្រម','badge.rejected':'បដិសេធ','badge.continue':'បន្តអាន','badge.page':'ទំព័រ',
     'err.bookNotFound':'រកសៀវភៅមិនឃើញ','err.loginFirst':'សូមចូលគណនីមុនសិន','err.noAccess':'អ្នកត្រូវទិញសៀវភៅនេះមុនអាន','err.uploadFailed':'បរាជ័យក្នុងការបង្ហោះ','err.fileTooLarge':'ឯកសារធំជាង 8MB','err.invalidFile':'ប្រភេទឯកសារមិនត្រឹមត្រូវ',
     'ss.title':'ការការពារមាតិកាបានបើក','ss.body':'មិនអនុញ្ញាតិឱ្យថតរូប, ថតវីដេអូ ឬធ្វើការចែកចាយបន្តដោយគ្មានការអនុញ្ញាតិជាលាយលក្ខណ៍អក្សរពីខូហ្ស៊ីរីដ។','ss.dismiss':'ខ្ញុំយល់ហើយ','pwa.install':'ដំឡើងកម្មវិធី'
   },
@@ -1114,7 +1117,7 @@ const I18N = {
     'pay.eyebrow':'Secure payment · ABA / KHQR','pay.title':'Complete your purchase','pay.crumb':'Payment','pay.step1':'Step 1 · Scan QR','pay.scan':'Scan the code below','pay.amount':'Amount',
     'pay.acc':'Account Name','pay.num':'Account Number','pay.s1h':'Scan QR and pay','pay.s1b':'Open ABA Mobile and scan the QR or transfer directly to the account.','pay.s2h':'Then upload the receipt','pay.s2b':'Take a screenshot of your payment and upload in the box below.','pay.s3h':'Wait for approval','pay.s3b':'Our team verifies within 1-2 hours. You can read immediately after.','pay.upload':'Upload receipt','pay.uploadSub':'JPG · PNG · PDF · max 8MB','pay.submit':'Submit payment','pay.success':'Submitted! Waiting for admin approval.',
     'reader.loading':'Loading PDF…','reader.failed':'Failed to load PDF','reader.licensed':'Licensed to','reader.tracked':'Screenshots and recordings are tracked',
-    'badge.pending':'Pending','badge.approved':'Approved','badge.rejected':'Rejected',
+    'badge.pending':'Pending','badge.approved':'Approved','badge.rejected':'Rejected','badge.continue':'Continue','badge.page':'Page',
     'err.bookNotFound':'Book not found','err.loginFirst':'Please login first','err.noAccess':'Please purchase this book to read','err.uploadFailed':'Upload failed','err.fileTooLarge':'File larger than 8MB','err.invalidFile':'Invalid file type',
     'ss.title':'Content Protection Active','ss.body':'Screenshots, video recording, or redistribution are not permitted without written permission from KhozyReads.','ss.dismiss':'I understand','pwa.install':'Install App'
   }
@@ -1475,7 +1478,11 @@ async function renderBookDetail(id){
 async function renderLibrary(){
   if(!state.user){ location.hash='#/login'; return; }
   const [{ data:lib }, { data:orders }, { data:favs }] = await Promise.all([
-    sb.from('user_library').select('id,access_status,book_id,books(id,title,creator,cover_url)').eq('user_id',state.profile.id),
+    // user_library table — includes new last_page + last_read_at columns from migration 014
+    sb.from('user_library')
+      .select('id,access_status,book_id,last_page,last_read_at,books(id,title,creator,cover_url,total_pages)')
+      .eq('user_id',state.profile.id)
+      .order('last_read_at',{ascending:false,nullsFirst:false}),
     sb.from('orders').select('id,status,book_id,reject_reason,books(id,title,cover_url)').eq('user_id',state.profile.id).in('status',['pending','rejected']).order('created_at',{ascending:false}),
     sb.from('book_favorites').select('book_id,created_at,books(id,title,creator,cover_url,price,currency,is_free)').eq('user_id',state.profile.id).order('created_at',{ascending:false})
   ]);
@@ -1487,7 +1494,19 @@ async function renderLibrary(){
   const ownedItems = [];
   (lib||[]).filter(r=>r.access_status==='active' && r.books).forEach(r=>{
     const b = r.books;
-    ownedItems.push(`<a class="book-card" href="#/read/${b.id}"><div class="book-cover" style="background:${b.cover_url?'var(--bg-deep)':pickColor(b.id)}">${b.cover_url?`<img src="${esc(b.cover_url)}"/>`:`<svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}<span class="progress-pill"><span class="dot"></span>${t('badge.approved')}</span></div><div class="book-meta"><h3 class="book-title">${esc(b.title)}</h3><p class="book-author">${esc(b.creator||'-')}</p></div></a>`);
+    const lastPage = r.last_page || 1;
+    const totalPages = b.total_pages || 0;
+    const hasProgress = lastPage > 1 && totalPages > 0;
+    const progressPct = hasProgress ? Math.min(100, Math.round(lastPage / totalPages * 100)) : 0;
+    // Badge: show "Continue · p.42/114" if in-progress, else "Approved"
+    const pillContent = hasProgress
+      ? `<span class="dot"></span>${t('badge.continue')} · ${t('badge.page')} ${lastPage}/${totalPages}`
+      : `<span class="dot"></span>${t('badge.approved')}`;
+    // Optional thin progress bar at bottom of cover when there's progress
+    const progressBar = hasProgress
+      ? `<div class="read-progress"><div class="read-progress-fill" style="width:${progressPct}%"></div></div>`
+      : '';
+    ownedItems.push(`<a class="book-card" href="#/read/${b.id}"><div class="book-cover" style="background:${b.cover_url?'var(--bg-deep)':pickColor(b.id)}">${b.cover_url?`<img src="${esc(b.cover_url)}"/>`:`<svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}<span class="progress-pill">${pillContent}</span>${progressBar}</div><div class="book-meta"><h3 class="book-title">${esc(b.title)}</h3><p class="book-author">${esc(b.creator||'-')}</p></div></a>`);
   });
   (orders||[]).forEach(o=>{
     const isP = o.status==='pending';
@@ -1742,10 +1761,17 @@ async function renderReader(bookId){
       console.warn('Image reader pages query failed, falling back to PDF.js', pgErr);
       // Graceful fallback to PDF.js
     } else {
+      // Fetch reading progress (last_page) for Continue Reading
+      const { data:libRow } = await sb.from('user_library')
+        .select('last_page')
+        .eq('user_id', state.profile.id)
+        .eq('book_id', bookId)
+        .maybeSingle();
+      const startPage = Math.max(1, Math.min(pages.length, libRow?.last_page || 1));
       showTemplate('tpl-reader-pages');
       const scope = $('#route-outlet');
       bindData(scope,'title',book.title);
-      initImageReader(book, pages);
+      initImageReader(book, pages, startPage);
       return;
     }
   }
@@ -1762,7 +1788,7 @@ async function renderReader(bookId){
 
 // Modern fullscreen image-based reader.
 // Pages are pre-rendered WebP images stored in Cloudflare R2.
-async function initImageReader(book, pages){
+async function initImageReader(book, pages, startPage){
   const publicBase = (state.settings?.r2_public_url || '').replace(/\/$/, '');
   if(!publicBase){
     $('#route-outlet').innerHTML = `<div class="container" style="padding:60px 0">${alertBox('R2 public URL not configured. Please set in admin Settings.')}</div>`;
@@ -1770,7 +1796,7 @@ async function initImageReader(book, pages){
   }
 
   const total = pages.length;
-  let current = 1;
+  let current = Math.max(1, Math.min(total, parseInt(startPage, 10) || 1));
   let uiTimer = null;
   let touchStartX = 0, touchStartY = 0, touchLock = null;
 
@@ -1814,6 +1840,19 @@ async function initImageReader(book, pages){
     });
   }
 
+  // Debounced save of reading progress so rapid swipes don't spam the DB.
+  let saveProgressT = null;
+  function saveProgress(num){
+    clearTimeout(saveProgressT);
+    saveProgressT = setTimeout(() => {
+      sb.from('user_library')
+        .update({ last_page: num, last_read_at: new Date().toISOString() })
+        .eq('user_id', state.profile.id)
+        .eq('book_id', book.id)
+        .then(()=>{}).catch(err=>console.warn('saveProgress failed', err));
+    }, 1500);
+  }
+
   function renderPage(num, animateDir){
     num = Math.max(1, Math.min(total, num|0));
     current = num;
@@ -1826,10 +1865,10 @@ async function initImageReader(book, pages){
     img.onload = () => {
       img.classList.remove('loading');
       loading.classList.remove('show');
-      // Position overlay (watermark + corner stamps) to match this image's bounds
       positionOverlay();
-      // Refresh watermark with new timestamp on every page (forensic trace)
       refreshWatermark(num);
+      // Save progress (debounced 1.5s after last page change)
+      saveProgress(num);
       // Preload next & previous pages for smooth nav
       preload(num+1); preload(num+2); preload(num-1);
     };
@@ -2000,12 +2039,21 @@ async function initImageReader(book, pages){
     window.removeEventListener('orientationchange', onResize);
     clearTimeout(uiTimer);
     clearTimeout(resizeT);
+    // Flush any pending progress save immediately so leaving doesn't lose data
+    if(saveProgressT){
+      clearTimeout(saveProgressT);
+      sb.from('user_library')
+        .update({ last_page: current, last_read_at: new Date().toISOString() })
+        .eq('user_id', state.profile.id)
+        .eq('book_id', book.id)
+        .then(()=>{}).catch(()=>{});
+    }
     window.removeEventListener('hashchange', cleanup);
   };
   window.addEventListener('hashchange', cleanup, { once: true });
 
-  // Initial render
-  renderPage(1);
+  // Initial render — resume from saved progress
+  renderPage(current);
 }
 
 async function initReader(book, pdfUrl){
