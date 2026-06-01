@@ -1840,16 +1840,15 @@ async function initImageReader(book, pages, startPage){
     });
   }
 
-  // Debounced save of reading progress so rapid swipes don't spam the DB.
+  // Debounced save of reading progress via SECURITY DEFINER RPC
+  // (direct UPDATE on user_library is blocked by RLS for buyers).
   let saveProgressT = null;
   function saveProgress(num){
     clearTimeout(saveProgressT);
     saveProgressT = setTimeout(() => {
-      sb.from('user_library')
-        .update({ last_page: num, last_read_at: new Date().toISOString() })
-        .eq('user_id', state.profile.id)
-        .eq('book_id', book.id)
-        .then(()=>{}).catch(err=>console.warn('saveProgress failed', err));
+      sb.rpc('update_reading_progress', { p_book_id: book.id, p_last_page: num })
+        .then(({error})=>{ if(error) console.warn('saveProgress failed', error); })
+        .catch(err=>console.warn('saveProgress failed', err));
     }, 1500);
   }
 
@@ -2042,10 +2041,7 @@ async function initImageReader(book, pages, startPage){
     // Flush any pending progress save immediately so leaving doesn't lose data
     if(saveProgressT){
       clearTimeout(saveProgressT);
-      sb.from('user_library')
-        .update({ last_page: current, last_read_at: new Date().toISOString() })
-        .eq('user_id', state.profile.id)
-        .eq('book_id', book.id)
+      sb.rpc('update_reading_progress', { p_book_id: book.id, p_last_page: current })
         .then(()=>{}).catch(()=>{});
     }
     window.removeEventListener('hashchange', cleanup);
