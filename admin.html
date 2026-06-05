@@ -784,10 +784,15 @@ async function openBookForm(id){
 async function renderOrders(){
   const filter = (new URLSearchParams(location.hash.split('?')[1]||'')).get('filter')||'pending';
   showTemplate('tpl-orders');
-  $('#orders-title').textContent = filter.charAt(0).toUpperCase()+filter.slice(1)+' orders';
+  const titleEl = $('#orders-title');
+  if(titleEl) titleEl.textContent = filter.charAt(0).toUpperCase()+filter.slice(1)+' orders';
   $$('#order-tabs button').forEach(b=>{ b.classList.toggle('active', b.dataset.tab===filter); b.onclick=()=>{ location.hash = '#/orders?filter='+b.dataset.tab; }; });
-  const { data:orders } = await sb.from('admin_orders_view').select('*').eq('status',filter).order('created_at',{ascending:false});
-  $('#orders-body').innerHTML = (orders||[]).map(o=>{
+  const { data:orders, error } = await sb.from('admin_orders_view').select('*').eq('status',filter).order('created_at',{ascending:false});
+  if(error){ console.error('admin_orders_view query failed:', error); }
+  // Guard: route may have changed during await — abort if template no longer present
+  const bodyEl = $('#orders-body');
+  if(!bodyEl){ console.warn('Orders template no longer in DOM, aborting render'); return; }
+  bodyEl.innerHTML = (orders||[]).map(o=>{
     const amountCell = o.promo_code
       ? `<div>${fmtMoney(o.amount,o.currency)}</div><div style="font-size:11px;color:var(--muted);text-decoration:line-through">${fmtMoney(o.original_amount||o.amount,o.currency)}</div>`
       : fmtMoney(o.amount,o.currency);
