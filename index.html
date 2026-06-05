@@ -286,15 +286,6 @@ html[lang="km"] .detail-info .price-row .price-note{font-family:var(--font-khmer
 .auth-orn-top svg{width:60px;height:24px}
 .auth-card h2{text-align:center;margin:0 0 8px}
 .btn-google{display:inline-flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px 20px;border:1px solid var(--border-strong);background:#fff;color:#3c4043;font-family:'Roboto','Crimson Pro',-apple-system,Arial,sans-serif;font-size:15px;font-weight:500;border-radius:6px;cursor:pointer;margin-top:20px;transition:box-shadow .2s,transform .15s,background .2s;letter-spacing:.2px}
-/* In-app browser warning (shown when user opens link from Messenger/Instagram/etc) */
-.iab-warn{background:rgba(231,76,60,.08);border:1px solid rgba(231,76,60,.35);color:#a93226;padding:16px;border-radius:10px;margin-bottom:20px;text-align:left;font-size:14px;line-height:1.5}
-.iab-warn .iab-title{display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;margin-bottom:8px}
-.iab-warn p{margin:0 0 12px 0}
-.iab-warn .iab-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
-.iab-warn button{background:#c0392b;color:#fff;border:0;padding:9px 16px;border-radius:6px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit}
-.iab-warn button:hover{background:#a93226}
-.iab-warn button.secondary{background:transparent;color:#a93226;border:1px solid #a93226}
-html[lang="km"] .iab-warn{font-family:var(--font-khmer);font-size:14px;line-height:1.6}
 .btn-google:hover{box-shadow:0 2px 8px rgba(60,64,67,.25);background:#f8f9fa}
 .btn-google:active{transform:scale(.98)}
 .btn-google:disabled{opacity:.6;cursor:wait}
@@ -856,13 +847,6 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       <h2 class="display display-3 center" data-i18n="auth.loginH">ចូលគណនី</h2>
       <p class="sub" data-i18n="auth.loginSub">បន្តការអានសៀវភៅដែលអ្នកស្រឡាញ់</p>
       <div id="login-error"></div>
-      <div class="iab-warn" id="iab-warn-login" hidden>
-        <div class="iab-title">⚠ <span data-i18n="iab.title">បើកនៅក្នុង Browser</span></div>
-        <p data-i18n="iab.body">ការចូលជាមួយ Google មិនអាចធ្វើបាននៅក្នុង Messenger / Instagram / Facebook។ សូមចម្លងតំណខាងក្រោម ហើយបើកវានៅក្នុង Safari ឬ Chrome។</p>
-        <div class="iab-actions">
-          <button type="button" id="iab-copy-login" data-i18n="iab.copy">ចម្លងតំណ</button>
-        </div>
-      </div>
       <button class="btn-google" type="button" id="google-signin-btn">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -887,13 +871,6 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       <h2 class="display display-3 center" data-i18n="auth.registerH">បង្កើតគណនី</h2>
       <p class="sub" data-i18n="auth.registerSub">ចាប់ផ្តើមការដំណើរនៃការអានរបស់អ្នក</p>
       <div id="reg-error"></div>
-      <div class="iab-warn" id="iab-warn-register" hidden>
-        <div class="iab-title">⚠ <span data-i18n="iab.title">បើកនៅក្នុង Browser</span></div>
-        <p data-i18n="iab.body">ការចូលជាមួយ Google មិនអាចធ្វើបាននៅក្នុង Messenger / Instagram / Facebook។ សូមចម្លងតំណខាងក្រោម ហើយបើកវានៅក្នុង Safari ឬ Chrome។</p>
-        <div class="iab-actions">
-          <button type="button" id="iab-copy-register" data-i18n="iab.copy">ចម្លងតំណ</button>
-        </div>
-      </div>
       <button class="btn-google" type="button" id="google-signup-btn">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -1123,8 +1100,7 @@ const I18N = {
     'reader.loading':'កំពុងផ្ទុក PDF…','reader.failed':'មិនអាចផ្ទុក PDF បានទេ','reader.licensed':'ផ្តល់សិទ្ធិឱ្យ','reader.tracked':'ការថត និងការថតវីដេអូត្រូវបានតាមដាន',
     'badge.pending':'កំពុងរង់ចាំ','badge.approved':'យល់ព្រម','badge.rejected':'បដិសេធ','badge.continue':'បន្តអាន','badge.page':'ទំព័រ',
     'err.bookNotFound':'រកសៀវភៅមិនឃើញ','err.loginFirst':'សូមចូលគណនីមុនសិន','err.noAccess':'អ្នកត្រូវទិញសៀវភៅនេះមុនអាន','err.uploadFailed':'បរាជ័យក្នុងការបង្ហោះ','err.fileTooLarge':'ឯកសារធំជាង 8MB','err.invalidFile':'ប្រភេទឯកសារមិនត្រឹមត្រូវ',
-    'ss.title':'ការការពារមាតិកាបានបើក','ss.body':'មិនអនុញ្ញាតិឱ្យថតរូប, ថតវីដេអូ ឬធ្វើការចែកចាយបន្តដោយគ្មានការអនុញ្ញាតិជាលាយលក្ខណ៍អក្សរពីខូហ្ស៊ីរីដ។','ss.dismiss':'ខ្ញុំយល់ហើយ','pwa.install':'ដំឡើងកម្មវិធី',
-    'iab.title':'សូមបើកនៅក្នុង Browser','iab.body':'ការចូលជាមួយ Google មិនអាចធ្វើបាននៅក្នុង Messenger / Instagram / Facebook ឡើយ។ សូមចម្លងតំណខាងក្រោម ហើយបើកវានៅក្នុង Safari ឬ Chrome។','iab.copy':'ចម្លងតំណ khozyreads.com','iab.copied':'✓ បានចម្លង!'
+    'ss.title':'ការការពារមាតិកាបានបើក','ss.body':'មិនអនុញ្ញាតិឱ្យថតរូប, ថតវីដេអូ ឬធ្វើការចែកចាយបន្តដោយគ្មានការអនុញ្ញាតិជាលាយលក្ខណ៍អក្សរពីខូហ្ស៊ីរីដ។','ss.dismiss':'ខ្ញុំយល់ហើយ','pwa.install':'ដំឡើងកម្មវិធី'
   },
   en: {
     'brand.tag':'Words Are Colors Of The Unspoken Soul.','nav.store':'Store','nav.library':'My Library','nav.login':'Sign In','nav.register':'Register','nav.logout':'Logout',
@@ -1143,8 +1119,7 @@ const I18N = {
     'reader.loading':'Loading PDF…','reader.failed':'Failed to load PDF','reader.licensed':'Licensed to','reader.tracked':'Screenshots and recordings are tracked',
     'badge.pending':'Pending','badge.approved':'Approved','badge.rejected':'Rejected','badge.continue':'Continue','badge.page':'Page',
     'err.bookNotFound':'Book not found','err.loginFirst':'Please login first','err.noAccess':'Please purchase this book to read','err.uploadFailed':'Upload failed','err.fileTooLarge':'File larger than 8MB','err.invalidFile':'Invalid file type',
-    'ss.title':'Content Protection Active','ss.body':'Screenshots, video recording, or redistribution are not permitted without written permission from KhozyReads.','ss.dismiss':'I understand','pwa.install':'Install App',
-    'iab.title':'Open in your real browser','iab.body':'Google sign-in does not work inside Messenger / Instagram / Facebook. Please copy the link below and open it in Safari or Chrome.','iab.copy':'Copy link khozyreads.com','iab.copied':'✓ Copied!'
+    'ss.title':'Content Protection Active','ss.body':'Screenshots, video recording, or redistribution are not permitted without written permission from KhozyReads.','ss.dismiss':'I understand','pwa.install':'Install App'
   }
 };
 function t(k){ return (I18N[state.lang]&&I18N[state.lang][k]) || I18N.en[k] || k; }
@@ -1594,39 +1569,6 @@ async function renderLibrary(){
   showTab('books');
 }
 
-// Detect in-app browsers (Messenger, Instagram, FB, TikTok, etc.) — Google blocks OAuth from these.
-function isInAppBrowser(){
-  const ua = navigator.userAgent || '';
-  return /(FBAN|FBAV|FB_IAB|Instagram|MicroMessenger|Line\/|TwitterAndroid|Twitter for|TikTok|Snapchat|WhatsApp|KAKAOTALK|Pinterest)/i.test(ua);
-}
-
-// Wire up the in-app browser warning on login/register pages.
-// Shows warning box + "Copy link" button so user can paste into Safari/Chrome.
-function setupIabWarning(warnId, btnId){
-  if(!isInAppBrowser()) return;
-  const warn = $('#' + warnId);
-  const copyBtn = $('#' + btnId);
-  if(!warn) return;
-  warn.hidden = false;
-  if(copyBtn){
-    copyBtn.onclick = async () => {
-      const url = location.origin + '/';
-      try {
-        await navigator.clipboard.writeText(url);
-      } catch(_){
-        const ta = document.createElement('textarea');
-        ta.value = url; ta.style.position = 'fixed'; ta.style.opacity = '0';
-        document.body.appendChild(ta); ta.select();
-        try { document.execCommand('copy'); } catch(_){}
-        document.body.removeChild(ta);
-      }
-      const orig = copyBtn.textContent;
-      copyBtn.textContent = t('iab.copied');
-      setTimeout(()=>{ copyBtn.textContent = orig; }, 2200);
-    };
-  }
-}
-
 async function signInWithGoogle(btnEl, errEl){
   if(btnEl){ btnEl.disabled = true; btnEl.style.opacity = '0.7'; }
   const { error } = await sb.auth.signInWithOAuth({
@@ -1643,14 +1585,12 @@ async function signInWithGoogle(btnEl, errEl){
 async function renderLogin(){
   if(state.user){ location.hash='#/'; return; }
   showTemplate('tpl-login');
-  setupIabWarning('iab-warn-login', 'iab-copy-login');
   $('#google-signin-btn').onclick = ()=>signInWithGoogle($('#google-signin-btn'), $('#login-error'));
 }
 
 async function renderRegister(){
   if(state.user){ location.hash='#/'; return; }
   showTemplate('tpl-register');
-  setupIabWarning('iab-warn-register', 'iab-copy-register');
   $('#google-signup-btn').onclick = ()=>signInWithGoogle($('#google-signup-btn'), $('#reg-error'));
 }
 
