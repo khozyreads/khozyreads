@@ -2641,11 +2641,13 @@ function setupIOSModal(kh, currentUrl){
   copyBtn.textContent = kh ? '📋 ចម្លងតំណ' : '📋 Copy Link';
   skipBtn.textContent = kh ? 'បន្តនៅទីនេះ' : 'Continue here';
 
-  // Try Chrome iOS deep link (works only if Chrome installed)
+  // Try Chrome iOS via protocol replacement (correct scheme: googlechromes:// for HTTPS).
+  // If Chrome isn't installed, the page stays here — fallback message after 1.5s.
   chromeBtn.onclick = () => {
-    const chromeUrl = 'googlechrome://navigate?url=' + encodeURIComponent(currentUrl);
+    const chromeUrl = currentUrl
+      .replace(/^https:\/\//, 'googlechromes://')
+      .replace(/^http:\/\//, 'googlechrome://');
     window.location.href = chromeUrl;
-    // If user is still here after 1.5s, Chrome probably not installed — fallback to copy.
     setTimeout(() => {
       if(!document.hidden){
         chromeBtn.textContent = kh ? '⚠ Chrome មិនមាន — សូមប្រើ Copy' : '⚠ Chrome not installed — use Copy';
