@@ -2540,6 +2540,10 @@ sb.auth.onAuthStateChange(async (event)=>{
    - Dismissable for current session (sessionStorage). */
 function isInAppBrowser(){
   const ua = navigator.userAgent || '';
+  // STEP 1: Exclude real browsers (CriOS=Chrome iOS, FxiOS=Firefox iOS, EdgiOS=Edge iOS,
+  // OPiOS=Opera iOS, YaBrowser=Yandex). These are standalone browsers, NOT in-app webviews.
+  if(/CriOS|FxiOS|EdgiOS|OPiOS|YaBrowser|UCBrowser|SamsungBrowser/i.test(ua)) return false;
+  // STEP 2: Detect actual in-app browser patterns
   return /(FBAN|FBAV|FB_IAB|Instagram|MicroMessenger|Line\/|TwitterAndroid|Twitter for|TikTok|Snapchat|WhatsApp|KAKAOTALK|Pinterest)/i.test(ua);
 }
 function isAndroid(){ return /Android/i.test(navigator.userAgent || ''); }
@@ -2641,37 +2645,32 @@ function setupIOSModal(kh, currentUrl){
   copyBtn.textContent = kh ? '📋 ចម្លងតំណ' : '📋 Copy Link';
   skipBtn.textContent = kh ? 'បន្តនៅទីនេះ' : 'Continue here';
 
-  // Try Chrome iOS via protocol replacement (correct scheme: googlechromes:// for HTTPS).
-  // If Chrome isn't installed, the page stays here — fallback message after 1.5s.
+  // Helper: persist dismiss + hide modal (once user takes any action, don't pester them again)
+  const dismissModal = () => {
+    modal.hidden = true;
+    try { sessionStorage.setItem('iab-dismissed', '1'); } catch(_){}
+  };
+
+  // Try Chrome iOS via protocol replacement (googlechromes:// for HTTPS).
+  // Dismiss modal immediately — user already took action.
   chromeBtn.onclick = () => {
     const chromeUrl = currentUrl
       .replace(/^https:\/\//, 'googlechromes://')
       .replace(/^http:\/\//, 'googlechrome://');
+    dismissModal();
     window.location.href = chromeUrl;
-    setTimeout(() => {
-      if(!document.hidden){
-        chromeBtn.textContent = kh ? '⚠ Chrome មិនមាន — សូមប្រើ Copy' : '⚠ Chrome not installed — use Copy';
-        chromeBtn.style.opacity = '.6';
-      }
-    }, 1500);
   };
 
-  // Copy link
+  // Copy link — also dismisses modal after a moment so user doesn't have to manually close
   copyBtn.onclick = async () => {
     await copyToClipboard(currentUrl);
     copyBtn.textContent = kh ? '✓ បានចម្លងហើយ!' : '✓ Copied!';
     copyBtn.classList.add('copied');
-    setTimeout(() => {
-      copyBtn.textContent = kh ? '📋 ចម្លងតំណ' : '📋 Copy Link';
-      copyBtn.classList.remove('copied');
-    }, 2500);
+    setTimeout(dismissModal, 1500);
   };
 
   // Skip — dismiss modal for current session
-  skipBtn.onclick = () => {
-    modal.hidden = true;
-    try { sessionStorage.setItem('iab-dismissed', '1'); } catch(_){}
-  };
+  skipBtn.onclick = dismissModal;
 
   modal.hidden = false;
 }
