@@ -84,6 +84,26 @@
 html,body{margin:0;padding:0}
 body{font-family:var(--font-body);font-size:17px;line-height:1.7;color:var(--fg);background:var(--bg);letter-spacing:.01em;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 html[lang="km"] body{font-family:var(--font-khmer);letter-spacing:0}
+/* ===== In-app browser banner (sticky top, dismissable) ===== */
+.iab-banner{position:sticky;top:0;left:0;right:0;z-index:1000;background:linear-gradient(135deg,#7B2D26,#A94238);color:#FAF5E9;box-shadow:0 2px 12px rgba(0,0,0,.18);font-size:14px}
+.iab-banner-inner{display:flex;align-items:center;gap:12px;max-width:1100px;margin:0 auto;padding:10px 14px}
+.iab-banner-icon{font-size:22px;flex-shrink:0}
+.iab-banner-text{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3}
+.iab-banner-text strong{font-weight:700;font-size:14px;letter-spacing:.01em}
+.iab-banner-text span{font-size:12px;opacity:.88;margin-top:2px}
+.iab-banner-action{background:#FAF5E9;color:#7B2D26;border:0;padding:8px 14px;border-radius:6px;font-weight:700;font-size:13px;cursor:pointer;flex-shrink:0;font-family:inherit;white-space:nowrap;letter-spacing:.02em}
+.iab-banner-action:hover{background:#fff;transform:translateY(-1px)}
+.iab-banner-action.copied{background:#2c7a5b;color:#fff}
+.iab-banner-close{background:transparent;color:#FAF5E9;border:0;font-size:24px;line-height:1;cursor:pointer;padding:4px 8px;flex-shrink:0;opacity:.75;font-family:inherit}
+.iab-banner-close:hover{opacity:1}
+html[lang="km"] .iab-banner-text strong,html[lang="km"] .iab-banner-action{font-family:var(--font-khmer)}
+@media (max-width:480px){
+  .iab-banner-inner{padding:8px 10px;gap:8px}
+  .iab-banner-icon{font-size:18px}
+  .iab-banner-text strong{font-size:13px}
+  .iab-banner-text span{font-size:11px}
+  .iab-banner-action{padding:7px 10px;font-size:12px}
+}
 img{max-width:100%;display:block}
 a{color:var(--primary);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .2s,color .2s}
 a:hover{color:var(--primary-deep);border-bottom-color:var(--accent)}
@@ -591,6 +611,19 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
 </style>
 </head>
 <body>
+
+<!-- In-app browser banner: auto-jump to Chrome (Android) or instructions (iOS) -->
+<div id="iab-banner" class="iab-banner" hidden role="alert" aria-live="polite">
+  <div class="iab-banner-inner">
+    <span class="iab-banner-icon" aria-hidden="true">🌐</span>
+    <div class="iab-banner-text">
+      <strong id="iab-banner-title">Buka di browser asli</strong>
+      <span id="iab-banner-sub">Klik tombol di kanan untuk pengalaman terbaik.</span>
+    </div>
+    <button class="iab-banner-action" id="iab-banner-action" type="button">Open</button>
+    <button class="iab-banner-close" id="iab-banner-close" type="button" aria-label="Close">×</button>
+  </div>
+</div>
 
 <!-- ORNAMENT SVG SYMBOLS -->
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -2440,9 +2473,88 @@ sb.auth.onAuthStateChange(async (event)=>{
   document.documentElement.lang = state.lang==='kh'?'km':'en';
   await Promise.all([loadAuth(), loadSettings()]);
   applyI18n();
+  setupInAppBrowserBanner();
   route();
   _authReady=true;
 })();
+
+/* ========== In-App Browser Banner ==========
+   Detects Messenger/Instagram/FB/TikTok/etc in-app browsers and shows a top banner.
+   - Android: provides "Open in Chrome" button using intent:// URL (auto-jumps).
+   - iOS: shows instructions + "Copy Link" button (Apple blocks auto-jump from web).
+   - Dismissable for current session (sessionStorage). */
+function isInAppBrowser(){
+  const ua = navigator.userAgent || '';
+  return /(FBAN|FBAV|FB_IAB|Instagram|MicroMessenger|Line\/|TwitterAndroid|Twitter for|TikTok|Snapchat|WhatsApp|KAKAOTALK|Pinterest)/i.test(ua);
+}
+function isAndroid(){ return /Android/i.test(navigator.userAgent || ''); }
+function isIOS(){ return /iPad|iPhone|iPod/.test(navigator.userAgent || '') && !window.MSStream; }
+
+function setupInAppBrowserBanner(){
+  if(!isInAppBrowser()) return;
+  // Respect user dismiss within the same session
+  try { if(sessionStorage.getItem('iab-dismissed') === '1') return; } catch(_){}
+
+  const banner = document.getElementById('iab-banner');
+  const titleEl = document.getElementById('iab-banner-title');
+  const subEl = document.getElementById('iab-banner-sub');
+  const actionBtn = document.getElementById('iab-banner-action');
+  const closeBtn = document.getElementById('iab-banner-close');
+  if(!banner || !actionBtn) return;
+
+  const kh = state.lang === 'kh';
+  const currentUrl = location.href;
+
+  if(isAndroid()){
+    // Android: paksa buka di Chrome via intent://
+    titleEl.textContent = kh ? 'បើកក្នុង Chrome' : 'Open in Chrome';
+    subEl.textContent   = kh ? 'ដើម្បីបទពិសោធន៍ល្អបំផុត ចុចបើកនៅក្នុង Chrome' : 'For the best experience, open in Chrome';
+    actionBtn.textContent = kh ? 'បើក Chrome' : 'Open Chrome';
+    actionBtn.onclick = () => {
+      // Strip protocol for intent:// scheme
+      const path = location.host + location.pathname + location.search + location.hash;
+      const intentUrl = `intent://${path}#Intent;scheme=https;package=com.android.chrome;end`;
+      window.location.href = intentUrl;
+    };
+  } else if(isIOS()){
+    // iOS: Apple blocks auto-redirect. Best we can do = copy link + instructions.
+    titleEl.textContent = kh ? 'បើកក្នុង Safari' : 'Open in Safari';
+    subEl.textContent   = kh ? 'ចុចបីចំណុច (⋯) ខាងលើ → "Open in Safari"' : 'Tap ⋯ at top → "Open in Safari"';
+    actionBtn.textContent = kh ? 'ចម្លងតំណ' : 'Copy Link';
+    actionBtn.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(currentUrl);
+      } catch(_){
+        const ta = document.createElement('textarea');
+        ta.value = currentUrl; ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch(_){}
+        document.body.removeChild(ta);
+      }
+      const orig = actionBtn.textContent;
+      actionBtn.textContent = kh ? '✓ បានចម្លង!' : '✓ Copied!';
+      actionBtn.classList.add('copied');
+      setTimeout(()=>{ actionBtn.textContent = orig; actionBtn.classList.remove('copied'); }, 2200);
+    };
+  } else {
+    // Detected in-app but unknown OS — generic copy fallback
+    titleEl.textContent = kh ? 'បើកក្នុង Browser' : 'Open in browser';
+    subEl.textContent   = kh ? 'សម្រាប់បទពិសោធន៍ល្អបំផុត' : 'For the best experience';
+    actionBtn.textContent = kh ? 'ចម្លងតំណ' : 'Copy Link';
+    actionBtn.onclick = async () => {
+      try { await navigator.clipboard.writeText(currentUrl); } catch(_){}
+      actionBtn.textContent = kh ? '✓ បានចម្លង!' : '✓ Copied!';
+      actionBtn.classList.add('copied');
+    };
+  }
+
+  closeBtn.onclick = () => {
+    banner.hidden = true;
+    try { sessionStorage.setItem('iab-dismissed', '1'); } catch(_){}
+  };
+
+  banner.hidden = false;
+}
 
 /* ========== PWA: register service worker + install prompt ========== */
 if('serviceWorker' in navigator && location.protocol === 'https:' || location.hostname === 'localhost'){
