@@ -286,6 +286,11 @@ html[lang="km"] .detail-info .price-row .price-note{font-family:var(--font-khmer
 .auth-orn-top svg{width:60px;height:24px}
 .auth-card h2{text-align:center;margin:0 0 8px}
 .btn-google{display:inline-flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px 20px;border:1px solid var(--border-strong);background:#fff;color:#3c4043;font-family:'Roboto','Crimson Pro',-apple-system,Arial,sans-serif;font-size:15px;font-weight:500;border-radius:6px;cursor:pointer;margin-top:20px;transition:box-shadow .2s,transform .15s,background .2s;letter-spacing:.2px}
+.btn-facebook{display:inline-flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px 20px;border:0;background:#1877F2;color:#fff;font-family:'Helvetica','Crimson Pro',-apple-system,Arial,sans-serif;font-size:15px;font-weight:600;border-radius:6px;cursor:pointer;margin-top:12px;transition:box-shadow .2s,transform .15s,background .2s;letter-spacing:.2px}
+.btn-facebook:hover{background:#166FE5}
+.auth-divider{display:flex;align-items:center;gap:12px;margin-top:18px;color:var(--muted);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+html[lang="km"] .auth-divider{font-family:var(--font-khmer);letter-spacing:.02em;text-transform:none;font-size:13px}
 .btn-google:hover{box-shadow:0 2px 8px rgba(60,64,67,.25);background:#f8f9fa}
 .btn-google:active{transform:scale(.98)}
 .btn-google:disabled{opacity:.6;cursor:wait}
@@ -856,6 +861,12 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
         </svg>
         <span data-i18n="auth.signInGoogle">បន្តជាមួយ Google</span>
       </button>
+      <button class="btn-facebook" type="button" id="facebook-signin-btn">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="#fff">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+        <span data-i18n="auth.signInFacebook">បន្តជាមួយ Facebook</span>
+      </button>
       <p class="muted" style="margin-top:18px;font-size:13px" data-i18n="auth.googleSub">សុវត្ថិភាព · ឥតគិតថ្លៃ · ការចូលរហ័ស</p>
     </div>
   </div>
@@ -879,6 +890,12 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
           <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
         </svg>
         <span data-i18n="auth.signUpGoogle">ចុះឈ្មោះជាមួយ Google</span>
+      </button>
+      <button class="btn-facebook" type="button" id="facebook-signup-btn">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="#fff">
+          <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+        </svg>
+        <span data-i18n="auth.signUpFacebook">ចុះឈ្មោះជាមួយ Facebook</span>
       </button>
       <p class="muted" style="margin-top:18px;font-size:13px" data-i18n="auth.googleSub">សុវត្ថិភាព · ឥតគិតថ្លៃ · ការចូលរហ័ស</p>
     </div>
@@ -1092,7 +1109,7 @@ const I18N = {
     'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់ការទូទាត់...','cta.pendingHint':'ចុចដើម្បីបង្ហោះវិក្កយបត្រឡើងវិញ','cta.pendingNote':'រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។ មិនអាចទិញម្តងទៀតបានទេនៅពេលនេះ។','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន',
     'lib.eyebrow':'បណ្ណាល័យផ្ទាល់ខ្លួន','lib.title':'បណ្ណាល័យរបស់ខ្ញុំ','lib.lede':'សៀវភៅទាំងអស់ដែលអ្នកបានទិញ — រួចរាល់ចាប់ផ្តើមអាន។','lib.empty':'មិនទាន់មានការទិញ','lib.empty.favs':'មិនទាន់មានសៀវភៅដែលចូលចិត្ត','lib.tab.books':'សៀវភៅរបស់ខ្ញុំ','lib.tab.favs':'ចូលចិត្ត',
     'pay.promo':'មានកូដប្រូម៉ូ?','pay.applyPromo':'អនុវត្ត','pay.review':'សូមពិនិត្យមើលមុនពេលបញ្ជូន','pay.book':'សៀវភៅ','pay.subtotal':'សរុបមុនបញ្ចុះតម្លៃ','pay.discount':'ការបញ្ចុះតម្លៃ','pay.total':'សរុបទាំងអស់','pay.contactAdmin':'មានបញ្ហា? ទាក់ទងអ្នកគ្រប់គ្រង','pay.contactAdminSub':'ផ្ញើសារនៅ Telegram',
-    'auth.welcome':'សូមស្វាគមន៍មកកាន់','auth.loginH':'ចូលគណនី','auth.loginSub':'បន្តការអានសៀវភៅដែលអ្នកស្រឡាញ់','auth.loginBtn':'ចូលគណនី','auth.noAcc':'មិនទាន់មានគណនី?','auth.haveAcc':'មានគណនីរួចហើយ?','auth.signInGoogle':'បន្តជាមួយ Google','auth.signUpGoogle':'ចុះឈ្មោះជាមួយ Google','auth.googleSub':'សុវត្ថិភាព · ឥតគិតថ្លៃ · ការចូលរហ័ស',
+    'auth.welcome':'សូមស្វាគមន៍មកកាន់','auth.loginH':'ចូលគណនី','auth.loginSub':'បន្តការអានសៀវភៅដែលអ្នកស្រឡាញ់','auth.loginBtn':'ចូលគណនី','auth.noAcc':'មិនទាន់មានគណនី?','auth.haveAcc':'មានគណនីរួចហើយ?','auth.signInGoogle':'បន្តជាមួយ Google','auth.signUpGoogle':'ចុះឈ្មោះជាមួយ Google','auth.signInFacebook':'បន្តជាមួយ Facebook','auth.signUpFacebook':'ចុះឈ្មោះជាមួយ Facebook','auth.googleSub':'សុវត្ថិភាព · ឥតគិតថ្លៃ · ការចូលរហ័ស',
     'auth.join':'ចូលរួមជាមួយយើង','auth.registerH':'បង្កើតគណនី','auth.registerSub':'ចាប់ផ្តើមការដំណើរនៃការអានរបស់អ្នក','auth.registerBtn':'បង្កើតគណនី',
     'auth.user':'ឈ្មោះអ្នកប្រើ','auth.email':'អ៊ីមែល','auth.pass':'ពាក្យសម្ងាត់',
     'pay.eyebrow':'ការទូទាត់សុវត្ថិភាព · ABA / KHQR','pay.title':'បញ្ចប់ការទិញរបស់អ្នក','pay.crumb':'បង់ប្រាក់','pay.step1':'ជំហានទី ១ · ស្កេន QR','pay.scan':'ស្កេនកូដខាងក្រោម','pay.amount':'ចំនួន',
@@ -1111,7 +1128,7 @@ const I18N = {
     'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Verifying payment...','cta.pendingHint':'Click to re-upload your payment proof','cta.pendingNote':'Waiting for admin verification. You cannot buy again right now.','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled','cta.readFree':'Read for Free','cta.loginToRead':'Login to Read',
     'lib.eyebrow':'Personal library','lib.title':'My Library','lib.lede':'All books you own — ready to read.','lib.empty':'No purchases yet','lib.empty.favs':'No favorites yet','lib.tab.books':'My Books','lib.tab.favs':'Favorites',
     'pay.promo':'Have a promo code?','pay.applyPromo':'Apply','pay.review':'Review before submitting','pay.book':'Book','pay.subtotal':'Subtotal','pay.discount':'Discount','pay.total':'Total','pay.contactAdmin':'Need help? Contact admin','pay.contactAdminSub':'Reach us on Telegram',
-    'auth.welcome':'Welcome to','auth.loginH':'Sign In','auth.loginSub':'Continue reading what you love','auth.loginBtn':'Sign In','auth.noAcc':'No account yet?','auth.haveAcc':'Already have an account?','auth.signInGoogle':'Continue with Google','auth.signUpGoogle':'Sign up with Google','auth.googleSub':'Secure · Free · One-tap access',
+    'auth.welcome':'Welcome to','auth.loginH':'Sign In','auth.loginSub':'Continue reading what you love','auth.loginBtn':'Sign In','auth.noAcc':'No account yet?','auth.haveAcc':'Already have an account?','auth.signInGoogle':'Continue with Google','auth.signUpGoogle':'Sign up with Google','auth.signInFacebook':'Continue with Facebook','auth.signUpFacebook':'Sign up with Facebook','auth.googleSub':'Secure · Free · One-tap access',
     'auth.join':'Join us','auth.registerH':'Create Account','auth.registerSub':'Start your reading journey','auth.registerBtn':'Create Account',
     'auth.user':'Username','auth.email':'Email','auth.pass':'Password',
     'pay.eyebrow':'Secure payment · ABA / KHQR','pay.title':'Complete your purchase','pay.crumb':'Payment','pay.step1':'Step 1 · Scan QR','pay.scan':'Scan the code below','pay.amount':'Amount',
@@ -1569,29 +1586,36 @@ async function renderLibrary(){
   showTab('books');
 }
 
-async function signInWithGoogle(btnEl, errEl){
+async function signInWithProvider(provider, btnEl, errEl){
   if(btnEl){ btnEl.disabled = true; btnEl.style.opacity = '0.7'; }
   const { error } = await sb.auth.signInWithOAuth({
-    provider: 'google',
+    provider,
     options: { redirectTo: location.origin + '/' }
   });
   if(error){
     if(errEl) errEl.innerHTML = alertBox(error.message);
     if(btnEl){ btnEl.disabled = false; btnEl.style.opacity = '1'; }
   }
-  // On success, browser navigates to Google then back; loadAuth runs on return.
+  // On success, browser navigates to the OAuth provider then back; loadAuth runs on return.
 }
+// Backward-compat shim (callers in templates still use signInWithGoogle)
+function signInWithGoogle(btnEl, errEl){ return signInWithProvider('google', btnEl, errEl); }
+function signInWithFacebook(btnEl, errEl){ return signInWithProvider('facebook', btnEl, errEl); }
 
 async function renderLogin(){
   if(state.user){ location.hash='#/'; return; }
   showTemplate('tpl-login');
   $('#google-signin-btn').onclick = ()=>signInWithGoogle($('#google-signin-btn'), $('#login-error'));
+  const fbBtn = $('#facebook-signin-btn');
+  if(fbBtn) fbBtn.onclick = ()=>signInWithFacebook(fbBtn, $('#login-error'));
 }
 
 async function renderRegister(){
   if(state.user){ location.hash='#/'; return; }
   showTemplate('tpl-register');
   $('#google-signup-btn').onclick = ()=>signInWithGoogle($('#google-signup-btn'), $('#reg-error'));
+  const fbBtn = $('#facebook-signup-btn');
+  if(fbBtn) fbBtn.onclick = ()=>signInWithFacebook(fbBtn, $('#reg-error'));
 }
 
 async function renderPayment(orderId){
