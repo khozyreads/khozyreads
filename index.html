@@ -1171,22 +1171,69 @@ const $$ = (s,c=document)=>c.querySelectorAll(s);
 const esc = s => s==null?'':String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmtMoney = (a,c)=>`${Number(a||0).toFixed(2)} ${c||'USD'}`;
 function alertBox(m,type='error'){ return `<div class="alert alert-${type}">${esc(m)}</div>`; }
-// SEO: dynamic <title> + Open Graph for shared links
+// SEO: dynamic <title> + Open Graph + JSON-LD for shared links & rich snippets
 const DEFAULT_TITLE = 'KhozyReads — Khmer Digital Bookstore | ហាងសៀវភៅឌីជីថលខ្មែរ';
 const DEFAULT_DESC = 'Buy and read authentic Khmer digital books and PDF stories online. Secure payment via ABA / KHQR.';
 const DEFAULT_OG_IMG = 'https://khozyreads.com/og-cover.jpg';
-function setPageMeta(title, desc, img){
+function setPageMeta(title, desc, img, canonical){
   document.title = title || DEFAULT_TITLE;
   const setM = (sel, content)=>{ const el = document.querySelector(sel); if(el && content) el.setAttribute('content', content); };
   setM('meta[name="description"]', desc || DEFAULT_DESC);
   setM('meta[property="og:title"]', title || DEFAULT_TITLE);
   setM('meta[property="og:description"]', desc || DEFAULT_DESC);
   setM('meta[property="og:image"]', img && /^https?:\/\//.test(img) ? img : DEFAULT_OG_IMG);
+  setM('meta[property="og:url"]', canonical || 'https://khozyreads.com/');
   setM('meta[name="twitter:title"]', title || DEFAULT_TITLE);
   setM('meta[name="twitter:description"]', desc || DEFAULT_DESC);
   setM('meta[name="twitter:image"]', img && /^https?:\/\//.test(img) ? img : DEFAULT_OG_IMG);
+  // Update canonical link
+  const canonEl = document.querySelector('link[rel="canonical"]');
+  if(canonEl && canonical) canonEl.setAttribute('href', canonical);
 }
-function resetPageMeta(){ setPageMeta(DEFAULT_TITLE, DEFAULT_DESC, DEFAULT_OG_IMG); }
+function resetPageMeta(){ setPageMeta(DEFAULT_TITLE, DEFAULT_DESC, DEFAULT_OG_IMG, 'https://khozyreads.com/'); removeBookJsonLd(); }
+
+// Inject Book schema.org JSON-LD for book detail pages (Google rich snippets)
+function setBookJsonLd(book){
+  removeBookJsonLd();
+  const ld = {
+    "@context": "https://schema.org",
+    "@type": "Book",
+    "name": book.title,
+    "url": `https://khozyreads.com/#/book/${book.id}`,
+    "inLanguage": "km",
+    "bookFormat": "https://schema.org/EBook",
+    "publisher": { "@type": "Organization", "name": "KhozyReads" },
+  };
+  if(book.creator) ld.author = { "@type": "Person", "name": book.creator };
+  if(book.synopsis) ld.description = book.synopsis;
+  if(book.cover_url) ld.image = book.cover_url;
+  if(book.genre) ld.genre = book.genre;
+  if(book.price != null && !book.is_free){
+    ld.offers = {
+      "@type": "Offer",
+      "price": String(book.price),
+      "priceCurrency": book.currency || "USD",
+      "availability": "https://schema.org/InStock",
+      "url": `https://khozyreads.com/#/book/${book.id}`,
+    };
+  } else if(book.is_free){
+    ld.offers = {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": book.currency || "USD",
+      "availability": "https://schema.org/InStock",
+    };
+  }
+  const script = document.createElement('script');
+  script.type = 'application/ld+json';
+  script.id = 'book-jsonld';
+  script.textContent = JSON.stringify(ld);
+  document.head.appendChild(script);
+}
+function removeBookJsonLd(){
+  const el = document.getElementById('book-jsonld');
+  if(el) el.remove();
+}
 function bindData(scope, key, val){ scope.querySelectorAll(`[data-bind="${key}"]`).forEach(el=>el.textContent=val); }
 async function publicUrl(bucket,path){ if(!path) return ''; const {data}=sb.storage.from(bucket).getPublicUrl(path); return data.publicUrl; }
 function pickColor(seed){ const palette=['linear-gradient(135deg,#7B2D26 0%,#3D5B49 100%)','linear-gradient(135deg,#3D5B49,#D4A574)','linear-gradient(135deg,#1E2A3A,#7B2D26)','linear-gradient(135deg,#E8C5BC,#7B2D26)','linear-gradient(135deg,#D4A574,#7B2D26)']; let h=0; for(let i=0;i<String(seed||'').length;i++) h=(h*31+String(seed).charCodeAt(i))|0; return palette[Math.abs(h)%palette.length]; }
@@ -1449,8 +1496,14 @@ async function renderBookDetail(id){
   if(!id){ location.hash='#/'; return; }
   const { data:book, error } = await sb.from('books').select('*').eq('id',id).maybeSingle();
   if(error||!book){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.bookNotFound'))}</div>`; return; }
-  // SEO: update tab title + share metadata so links shared show the book name
-  setPageMeta(`${book.title} · KhozyReads`, book.synopsis ? book.synopsis.slice(0, 160) : null, book.cover_url || null);
+  // SEO: update tab title + share metadata + Book schema for rich snippets
+  setPageMeta(
+    `${book.title} · KhozyReads`,
+    book.synopsis ? book.synopsis.slice(0, 160) : null,
+    book.cover_url || null,
+    `https://khozyreads.com/#/book/${book.id}`,
+  );
+  setBookJsonLd(book);
   let action='guest', orderId=null;
   if(state.user&&state.profile){
     const { data:lib } = await sb.from('user_library').select('id').eq('user_id',state.profile.id).eq('book_id',id).eq('access_status','active').maybeSingle();
