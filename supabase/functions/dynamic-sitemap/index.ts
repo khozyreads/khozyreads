@@ -70,9 +70,10 @@ Deno.serve(async (_req) => {
     }
 
     // SEO landing pages (high priority — primary keyword targets)
+    // Clean URLs without .html — Cloudflare Pages serves these natively
     urls.push(
       `  <url>
-    <loc>${SITE}/khmer-romance.html</loc>
+    <loc>${SITE}/khmer-romance</loc>
     <lastmod>${today}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>

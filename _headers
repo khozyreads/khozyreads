@@ -37,6 +37,9 @@
 
 # SEO landing pages — change infrequently, cache aggressively at edge
 # for fast Google crawler experience and good Core Web Vitals score.
+# Note: Cloudflare Pages serves both /khmer-romance and /khmer-romance.html
+/khmer-romance
+  Cache-Control: public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400
 /khmer-romance.html
   Cache-Control: public, max-age=3600, s-maxage=86400, stale-while-revalidate=86400
 /privacy.html
