@@ -1594,21 +1594,48 @@ async function signInWithGoogle(btnEl, errEl){
 // On success it invokes the global callback specified in data-onauth.
 const TELEGRAM_BOT_USERNAME = 'KhozyReads_bot';
 
-// Mount the Telegram widget into the given container element.
-// Re-injects on every login/register page render so the iframe is fresh.
+// Mount the Telegram widget as a direct iframe (bypasses dynamic script-injection
+// quirks in Chrome iOS / some Android browsers). We listen for postMessage from
+// oauth.telegram.org and route auth_user events to onTelegramAuth.
 function mountTelegramWidget(containerId){
   const container = document.getElementById(containerId);
   if(!container) return;
   container.innerHTML = ''; // clear any previous widget
-  const script = document.createElement('script');
-  script.async = true;
-  script.src = 'https://telegram.org/js/telegram-widget.js?22';
-  script.setAttribute('data-telegram-login', TELEGRAM_BOT_USERNAME);
-  script.setAttribute('data-size', 'large');
-  script.setAttribute('data-radius', '6');
-  script.setAttribute('data-onauth', 'onTelegramAuth(user)');
-  script.setAttribute('data-request-access', 'write');
-  container.appendChild(script);
+  const origin = encodeURIComponent(location.origin);
+  const iframe = document.createElement('iframe');
+  iframe.id = containerId + '-iframe';
+  iframe.src = `https://oauth.telegram.org/embed/${TELEGRAM_BOT_USERNAME}?origin=${origin}&size=large&request_access=write&radius=6`;
+  iframe.setAttribute('frameborder', '0');
+  iframe.setAttribute('scrolling', 'no');
+  iframe.setAttribute('allowtransparency', 'true');
+  iframe.style.cssText = 'border:0;overflow:hidden;color-scheme:light;width:238px;height:40px';
+  container.appendChild(iframe);
+}
+
+// Global postMessage listener — installed once. Listens for Telegram OAuth events.
+if(!window._tgListenerInstalled){
+  window._tgListenerInstalled = true;
+  window.addEventListener('message', function(event){
+    if(event.origin !== 'https://oauth.telegram.org') return;
+    try {
+      const data = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+      if(!data || !data.event) return;
+      if(data.event === 'auth_user' && data.auth_data){
+        window.onTelegramAuth(data.auth_data);
+      } else if(data.event === 'auth_user'){
+        // Some versions post the user object directly
+        const { event: _ev, ...userData } = data;
+        window.onTelegramAuth(userData);
+      } else if(data.event === 'resize' && data.height){
+        // Resize iframe to match content height reported by Telegram
+        document.querySelectorAll('iframe[id$="-iframe"][src^="https://oauth.telegram.org"]').forEach(f => {
+          f.style.height = data.height + 'px';
+        });
+      }
+    } catch(err){
+      console.error('Telegram message parse error', err);
+    }
+  });
 }
 
 // Global callback invoked by the Telegram widget after the user authorizes.
