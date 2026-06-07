@@ -363,12 +363,26 @@ details.row-details .detail-body{margin-top:8px;padding:12px;background:var(--bg
     </div>
     <div class="panel-body">
       <div class="field" style="margin-bottom:14px">
-        <label>Message (Khmer or English)</label>
+        <label>Message / Caption (Khmer or English)</label>
         <textarea id="broadcast-text" class="input" rows="8" maxlength="4000" placeholder="ឧទាហរណ៍: 📚 សៀវភៅថ្មីបានមកដល់ហើយ! ទស្សនានៅ khozyreads.com" style="font-family:inherit;resize:vertical;min-height:150px"></textarea>
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px">
-          <span>Tip: short, friendly, with a CTA. Telegram limit: 4000 chars.</span>
+          <span>Tip: short, friendly, with a CTA. Limit: <span id="broadcast-charlimit">4000</span> chars.</span>
           <span id="broadcast-charcount">0 / 4000</span>
         </div>
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label>Image (optional)</label>
+        <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
+          <label class="btn btn-ghost btn-sm" style="cursor:pointer;flex-shrink:0">
+            <input type="file" id="broadcast-image" accept="image/jpeg,image/png,image/webp" style="display:none">
+            📷 Choose image
+          </label>
+          <div id="broadcast-image-preview" style="display:none;align-items:center;gap:10px">
+            <img id="broadcast-image-thumb" style="max-width:120px;max-height:80px;border-radius:6px;border:1px solid var(--border)">
+            <button type="button" class="btn btn-ghost btn-sm" id="broadcast-image-remove" style="color:#c0392b">Remove</button>
+          </div>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px">JPG/PNG/WebP, max 5MB. Image will be sent as photo with caption.</div>
       </div>
       <div class="field" style="margin-bottom:14px">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
@@ -1194,11 +1208,73 @@ async function renderBroadcast(){
     histBody.innerHTML = `<tr><td colspan="6" class="empty">Could not load history</td></tr>`;
   }
 
+  // Image upload state (Supabase storage)
+  const imageInput = $('#broadcast-image');
+  const imagePreview = $('#broadcast-image-preview');
+  const imageThumb = $('#broadcast-image-thumb');
+  const imageRemove = $('#broadcast-image-remove');
+  const charLimitEl = $('#broadcast-charlimit');
+  let uploadedImageUrl = null;
+  let uploadedImagePath = null;
+
+  imageInput.addEventListener('change', async ()=>{
+    const file = imageInput.files[0];
+    if(!file) return;
+    if(!['image/jpeg','image/png','image/webp'].includes(file.type)){
+      msgEl.innerHTML = alertBox('Invalid image type (JPG/PNG/WebP only)');
+      imageInput.value = '';
+      return;
+    }
+    if(file.size > 5 * 1024 * 1024){
+      msgEl.innerHTML = alertBox('Image too large (max 5MB)');
+      imageInput.value = '';
+      return;
+    }
+    msgEl.innerHTML = `<div class="alert alert-info">Uploading image…</div>`;
+    try {
+      // Upload to broadcasts folder in site-assets bucket
+      const ext = (file.name.split('.').pop()||'jpg').toLowerCase();
+      const path = `broadcasts/bc_${Date.now()}.${ext}`;
+      const { error: upErr } = await sb.storage.from('site-assets').upload(path, file, {
+        upsert: false,
+        contentType: file.type,
+      });
+      if(upErr) throw upErr;
+      const { data: pub } = sb.storage.from('site-assets').getPublicUrl(path);
+      uploadedImageUrl = pub.publicUrl;
+      uploadedImagePath = path;
+      imageThumb.src = uploadedImageUrl;
+      imagePreview.style.display = 'flex';
+      msgEl.innerHTML = '';
+      updateState();
+    } catch(err){
+      console.error('Image upload failed:', err);
+      msgEl.innerHTML = alertBox('Image upload failed: ' + (err.message || err));
+      imageInput.value = '';
+    }
+  });
+
+  imageRemove.onclick = async ()=>{
+    if(uploadedImagePath){
+      try { await sb.storage.from('site-assets').remove([uploadedImagePath]); } catch(_){}
+    }
+    uploadedImageUrl = null;
+    uploadedImagePath = null;
+    imageInput.value = '';
+    imagePreview.style.display = 'none';
+    updateState();
+  };
+
   // Wire up char count + form validation
   function updateState(){
     const len = textEl.value.length;
-    charCountEl.textContent = `${len} / 4000`;
-    sendBtn.disabled = len === 0 || len > 4000 || !confirmEl.checked;
+    const maxLen = uploadedImageUrl ? 1024 : 4000;
+    charLimitEl.textContent = maxLen;
+    charCountEl.textContent = `${len} / ${maxLen}`;
+    charCountEl.style.color = len > maxLen ? '#c0392b' : 'var(--muted)';
+    // Allow send if either text or image is present (or both), within limit
+    const hasContent = len > 0 || !!uploadedImageUrl;
+    sendBtn.disabled = !hasContent || len > maxLen || !confirmEl.checked;
   }
   textEl.addEventListener('input', updateState);
   confirmEl.addEventListener('change', updateState);
@@ -1207,7 +1283,7 @@ async function renderBroadcast(){
   // Send handler
   sendBtn.onclick = async ()=>{
     const message = textEl.value.trim();
-    if(!message){ statusEl.textContent = 'Empty message'; return; }
+    if(!message && !uploadedImageUrl){ statusEl.textContent = 'Empty message and no image'; return; }
     if(!confirm(`Send this broadcast to all ${countEl.textContent}? This cannot be undone.`)) return;
 
     sendBtn.disabled = true;
@@ -1217,6 +1293,8 @@ async function renderBroadcast(){
     try {
       const session = (await sb.auth.getSession()).data.session;
       if(!session) throw new Error('Not logged in');
+      const payload = { message, parse_mode: 'Markdown' };
+      if(uploadedImageUrl) payload.photo_url = uploadedImageUrl;
       const res = await fetch(`${CFG.SUPABASE_URL}/functions/v1/telegram-broadcast`, {
         method: 'POST',
         headers: {
@@ -1224,7 +1302,7 @@ async function renderBroadcast(){
           'Authorization': `Bearer ${session.access_token}`,
           'apikey': CFG.SUPABASE_ANON_KEY,
         },
-        body: JSON.stringify({ message, parse_mode: 'Markdown' }),
+        body: JSON.stringify(payload),
       });
       const body = await res.json();
       if(!res.ok) throw new Error(body?.error || 'Send failed');
@@ -1234,6 +1312,10 @@ async function renderBroadcast(){
       // Clear form + refresh history
       textEl.value = '';
       confirmEl.checked = false;
+      imageInput.value = '';
+      uploadedImageUrl = null;
+      uploadedImagePath = null;
+      imagePreview.style.display = 'none';
       updateState();
       setTimeout(() => renderBroadcast(), 800);
     } catch(err){

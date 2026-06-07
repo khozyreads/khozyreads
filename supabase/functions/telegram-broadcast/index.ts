@@ -48,11 +48,16 @@ Deno.serve(async (req) => {
     // ---- Parse body ----
     const body = await req.json().catch(() => null);
     const message = (body?.message ?? "").toString().trim();
+    const photoUrl = body?.photo_url ? String(body.photo_url).trim() : "";
     const parseMode = body?.parse_mode === "HTML" || body?.parse_mode === "Markdown"
       ? body.parse_mode
       : "Markdown";
-    if (!message) return json({ error: "Message is empty" }, 400);
-    if (message.length > 4000) return json({ error: "Message too long (max 4000 chars)" }, 400);
+    if (!message && !photoUrl) return json({ error: "Message or image required" }, 400);
+    // sendPhoto caption limit is 1024; sendMessage limit is 4096
+    const maxLen = photoUrl ? 1024 : 4000;
+    if (message.length > maxLen) {
+      return json({ error: `Message too long (max ${maxLen} chars when ${photoUrl ? "image attached" : "text-only"})` }, 400);
+    }
 
     // ---- Get recipients ----
     const { data: recipients, error: rcpErr } = await supabase.rpc("list_telegram_recipients");
@@ -67,18 +72,19 @@ Deno.serve(async (req) => {
     let failed = 0;
     const failures: Array<{ telegram_id: number; username: string; reason: string }> = [];
 
+    // Pick Telegram method: sendPhoto when image present, else sendMessage
+    const tgMethod = photoUrl ? "sendPhoto" : "sendMessage";
+    const buildPayload = (chatId: number) => photoUrl
+      ? { chat_id: chatId, photo: photoUrl, caption: message || undefined, parse_mode: message ? parseMode : undefined }
+      : { chat_id: chatId, text: message, parse_mode: parseMode, disable_web_page_preview: false };
+
     for (let i = 0; i < list.length; i++) {
       const rcp = list[i];
       try {
-        const res = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+        const res = await fetch(`https://api.telegram.org/bot${botToken}/${tgMethod}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            chat_id: rcp.telegram_id,
-            text: message,
-            parse_mode: parseMode,
-            disable_web_page_preview: false,
-          }),
+          body: JSON.stringify(buildPayload(rcp.telegram_id)),
         });
         if (res.ok) {
           sent++;
