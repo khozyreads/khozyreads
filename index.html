@@ -1643,6 +1643,12 @@ if(!window._tgListenerInstalled){
 // returns a magic link that signs the user in via Supabase Auth.
 window.onTelegramAuth = async function(tgUser){
   const errEl = document.getElementById('login-error') || document.getElementById('reg-error');
+  console.log('[tg-auth] Received auth data from Telegram:', tgUser);
+  if(!tgUser || !tgUser.id || !tgUser.hash){
+    console.error('[tg-auth] Auth data missing required fields:', tgUser);
+    if(errEl) errEl.innerHTML = alertBox('Telegram sent unexpected data. Please retry.');
+    return;
+  }
   if(errEl) errEl.innerHTML = `<div class="alert alert-info">Signing in via Telegram…</div>`;
   try {
     const res = await fetch(`${CFG.SUPABASE_URL}/functions/v1/telegram-auth`, {
@@ -1650,14 +1656,19 @@ window.onTelegramAuth = async function(tgUser){
       headers: { 'Content-Type': 'application/json', 'apikey': CFG.SUPABASE_ANON_KEY },
       body: JSON.stringify(tgUser),
     });
-    const body = await res.json();
-    if(!res.ok || !body?.magic_link){
-      throw new Error(body?.error || 'Telegram sign-in failed');
+    let body = null;
+    try { body = await res.json(); } catch(_){ body = null; }
+    console.log('[tg-auth] Edge function response:', res.status, body);
+    if(!res.ok){
+      throw new Error(`Edge function ${res.status}: ${body?.error || 'unknown'} ${body?.details ? '· ' + body.details : ''}`);
+    }
+    if(!body?.magic_link){
+      throw new Error('No magic link returned: ' + JSON.stringify(body));
     }
     // Magic link redirects to our origin and Supabase Auth picks up the session token.
     location.href = body.magic_link;
   } catch(err){
-    console.error('Telegram auth error:', err);
+    console.error('[tg-auth] Failed:', err);
     if(errEl) errEl.innerHTML = alertBox(err.message || 'Telegram sign-in failed. Please try again.');
   }
 };

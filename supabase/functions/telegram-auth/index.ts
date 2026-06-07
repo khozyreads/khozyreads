@@ -51,20 +51,21 @@ Deno.serve(async (req) => {
 
     // ---- Verify Telegram hash ----
     // Telegram docs: https://core.telegram.org/widgets/login#checking-authorization
-    // data_check_string = sorted "key=value" lines from all fields except `hash`
+    // data_check_string = concatenation of ALL received fields (except `hash`),
+    //   sorted alphabetically, in format "key=value", joined by '\n'.
     // secret_key = SHA-256(bot_token)
     // expected_hash = HMAC-SHA-256(secret_key, data_check_string)
     const dataFields: Record<string, string> = {};
-    for (const k of ["auth_date", "first_name", "id", "last_name", "photo_url", "username"]) {
-      const v = (body as Record<string, unknown>)[k];
-      if (v !== undefined && v !== null && v !== "") {
-        dataFields[k] = String(v);
-      }
+    for (const [k, v] of Object.entries(body)) {
+      if (k === "hash") continue;
+      if (v === undefined || v === null || v === "") continue;
+      dataFields[k] = String(v);
     }
     const dataCheckString = Object.keys(dataFields)
       .sort()
       .map((k) => `${k}=${dataFields[k]}`)
       .join("\n");
+    console.log("data_check_string:", dataCheckString);
 
     const enc = new TextEncoder();
     const secretKey = await crypto.subtle.digest("SHA-256", enc.encode(botToken));
