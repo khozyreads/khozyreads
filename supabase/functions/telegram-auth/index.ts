@@ -111,20 +111,45 @@ Deno.serve(async (req) => {
     if (!desiredUsername) desiredUsername = `tg_${tgId}`;
 
     // Look up existing profile by telegram_id
-    const { data: existingRows, error: lookupErr } = await supabase.rpc("find_profile_by_telegram_id", { p_tg_id: tgId });
-    if (lookupErr) {
-      console.error("find_profile_by_telegram_id failed:", lookupErr);
-      return json({ error: "DB lookup failed", details: lookupErr.message }, 500);
-    }
-    const existing = (existingRows ?? [])[0] as { profile_id: string; auth_user_id: string; username: string } | undefined;
-
-    let authUserId: string;
+    // ---- Find or create user ----
+    // Lookup priority:
+    //   1) By telegram_id in users_profile (existing TG user with full link)
+    //   2) By placeholder email in auth.users (auth exists but profile missing telegram_id)
+    //   3) Create new auth user
+    let authUserId: string | undefined;
     let isNew = false;
 
-    if (existing) {
-      authUserId = existing.auth_user_id;
-    } else {
-      // Create new auth user
+    // (1) Try by telegram_id
+    const { data: byTgId, error: tgLookupErr } = await supabase.rpc("find_profile_by_telegram_id", { p_tg_id: tgId });
+    if (tgLookupErr) {
+      console.error("find_profile_by_telegram_id failed:", tgLookupErr);
+      return json({ error: "DB lookup failed (telegram_id)", details: tgLookupErr.message }, 500);
+    }
+    const existingByTg = (byTgId ?? [])[0] as { profile_id: string; auth_user_id: string; username: string } | undefined;
+    if (existingByTg) {
+      authUserId = existingByTg.auth_user_id;
+    }
+
+    // (2) Fallback: lookup by placeholder email — recovers from past failed profile updates
+    if (!authUserId) {
+      const { data: byEmail, error: emailLookupErr } = await supabase.rpc("find_auth_user_by_email", { p_email: placeholderEmail });
+      if (emailLookupErr) {
+        console.error("find_auth_user_by_email failed:", emailLookupErr);
+        return json({ error: "DB lookup failed (email)", details: emailLookupErr.message }, 500);
+      }
+      if (byEmail) {
+        authUserId = String(byEmail);
+        // Repair: set telegram_id on profile so next time lookup (1) works
+        const { error: repairErr } = await supabase
+          .from("users_profile")
+          .update({ telegram_id: tgId, telegram_username: username || null })
+          .eq("auth_user_id", authUserId);
+        if (repairErr) console.warn("profile repair failed:", repairErr);
+      }
+    }
+
+    // (3) Create new auth user only if nothing found
+    if (!authUserId) {
       const { data: created, error: createErr } = await supabase.auth.admin.createUser({
         email: placeholderEmail,
         email_confirm: true,
@@ -143,8 +168,7 @@ Deno.serve(async (req) => {
       authUserId = created.user.id;
       isNew = true;
 
-      // Update users_profile with telegram fields. The auto-created profile (from trigger)
-      // will have a generated username — overwrite with telegram-derived one.
+      // Set username + telegram fields on the auto-created profile
       const { error: upErr } = await supabase
         .from("users_profile")
         .update({
@@ -154,8 +178,8 @@ Deno.serve(async (req) => {
         })
         .eq("auth_user_id", authUserId);
       if (upErr) {
-        // Username conflict possible — append numeric suffix and retry
-        const fallback = `${desiredUsername}_${String(tgId).slice(-4)}`;
+        // Username conflict — append last 4 of telegram_id and retry
+        const fallback = `${desiredUsername}_${String(tgId).slice(-4)}`.slice(0, 30);
         await supabase
           .from("users_profile")
           .update({
