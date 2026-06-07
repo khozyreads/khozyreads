@@ -346,6 +346,50 @@ details.row-details .detail-body{margin-top:8px;padding:12px;background:var(--bg
 </section>
 </template>
 
+<template id="tpl-broadcast">
+<section class="route">
+  <div class="page-head">
+    <div><div class="eyebrow">Telegram</div><h1>Broadcast Notifications</h1></div>
+    <div class="right"><span class="meta" id="broadcast-recipients-count">— recipients</span></div>
+  </div>
+  <div id="broadcast-msg"></div>
+
+  <div class="panel" style="margin-bottom:20px">
+    <div class="panel-head">
+      <div>
+        <h2>Compose message</h2>
+        <div class="meta">Send a DM to all Telegram-linked users via @KhozyReads_bot. Supports Markdown (*bold*, _italic_, [link](url)).</div>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="field" style="margin-bottom:14px">
+        <label>Message (Khmer or English)</label>
+        <textarea id="broadcast-text" class="input" rows="8" maxlength="4000" placeholder="ឧទាហរណ៍: 📚 សៀវភៅថ្មីបានមកដល់ហើយ! ទស្សនានៅ khozyreads.com" style="font-family:inherit;resize:vertical;min-height:150px"></textarea>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:6px">
+          <span>Tip: short, friendly, with a CTA. Telegram limit: 4000 chars.</span>
+          <span id="broadcast-charcount">0 / 4000</span>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:14px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="broadcast-confirm" style="width:auto">
+          <span>I confirm I want to send this to all Telegram-linked users</span>
+        </label>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn btn-primary" id="broadcast-send" disabled>Send Broadcast</button>
+        <span class="meta" id="broadcast-status"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><div><h2>Recent broadcasts</h2><div class="meta">Last 20 entries</div></div></div>
+    <div class="panel-body"><table class="table"><thead><tr><th>Time</th><th>Message</th><th>Recipients</th><th>Sent</th><th>Failed</th><th>By</th></tr></thead><tbody id="broadcast-history"></tbody></table></div>
+  </div>
+</section>
+</template>
+
 <template id="tpl-settings">
 <section class="route">
   <div class="page-head"><div><div class="eyebrow">Configuration</div><h1>Settings</h1></div><div class="right"><button class="btn btn-primary" id="save-settings">Save changes</button></div></div>
@@ -596,7 +640,7 @@ function renderTopNav(){
   if(!state.user || state.profile?.role!=='admin'){ nav.innerHTML=''; userNav.innerHTML=''; return; }
   const cur = (location.hash.replace(/^#\/?/,'').split('/')[0])||'dashboard';
   const link = (h,label)=>`<a class="nav-link ${cur===h?'active':''}" href="#/${h}" data-route="${h}">${label}</a>`;
-  nav.innerHTML = link('dashboard','Dashboard')+link('books','Books')+link('orders','Orders')+link('users','Users')+link('promos','Promos')+link('settings','Settings')+link('logs','Logs');
+  nav.innerHTML = link('dashboard','Dashboard')+link('books','Books')+link('orders','Orders')+link('users','Users')+link('promos','Promos')+link('broadcast','Broadcast')+link('settings','Settings')+link('logs','Logs');
   const u = state.profile.username||'';
   userNav.innerHTML = `<span class="user-chip"><span class="avatar">${esc(u.charAt(0).toUpperCase()||'A')}</span>@${esc(u)}</span><a class="btn btn-ghost btn-sm" href="#" id="logout-btn">Logout</a>`;
   $('#logout-btn').onclick = e=>{ e.preventDefault(); doLogout(); };
@@ -622,7 +666,7 @@ function route(){
   _spinnerTimer = setTimeout(()=>{ if(!isStale()) $('#route-outlet').innerHTML=`<div class="center" style="padding:80px"><span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span></div>`; }, 150);
   const hash = location.hash.replace(/^#\/?/,'');
   const [page] = hash.split('/');
-  const handlers = {'':renderDashboard, 'dashboard':renderDashboard, 'books':renderBooks, 'orders':renderOrders, 'users':renderUsers, 'promos':renderPromos, 'settings':renderSettings, 'logs':renderLogs, 'login':renderLogin};
+  const handlers = {'':renderDashboard, 'dashboard':renderDashboard, 'books':renderBooks, 'orders':renderOrders, 'users':renderUsers, 'promos':renderPromos, 'broadcast':renderBroadcast, 'settings':renderSettings, 'logs':renderLogs, 'login':renderLogin};
   const h = handlers[page] || renderDashboard;
   Promise.resolve(h()).catch(err=>{ if(isStale()) return; console.error(err); $('#route-outlet').innerHTML=`<div>${alertBox(err.message||String(err))}</div>`; }).finally(()=>{ if(_spinnerTimer){clearTimeout(_spinnerTimer);_spinnerTimer=null;} renderTopNav(); window.scrollTo(0,0); });
 }
@@ -806,7 +850,8 @@ async function renderOrders(){
     b.disabled=true;
     const row = b.closest('tr');
     if(row) row.style.opacity = '0.4';
-    const {error} = await sb.rpc('admin_approve_order',{p_order_id:b.dataset.approve});
+    const orderId = b.dataset.approve;
+    const {error} = await sb.rpc('admin_approve_order',{p_order_id:orderId});
     if(error){
       console.error('admin_approve_order failed:', error);
       alert(error.message);
@@ -814,14 +859,15 @@ async function renderOrders(){
       if(row) row.style.opacity='1';
       return;
     }
-    console.log('[approve] order approved:', b.dataset.approve);
+    console.log('[approve] order approved:', orderId);
+    // Notify buyer in Khmer via Telegram (fire-and-forget — don't block UI)
+    notifyOrderBuyer(orderId, 'approved');
     // Instant UI: remove row + decrement meta counter
     if(row){
       row.style.transition='opacity .25s';
       row.style.opacity='0';
       setTimeout(()=>row.remove(), 250);
     }
-    // Re-fetch in background after a tick so DB commit is visible
     setTimeout(()=>{ renderOrders().catch(e=>console.error('refresh failed', e)); }, 400);
   });
   $$('[data-reject]').forEach(b=>b.onclick=async ()=>{
@@ -830,7 +876,8 @@ async function renderOrders(){
     b.disabled=true;
     const row = b.closest('tr');
     if(row) row.style.opacity = '0.4';
-    const {error} = await sb.rpc('admin_reject_order',{p_order_id:b.dataset.reject, p_reason:reason||null});
+    const orderId = b.dataset.reject;
+    const {error} = await sb.rpc('admin_reject_order',{p_order_id:orderId, p_reason:reason||null});
     if(error){
       console.error('admin_reject_order failed:', error);
       alert(error.message);
@@ -838,7 +885,8 @@ async function renderOrders(){
       if(row) row.style.opacity='1';
       return;
     }
-    console.log('[reject] order rejected:', b.dataset.reject);
+    console.log('[reject] order rejected:', orderId);
+    notifyOrderBuyer(orderId, 'rejected', reason);
     if(row){
       row.style.transition='opacity .25s';
       row.style.opacity='0';
@@ -846,6 +894,32 @@ async function renderOrders(){
     }
     setTimeout(()=>{ renderOrders().catch(e=>console.error('refresh failed', e)); }, 400);
   });
+}
+
+// Fire-and-forget DM to buyer (Khmer) via Telegram. Failures are logged but don't
+// block the order approval/rejection flow. Buyers without telegram_id are skipped.
+async function notifyOrderBuyer(orderId, result, reason){
+  try {
+    const session = (await sb.auth.getSession()).data.session;
+    if(!session) return;
+    const res = await fetch(`${CFG.SUPABASE_URL}/functions/v1/notify-order-buyer`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': CFG.SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ order_id: orderId, result, reason: reason||'' }),
+    });
+    const body = await res.json().catch(()=>null);
+    if(!res.ok){
+      console.warn('notifyOrderBuyer failed:', res.status, body);
+    } else {
+      console.log(`[notify] order ${result}:`, body);
+    }
+  } catch(err){
+    console.warn('notifyOrderBuyer error (non-blocking):', err);
+  }
 }
 
 async function renderUsers(){
@@ -1076,6 +1150,101 @@ function actionClass(a){
   if(a.endsWith('.reject')||a.endsWith('.triggered')) return 'b-rejected';
   return 'b-info';
 }
+async function renderBroadcast(){
+  showTemplate('tpl-broadcast');
+  const textEl = $('#broadcast-text');
+  const confirmEl = $('#broadcast-confirm');
+  const sendBtn = $('#broadcast-send');
+  const statusEl = $('#broadcast-status');
+  const charCountEl = $('#broadcast-charcount');
+  const msgEl = $('#broadcast-msg');
+  const countEl = $('#broadcast-recipients-count');
+  const histBody = $('#broadcast-history');
+
+  // Count recipients
+  try {
+    const { data, error } = await sb.rpc('list_telegram_recipients');
+    if(error) throw error;
+    countEl.textContent = `${(data||[]).length} Telegram-linked users`;
+  } catch(err){
+    countEl.textContent = 'Could not count recipients';
+    console.warn(err);
+  }
+
+  // Load recent broadcast history
+  try {
+    const { data:rows, error } = await sb.from('telegram_broadcast_logs')
+      .select('id,message,recipients_total,sent_count,failed_count,sent_at,users_profile!sent_by(username)')
+      .order('sent_at',{ascending:false}).limit(20);
+    if(error) throw error;
+    histBody.innerHTML = (rows||[]).map(r=>{
+      const sender = r.users_profile?.username || '—';
+      const preview = r.message.length > 100 ? r.message.slice(0,100) + '…' : r.message;
+      return `<tr>
+        <td class="cell-mono">${esc(fmtDateShort(r.sent_at))}</td>
+        <td style="max-width:300px"><div style="white-space:pre-wrap;word-break:break-word;font-size:13px">${esc(preview)}</div></td>
+        <td>${r.recipients_total}</td>
+        <td style="color:#2c7a5b;font-weight:600">${r.sent_count}</td>
+        <td style="color:${r.failed_count>0?'#c0392b':'var(--muted)'};font-weight:${r.failed_count>0?600:400}">${r.failed_count}</td>
+        <td>@${esc(sender)}</td>
+      </tr>`;
+    }).join('') || `<tr><td colspan="6" class="empty">No broadcasts sent yet</td></tr>`;
+  } catch(err){
+    console.warn('History load failed:', err);
+    histBody.innerHTML = `<tr><td colspan="6" class="empty">Could not load history</td></tr>`;
+  }
+
+  // Wire up char count + form validation
+  function updateState(){
+    const len = textEl.value.length;
+    charCountEl.textContent = `${len} / 4000`;
+    sendBtn.disabled = len === 0 || len > 4000 || !confirmEl.checked;
+  }
+  textEl.addEventListener('input', updateState);
+  confirmEl.addEventListener('change', updateState);
+  updateState();
+
+  // Send handler
+  sendBtn.onclick = async ()=>{
+    const message = textEl.value.trim();
+    if(!message){ statusEl.textContent = 'Empty message'; return; }
+    if(!confirm(`Send this broadcast to all ${countEl.textContent}? This cannot be undone.`)) return;
+
+    sendBtn.disabled = true;
+    statusEl.textContent = 'Sending…';
+    msgEl.innerHTML = '';
+
+    try {
+      const session = (await sb.auth.getSession()).data.session;
+      if(!session) throw new Error('Not logged in');
+      const res = await fetch(`${CFG.SUPABASE_URL}/functions/v1/telegram-broadcast`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+          'apikey': CFG.SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({ message, parse_mode: 'Markdown' }),
+      });
+      const body = await res.json();
+      if(!res.ok) throw new Error(body?.error || 'Send failed');
+      const summary = `✅ Sent to ${body.sent}/${body.total} users` + (body.failed > 0 ? ` · ⚠️ ${body.failed} failed` : '');
+      msgEl.innerHTML = alertBox(summary, body.failed > 0 ? 'warn' : 'success');
+      statusEl.textContent = '';
+      // Clear form + refresh history
+      textEl.value = '';
+      confirmEl.checked = false;
+      updateState();
+      setTimeout(() => renderBroadcast(), 800);
+    } catch(err){
+      console.error('Broadcast failed:', err);
+      msgEl.innerHTML = alertBox(err.message || 'Broadcast failed');
+      statusEl.textContent = '';
+      sendBtn.disabled = false;
+    }
+  };
+}
+
 async function renderLogs(){
   const { data:logs } = await sb.from('activity_logs').select('*').order('created_at',{ascending:false}).limit(200);
   showTemplate('tpl-logs');
