@@ -204,6 +204,24 @@ html[lang="km"] .featured-info .author{font-family:var(--font-khmer);font-style:
 .detail-genre-link{text-decoration:none}
 .detail-genres span{font-size:11px;letter-spacing:.08em;color:var(--accent-deep);text-transform:uppercase;background:rgba(212,163,115,.18);padding:4px 11px;border-radius:12px;display:inline-block;transition:background .15s}
 .detail-genres a:hover span{background:rgba(212,163,115,.35)}
+/* SEO content section — keyword-rich bilingual prose, tasteful styling */
+.seo-content{margin:80px 0 40px;padding:48px 24px;position:relative;text-align:left;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:linear-gradient(180deg,transparent,rgba(123,45,38,0.02))}
+.seo-orn-divider{display:flex;justify-content:center;margin-bottom:24px;color:var(--accent);opacity:.6}
+.seo-orn-divider svg{width:120px;height:30px}
+.seo-content h2{margin:0 0 12px}
+.seo-sub{color:var(--muted);font-size:14px;letter-spacing:.05em;text-transform:uppercase;margin-bottom:36px}
+html[lang="km"] .seo-sub{font-family:var(--font-khmer);letter-spacing:.02em;text-transform:none;font-size:15px}
+.seo-prose{max-width:780px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:32px}
+.seo-block p{font-size:15px;line-height:1.8;margin:0 0 16px;color:var(--fg);opacity:.9}
+.seo-block:first-child p{font-family:var(--font-khmer);font-size:16px;line-height:1.9}
+.seo-genres-cloud{max-width:780px;margin:36px auto 0;display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.seo-genre-tag{display:inline-block;padding:6px 14px;background:rgba(123,45,38,.06);border:1px solid rgba(123,45,38,.18);border-radius:999px;font-size:13px;color:var(--primary);font-family:'Crimson Pro','Noto Serif Khmer',serif}
+html[lang="km"] .seo-genre-tag{font-family:var(--font-khmer)}
+@media (max-width:780px){
+  .seo-content{padding:32px 16px;margin:48px 0 24px}
+  .seo-prose{grid-template-columns:1fr;gap:24px}
+  .seo-content h2{font-size:24px}
+}
 .apply-creator-banner{margin:64px 0 24px;background:var(--bg-elevated);border:1px solid var(--border);padding:36px 40px;position:relative;overflow:hidden}
 .apply-creator-banner::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,transparent 0%,rgba(212,163,115,.08) 50%,transparent 100%);pointer-events:none}
 .acb-inner{display:flex;justify-content:space-between;align-items:center;gap:32px;flex-wrap:wrap;position:relative}
@@ -789,6 +807,39 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       <div class="genre-chips" id="genre-chips"></div>
     </div>
     <div class="book-grid" id="book-grid"></div>
+
+    <!-- SEO Content Section — keyword-rich, bilingual, tasteful for adult literary fiction -->
+    <section class="seo-content" aria-labelledby="seo-heading">
+      <div class="seo-orn-divider"><svg><use href="#orn-divider"/></svg></div>
+      <h2 id="seo-heading" class="display display-3 center" data-i18n="seo.heading">ហាងសៀវភៅខ្មែរសម្រាប់មនុស្សពេញវ័យ</h2>
+      <p class="seo-sub center" data-i18n="seo.sub">Authentic Khmer romance, dark romance, and crime fiction for Cambodian readers</p>
+
+      <div class="seo-prose">
+        <div class="seo-block" data-i18n-block="kh">
+          <p data-i18n="seo.p1">KhozyReads គឺជាបណ្ណាគារឌីជីថលខ្មែរដែលប្រមូលផ្តុំនូវប្រលោមលោកស្នេហាខ្មែរ រឿងស្នេហាងងឹត និងប្រលោមលោកឧក្រិដ្ឋកម្មសម័យទំនើបដែលនិពន្ធដោយអ្នកនិពន្ធកម្ពុជា។ យើងជ្រើសរើសតែស្នាដៃដែលប្រកបដោយគុណភាព សម្រាប់អ្នកអានពេញវ័យដែលស្វែងរករឿងជម្រៅ និងតួអង្គពិតប្រាកដ។</p>
+          <p data-i18n="seo.p2">អានសៀវភៅរបស់អ្នកនៅគ្រប់ទីកន្លែង — នៅលើទូរស័ព្ទ ថេប្លេត ឬកុំព្យូទ័រ។ ការទូទាត់សុវត្ថិភាពតាម ABA / KHQR ហើយចូលប្រើភ្លាមៗបន្ទាប់ពីការអនុម័ត។ ស្វែងរកប្រភេទសៀវភៅពេញចិត្តរបស់អ្នក — ស្នេហា អាថ៌កំបាំង ឧក្រិដ្ឋកម្ម ឬប្រលោមលោកសម័យទំនើប — ទាំងអស់ជាភាសាខ្មែរ។</p>
+        </div>
+
+        <div class="seo-block" data-i18n-block="en">
+          <p data-i18n="seo.p1en">KhozyReads is Cambodia's premier digital bookstore for authentic Khmer romance novels, dark romance, and crime fiction by talented Cambodian authors. We curate quality contemporary literature for mature readers who appreciate depth, complexity, and real characters in Khmer storytelling.</p>
+          <p data-i18n="seo.p2en">Read your favorite Khmer novels online — on your phone, tablet, or desktop. Secure payment via ABA / KHQR, instant access after approval. Browse genres including Khmer romance, dark romance, mystery, crime fiction, and modern Cambodian literature — all in your native language. ⓘ Mature themes · ages 18+.</p>
+        </div>
+      </div>
+
+      <div class="seo-genres-cloud">
+        <span class="seo-genre-tag">ប្រលោមលោកស្នេហាខ្មែរ</span>
+        <span class="seo-genre-tag">Dark Romance</span>
+        <span class="seo-genre-tag">រឿងឧក្រិដ្ឋកម្ម</span>
+        <span class="seo-genre-tag">Crime Fiction</span>
+        <span class="seo-genre-tag">សៀវភៅស្នេហា</span>
+        <span class="seo-genre-tag">Modern Khmer Fiction</span>
+        <span class="seo-genre-tag">Cambodian Authors</span>
+        <span class="seo-genre-tag">សៀវភៅឌីជីថល</span>
+        <span class="seo-genre-tag">Khmer eBooks</span>
+        <span class="seo-genre-tag">Adult Literature 18+</span>
+      </div>
+    </section>
+
     <aside class="apply-creator-banner" id="apply-creator-banner" style="display:none">
       <div class="acb-inner">
         <div class="acb-text">
@@ -1127,6 +1178,9 @@ const I18N = {
     'brand.tag':'ពាក្យគឺជាពណ៌នៃអាថ៌កំបាំងដួងចិត្ត។','nav.store':'ហាង','nav.library':'បណ្ណាល័យរបស់ខ្ញុំ','nav.login':'ចូល','nav.register':'ចុះឈ្មោះ','nav.logout':'ចេញ',
     'footer.tag':'សៀវភៅឌីជីថលដែលបន្ថែមភាពរីករាយក្នុងការអាន','footer.note':'បង្កើតដោយក្តីស្រឡាញ់ពីខ្មែរ','footer.privacy':'គោលនយោបាយឯកជនភាព','footer.terms':'លក្ខខណ្ឌនៃសេវាកម្ម','footer.contact':'ទាក់ទងតាម Telegram','footer.applyCreator':'ដាក់ពាក្យជាអ្នកនិពន្ធ','acb.eyebrow':'សម្រាប់អ្នកនិពន្ធ','acb.title':'ចង់ផ្សព្វផ្សាយសៀវភៅរបស់អ្នកនៅ KhozyReads?','acb.sub':'ដាក់ស្នើដើម្បីក្លាយជាអ្នកនិពន្ធ ហើយចែករំលែករឿងរបស់អ្នកជាមួយអ្នកអានខ្មែរ។','acb.cta':'ដាក់ពាក្យជាអ្នកនិពន្ធ',
     'home.eyebrow':'បណ្ណាគារខ្មែរឌីជីថល · EST. 2026','home.title':'ហាងសៀវភៅឌីជីថល','home.lede':'ពាក្យគឺជាពណ៌នៃអាថ៌កំបាំងដួងចិត្ត។',
+    'seo.heading':'ហាងសៀវភៅខ្មែរសម្រាប់មនុស្សពេញវ័យ','seo.sub':'Khmer romance, dark romance, and crime fiction for Cambodian readers',
+    'seo.p1':'KhozyReads គឺជាបណ្ណាគារឌីជីថលខ្មែរដែលប្រមូលផ្តុំនូវប្រលោមលោកស្នេហាខ្មែរ រឿងស្នេហាងងឹត និងប្រលោមលោកឧក្រិដ្ឋកម្មសម័យទំនើបដែលនិពន្ធដោយអ្នកនិពន្ធកម្ពុជា។ យើងជ្រើសរើសតែស្នាដៃដែលប្រកបដោយគុណភាព សម្រាប់អ្នកអានពេញវ័យដែលស្វែងរករឿងជម្រៅ និងតួអង្គពិតប្រាកដ។',
+    'seo.p2':'អានសៀវភៅរបស់អ្នកនៅគ្រប់ទីកន្លែង — នៅលើទូរស័ព្ទ ថេប្លេត ឬកុំព្យូទ័រ។ ការទូទាត់សុវត្ថិភាពតាម ABA / KHQR ហើយចូលប្រើភ្លាមៗបន្ទាប់ពីការអនុម័ត។ ស្វែងរកប្រភេទសៀវភៅពេញចិត្តរបស់អ្នក — ស្នេហា អាថ៌កំបាំង ឧក្រិដ្ឋកម្ម ឬប្រលោមលោកសម័យទំនើប — ទាំងអស់ជាភាសាខ្មែរ។',
     'home.all.eyebrow':'បណ្តុំសៀវភៅទាំងអស់','home.all.h':'ហាងសៀវភៅឌីជីថល','home.all.sort':'តម្រៀបតាម · ថ្មីបំផុត','home.empty':'មិនទាន់មានសៀវភៅទេ','home.search':'ស្វែងរកសៀវភៅ ឬអ្នកនិពន្ធ...',
     'detail.eyebrow':'សៀវភៅ · ឆ្នាំ ២០២៦','detail.by':'និពន្ធដោយ','detail.priceNote':'តម្លៃតែម្តង · កាន់កាប់រហូត','detail.synopsis':'ដំណើររឿងសង្ខេប',
     'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់ការទូទាត់...','cta.pendingHint':'ចុចដើម្បីបង្ហោះវិក្កយបត្រឡើងវិញ','cta.pendingNote':'រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។ មិនអាចទិញម្តងទៀតបានទេនៅពេលនេះ។','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន',

@@ -69,6 +69,16 @@ Deno.serve(async (_req) => {
       );
     }
 
+    // SEO landing pages (high priority — primary keyword targets)
+    urls.push(
+      `  <url>
+    <loc>${SITE}/khmer-romance.html</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>`,
+    );
+
     // Book detail pages (hash route — Google still discovers these)
     for (const b of books ?? []) {
       const lastmod = (b.updated_at || b.created_at || today).slice(0, 10);
