@@ -98,7 +98,17 @@ Deno.serve(async (req) => {
     const tgId = typeof id === "string" ? parseInt(id, 10) : id;
     const placeholderEmail = `tg${tgId}@telegram.khozyreads.local`;
     const displayName = [first_name, last_name].filter(Boolean).join(" ").trim() || `tg_${tgId}`;
-    const desiredUsername = (username ? String(username) : `tg_${tgId}`).toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 30) || `tg_${tgId}`;
+
+    // Username priority: 1) Telegram @username  2) first+last name (sanitized)  3) tg_{id}
+    // Telegram Login Widget does NOT return phone number, so phone fallback isn't possible.
+    let baseUsername = "";
+    if (username) {
+      baseUsername = String(username);
+    } else if (first_name || last_name) {
+      baseUsername = `${first_name}${last_name}`;
+    }
+    let desiredUsername = baseUsername.toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 30);
+    if (!desiredUsername) desiredUsername = `tg_${tgId}`;
 
     // Look up existing profile by telegram_id
     const { data: existingRows, error: lookupErr } = await supabase.rpc("find_profile_by_telegram_id", { p_tg_id: tgId });

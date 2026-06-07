@@ -287,8 +287,19 @@ html[lang="km"] .detail-info .price-row .price-note{font-family:var(--font-khmer
 .auth-card h2{text-align:center;margin:0 0 8px}
 .btn-google{display:inline-flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px 20px;border:1px solid var(--border-strong);background:#fff;color:#3c4043;font-family:'Roboto','Crimson Pro',-apple-system,Arial,sans-serif;font-size:15px;font-weight:500;border-radius:6px;cursor:pointer;margin-top:20px;transition:box-shadow .2s,transform .15s,background .2s;letter-spacing:.2px}
 /* Telegram official widget iframe wrapper — centers the button Telegram renders */
-.tg-widget-wrap{display:flex;justify-content:center;margin-top:12px;min-height:48px}
+.tg-widget-wrap{display:flex;justify-content:center;margin-top:10px;min-height:48px}
 .tg-widget-wrap iframe{border-radius:6px !important;max-width:100% !important}
+/* Telegram "recommended" section above Google */
+.tg-section{margin-top:20px;padding:14px 12px 16px;background:linear-gradient(180deg,rgba(34,158,217,.06),rgba(34,158,217,.02));border:1px solid rgba(34,158,217,.18);border-radius:10px;position:relative}
+.tg-section-header{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}
+.tg-recommended-badge{display:inline-block;background:linear-gradient(135deg,#2c7a5b,#1f6048);color:#fff;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.06em;text-transform:uppercase}
+html[lang="km"] .tg-recommended-badge{font-family:var(--font-khmer);letter-spacing:.02em;text-transform:none;font-size:12px}
+.tg-section-label{font-size:13px;font-weight:600;color:#1a5a78;letter-spacing:.01em}
+html[lang="km"] .tg-section-label{font-family:var(--font-khmer);font-size:14px}
+/* Divider "or" between Telegram and Google */
+.auth-divider{display:flex;align-items:center;gap:12px;margin:18px 0 8px;color:var(--muted);font-size:11px;letter-spacing:.18em;text-transform:uppercase}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+html[lang="km"] .auth-divider{font-family:var(--font-khmer);letter-spacing:.02em;text-transform:none;font-size:13px}
 .btn-google:hover{box-shadow:0 2px 8px rgba(60,64,67,.25);background:#f8f9fa}
 .btn-google:active{transform:scale(.98)}
 .btn-google:disabled{opacity:.6;cursor:wait}
@@ -850,6 +861,19 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       <h2 class="display display-3 center" data-i18n="auth.loginH">ចូលគណនី</h2>
       <p class="sub" data-i18n="auth.loginSub">បន្តការអានសៀវភៅដែលអ្នកស្រឡាញ់</p>
       <div id="login-error"></div>
+
+      <!-- Telegram (Recommended) — placed first as preferred option -->
+      <div class="tg-section">
+        <div class="tg-section-header">
+          <span class="tg-recommended-badge" data-i18n="auth.recommended">ណែនាំ</span>
+          <span class="tg-section-label" data-i18n="auth.signInTelegram">ចូលដោយ Telegram</span>
+        </div>
+        <div class="tg-widget-wrap" id="tg-signin-widget"></div>
+      </div>
+
+      <!-- Visual divider -->
+      <div class="auth-divider"><span data-i18n="auth.or">ឬ</span></div>
+
       <button class="btn-google" type="button" id="google-signin-btn">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -859,7 +883,6 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
         </svg>
         <span data-i18n="auth.signInGoogle">បន្តជាមួយ Google</span>
       </button>
-      <div class="tg-widget-wrap" id="tg-login-widget"></div>
       <p class="muted" style="margin-top:18px;font-size:13px" data-i18n="auth.googleSub">សុវត្ថិភាព · ឥតគិតថ្លៃ · ការចូលរហ័ស</p>
     </div>
   </div>
@@ -875,6 +898,19 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       <h2 class="display display-3 center" data-i18n="auth.registerH">បង្កើតគណនី</h2>
       <p class="sub" data-i18n="auth.registerSub">ចាប់ផ្តើមការដំណើរនៃការអានរបស់អ្នក</p>
       <div id="reg-error"></div>
+
+      <!-- Telegram (Recommended) — placed first as preferred option -->
+      <div class="tg-section">
+        <div class="tg-section-header">
+          <span class="tg-recommended-badge" data-i18n="auth.recommended">ណែនាំ</span>
+          <span class="tg-section-label" data-i18n="auth.signUpTelegram">ចុះឈ្មោះដោយ Telegram</span>
+        </div>
+        <div class="tg-widget-wrap" id="tg-signup-widget"></div>
+      </div>
+
+      <!-- Visual divider -->
+      <div class="auth-divider"><span data-i18n="auth.or">ឬ</span></div>
+
       <button class="btn-google" type="button" id="google-signup-btn">
         <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -884,7 +920,6 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
         </svg>
         <span data-i18n="auth.signUpGoogle">ចុះឈ្មោះជាមួយ Google</span>
       </button>
-      <div class="tg-widget-wrap" id="tg-signup-widget"></div>
       <p class="muted" style="margin-top:18px;font-size:13px" data-i18n="auth.googleSub">សុវត្ថិភាព · ឥតគិតថ្លៃ · ការចូលរហ័ស</p>
     </div>
   </div>
@@ -1097,7 +1132,7 @@ const I18N = {
     'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់ការទូទាត់...','cta.pendingHint':'ចុចដើម្បីបង្ហោះវិក្កយបត្រឡើងវិញ','cta.pendingNote':'រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។ មិនអាចទិញម្តងទៀតបានទេនៅពេលនេះ។','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន',
     'lib.eyebrow':'បណ្ណាល័យផ្ទាល់ខ្លួន','lib.title':'បណ្ណាល័យរបស់ខ្ញុំ','lib.lede':'សៀវភៅទាំងអស់ដែលអ្នកបានទិញ — រួចរាល់ចាប់ផ្តើមអាន។','lib.empty':'មិនទាន់មានការទិញ','lib.empty.favs':'មិនទាន់មានសៀវភៅដែលចូលចិត្ត','lib.tab.books':'សៀវភៅរបស់ខ្ញុំ','lib.tab.favs':'ចូលចិត្ត',
     'pay.promo':'មានកូដប្រូម៉ូ?','pay.applyPromo':'អនុវត្ត','pay.review':'សូមពិនិត្យមើលមុនពេលបញ្ជូន','pay.book':'សៀវភៅ','pay.subtotal':'សរុបមុនបញ្ចុះតម្លៃ','pay.discount':'ការបញ្ចុះតម្លៃ','pay.total':'សរុបទាំងអស់','pay.contactAdmin':'មានបញ្ហា? ទាក់ទងអ្នកគ្រប់គ្រង','pay.contactAdminSub':'ផ្ញើសារនៅ Telegram',
-    'auth.welcome':'សូមស្វាគមន៍មកកាន់','auth.loginH':'ចូលគណនី','auth.loginSub':'បន្តការអានសៀវភៅដែលអ្នកស្រឡាញ់','auth.loginBtn':'ចូលគណនី','auth.noAcc':'មិនទាន់មានគណនី?','auth.haveAcc':'មានគណនីរួចហើយ?','auth.signInGoogle':'បន្តជាមួយ Google','auth.signUpGoogle':'ចុះឈ្មោះជាមួយ Google','auth.signInTelegram':'បន្តជាមួយ Telegram','auth.signUpTelegram':'ចុះឈ្មោះជាមួយ Telegram','auth.googleSub':'សុវត្ថិភាព · ឥតគិតថ្លៃ · ការចូលរហ័ស',
+    'auth.welcome':'សូមស្វាគមន៍មកកាន់','auth.loginH':'ចូលគណនី','auth.loginSub':'បន្តការអានសៀវភៅដែលអ្នកស្រឡាញ់','auth.loginBtn':'ចូលគណនី','auth.noAcc':'មិនទាន់មានគណនី?','auth.haveAcc':'មានគណនីរួចហើយ?','auth.signInGoogle':'បន្តជាមួយ Google','auth.signUpGoogle':'ចុះឈ្មោះជាមួយ Google','auth.signInTelegram':'ចូលដោយ Telegram','auth.signUpTelegram':'ចុះឈ្មោះដោយ Telegram','auth.recommended':'ណែនាំ','auth.or':'ឬ','auth.googleSub':'សុវត្ថិភាព · ឥតគិតថ្លៃ · ការចូលរហ័ស',
     'auth.join':'ចូលរួមជាមួយយើង','auth.registerH':'បង្កើតគណនី','auth.registerSub':'ចាប់ផ្តើមការដំណើរនៃការអានរបស់អ្នក','auth.registerBtn':'បង្កើតគណនី',
     'auth.user':'ឈ្មោះអ្នកប្រើ','auth.email':'អ៊ីមែល','auth.pass':'ពាក្យសម្ងាត់',
     'pay.eyebrow':'ការទូទាត់សុវត្ថិភាព · ABA / KHQR','pay.title':'បញ្ចប់ការទិញរបស់អ្នក','pay.crumb':'បង់ប្រាក់','pay.step1':'ជំហានទី ១ · ស្កេន QR','pay.scan':'ស្កេនកូដខាងក្រោម','pay.amount':'ចំនួន',
@@ -1116,7 +1151,7 @@ const I18N = {
     'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Verifying payment...','cta.pendingHint':'Click to re-upload your payment proof','cta.pendingNote':'Waiting for admin verification. You cannot buy again right now.','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled','cta.readFree':'Read for Free','cta.loginToRead':'Login to Read',
     'lib.eyebrow':'Personal library','lib.title':'My Library','lib.lede':'All books you own — ready to read.','lib.empty':'No purchases yet','lib.empty.favs':'No favorites yet','lib.tab.books':'My Books','lib.tab.favs':'Favorites',
     'pay.promo':'Have a promo code?','pay.applyPromo':'Apply','pay.review':'Review before submitting','pay.book':'Book','pay.subtotal':'Subtotal','pay.discount':'Discount','pay.total':'Total','pay.contactAdmin':'Need help? Contact admin','pay.contactAdminSub':'Reach us on Telegram',
-    'auth.welcome':'Welcome to','auth.loginH':'Sign In','auth.loginSub':'Continue reading what you love','auth.loginBtn':'Sign In','auth.noAcc':'No account yet?','auth.haveAcc':'Already have an account?','auth.signInGoogle':'Continue with Google','auth.signUpGoogle':'Sign up with Google','auth.signInTelegram':'Continue with Telegram','auth.signUpTelegram':'Sign up with Telegram','auth.googleSub':'Secure · Free · One-tap access',
+    'auth.welcome':'Welcome to','auth.loginH':'Sign In','auth.loginSub':'Continue reading what you love','auth.loginBtn':'Sign In','auth.noAcc':'No account yet?','auth.haveAcc':'Already have an account?','auth.signInGoogle':'Continue with Google','auth.signUpGoogle':'Sign up with Google','auth.signInTelegram':'Sign in with Telegram','auth.signUpTelegram':'Sign up with Telegram','auth.recommended':'Recommended','auth.or':'or','auth.googleSub':'Secure · Free · One-tap access',
     'auth.join':'Join us','auth.registerH':'Create Account','auth.registerSub':'Start your reading journey','auth.registerBtn':'Create Account',
     'auth.user':'Username','auth.email':'Email','auth.pass':'Password',
     'pay.eyebrow':'Secure payment · ABA / KHQR','pay.title':'Complete your purchase','pay.crumb':'Payment','pay.step1':'Step 1 · Scan QR','pay.scan':'Scan the code below','pay.amount':'Amount',
