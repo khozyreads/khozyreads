@@ -286,9 +286,9 @@ html[lang="km"] .detail-info .price-row .price-note{font-family:var(--font-khmer
 .auth-orn-top svg{width:60px;height:24px}
 .auth-card h2{text-align:center;margin:0 0 8px}
 .btn-google{display:inline-flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px 20px;border:1px solid var(--border-strong);background:#fff;color:#3c4043;font-family:'Roboto','Crimson Pro',-apple-system,Arial,sans-serif;font-size:15px;font-weight:500;border-radius:6px;cursor:pointer;margin-top:20px;transition:box-shadow .2s,transform .15s,background .2s;letter-spacing:.2px}
-.btn-telegram{display:inline-flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px 20px;border:0;background:#229ED9;color:#fff;font-family:'Helvetica','Crimson Pro',-apple-system,Arial,sans-serif;font-size:15px;font-weight:600;border-radius:6px;cursor:pointer;margin-top:12px;transition:box-shadow .2s,transform .15s,background .2s;letter-spacing:.2px}
-.btn-telegram:hover{background:#1d8dc1}
-.btn-telegram:disabled{opacity:.65;cursor:wait}
+/* Telegram official widget iframe wrapper — centers the button Telegram renders */
+.tg-widget-wrap{display:flex;justify-content:center;margin-top:12px;min-height:48px}
+.tg-widget-wrap iframe{border-radius:6px !important;max-width:100% !important}
 .btn-google:hover{box-shadow:0 2px 8px rgba(60,64,67,.25);background:#f8f9fa}
 .btn-google:active{transform:scale(.98)}
 .btn-google:disabled{opacity:.6;cursor:wait}
@@ -859,12 +859,7 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
         </svg>
         <span data-i18n="auth.signInGoogle">បន្តជាមួយ Google</span>
       </button>
-      <button class="btn-telegram" type="button" id="telegram-signin-btn">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="#fff">
-          <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.24 3.64 11.95c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
-        </svg>
-        <span data-i18n="auth.signInTelegram">បន្តជាមួយ Telegram</span>
-      </button>
+      <div class="tg-widget-wrap" id="tg-login-widget"></div>
       <p class="muted" style="margin-top:18px;font-size:13px" data-i18n="auth.googleSub">សុវត្ថិភាព · ឥតគិតថ្លៃ · ការចូលរហ័ស</p>
     </div>
   </div>
@@ -889,12 +884,7 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
         </svg>
         <span data-i18n="auth.signUpGoogle">ចុះឈ្មោះជាមួយ Google</span>
       </button>
-      <button class="btn-telegram" type="button" id="telegram-signup-btn">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="#fff">
-          <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.24 3.64 11.95c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
-        </svg>
-        <span data-i18n="auth.signUpTelegram">ចុះឈ្មោះជាមួយ Telegram</span>
-      </button>
+      <div class="tg-widget-wrap" id="tg-signup-widget"></div>
       <p class="muted" style="margin-top:18px;font-size:13px" data-i18n="auth.googleSub">សុវត្ថិភាព · ឥតគិតថ្លៃ · ការចូលរហ័ស</p>
     </div>
   </div>
@@ -1598,95 +1588,65 @@ async function signInWithGoogle(btnEl, errEl){
 }
 
 // ===== Telegram Login =====
-// Opens Telegram's OAuth popup (oauth.telegram.org). On success Telegram
-// posts auth payload (id, hash, etc) back to this page. We send it to our
-// edge function (telegram-auth) which verifies the HMAC signature using
-// the bot token (server-side), creates/finds the user, and returns a magic
-// link that signs them in instantly.
+// Uses Telegram's official iframe widget (telegram-widget.js). When the script
+// is injected into a container with data-* attributes, Telegram renders a
+// blue "Log in with Telegram" button. On click it opens the auth popup.
+// On success it invokes the global callback specified in data-onauth.
 const TELEGRAM_BOT_USERNAME = 'KhozyReads_bot';
 
-function signInWithTelegram(btnEl, errEl){
-  if(btnEl){ btnEl.disabled = true; btnEl.style.opacity = '0.7'; }
-  if(errEl) errEl.innerHTML = '';
-
-  // Telegram's official Login Widget popup. Returns auth data via callback.
-  // We wrap it in a Promise that resolves once the user authorizes.
-  const origin = location.origin;
-  const returnTo = encodeURIComponent(location.href);
-  // Telegram uses bot ID (numeric); we extract it from the bot_username via the widget.
-  // The official telegram-widget.js handles popup + callback wiring for us.
-  if(!window.Telegram || !window.Telegram.Login){
-    loadTelegramWidget(() => doTelegramAuth(btnEl, errEl));
-    return;
-  }
-  doTelegramAuth(btnEl, errEl);
+// Mount the Telegram widget into the given container element.
+// Re-injects on every login/register page render so the iframe is fresh.
+function mountTelegramWidget(containerId){
+  const container = document.getElementById(containerId);
+  if(!container) return;
+  container.innerHTML = ''; // clear any previous widget
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = 'https://telegram.org/js/telegram-widget.js?22';
+  script.setAttribute('data-telegram-login', TELEGRAM_BOT_USERNAME);
+  script.setAttribute('data-size', 'large');
+  script.setAttribute('data-radius', '6');
+  script.setAttribute('data-onauth', 'onTelegramAuth(user)');
+  script.setAttribute('data-request-access', 'write');
+  container.appendChild(script);
 }
 
-function loadTelegramWidget(cb){
-  if(document.getElementById('tg-widget-script')) { cb && cb(); return; }
-  const s = document.createElement('script');
-  s.id = 'tg-widget-script';
-  s.src = 'https://telegram.org/js/telegram-widget.js?22';
-  s.async = true;
-  s.onload = () => cb && cb();
-  s.onerror = () => {
-    console.error('Failed to load Telegram widget script');
-    cb && cb();
-  };
-  document.head.appendChild(s);
-}
-
-function doTelegramAuth(btnEl, errEl){
-  if(!window.Telegram || !window.Telegram.Login){
-    if(errEl) errEl.innerHTML = alertBox('Telegram widget failed to load. Please retry.');
-    if(btnEl){ btnEl.disabled = false; btnEl.style.opacity = '1'; }
-    return;
-  }
-  window.Telegram.Login.auth(
-    { bot_id: undefined, bot_username: TELEGRAM_BOT_USERNAME, request_access: true, lang: state.lang === 'kh' ? 'en' : 'en' },
-    async (tgUser) => {
-      if(!tgUser){
-        if(errEl) errEl.innerHTML = alertBox('Telegram authorization was cancelled.');
-        if(btnEl){ btnEl.disabled = false; btnEl.style.opacity = '1'; }
-        return;
-      }
-      try {
-        const res = await fetch(`${CFG.SUPABASE_URL}/functions/v1/telegram-auth`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'apikey': CFG.SUPABASE_ANON_KEY },
-          body: JSON.stringify(tgUser),
-        });
-        const body = await res.json();
-        if(!res.ok || !body?.magic_link){
-          throw new Error(body?.error || 'Telegram sign-in failed');
-        }
-        // Redirect to magic link URL — Supabase Auth picks up the session token from the URL fragment
-        location.href = body.magic_link;
-      } catch(err){
-        console.error('Telegram auth error:', err);
-        if(errEl) errEl.innerHTML = alertBox(err.message || 'Telegram sign-in failed. Please try again.');
-        if(btnEl){ btnEl.disabled = false; btnEl.style.opacity = '1'; }
-      }
+// Global callback invoked by the Telegram widget after the user authorizes.
+// We POST the payload to our edge function which verifies the HMAC and
+// returns a magic link that signs the user in via Supabase Auth.
+window.onTelegramAuth = async function(tgUser){
+  const errEl = document.getElementById('login-error') || document.getElementById('reg-error');
+  if(errEl) errEl.innerHTML = `<div class="alert alert-info">Signing in via Telegram…</div>`;
+  try {
+    const res = await fetch(`${CFG.SUPABASE_URL}/functions/v1/telegram-auth`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': CFG.SUPABASE_ANON_KEY },
+      body: JSON.stringify(tgUser),
+    });
+    const body = await res.json();
+    if(!res.ok || !body?.magic_link){
+      throw new Error(body?.error || 'Telegram sign-in failed');
     }
-  );
-}
+    // Magic link redirects to our origin and Supabase Auth picks up the session token.
+    location.href = body.magic_link;
+  } catch(err){
+    console.error('Telegram auth error:', err);
+    if(errEl) errEl.innerHTML = alertBox(err.message || 'Telegram sign-in failed. Please try again.');
+  }
+};
 
 async function renderLogin(){
   if(state.user){ location.hash='#/'; return; }
   showTemplate('tpl-login');
   $('#google-signin-btn').onclick = ()=>signInWithGoogle($('#google-signin-btn'), $('#login-error'));
-  const tgBtn = $('#telegram-signin-btn');
-  if(tgBtn) tgBtn.onclick = () => signInWithTelegram(tgBtn, $('#login-error'));
-  loadTelegramWidget();
+  mountTelegramWidget('tg-signin-widget');
 }
 
 async function renderRegister(){
   if(state.user){ location.hash='#/'; return; }
   showTemplate('tpl-register');
   $('#google-signup-btn').onclick = ()=>signInWithGoogle($('#google-signup-btn'), $('#reg-error'));
-  const tgBtn = $('#telegram-signup-btn');
-  if(tgBtn) tgBtn.onclick = () => signInWithTelegram(tgBtn, $('#reg-error'));
-  loadTelegramWidget();
+  mountTelegramWidget('tg-signup-widget');
 }
 
 async function renderPayment(orderId){
