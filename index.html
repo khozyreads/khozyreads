@@ -1843,20 +1843,47 @@ async function renderPayment(orderId){
     if(!allowed.includes(file.type)){ $('#proof-msg').innerHTML = alertBox(t('err.invalidFile')); return; }
     if(file.size > 8*1024*1024){ $('#proof-msg').innerHTML = alertBox(t('err.fileTooLarge')); return; }
     const btn = e.target.querySelector('button[type=submit]'); btn.disabled=true;
+    const msgEl = $('#proof-msg');
+    const navigateToLibrary = () => {
+      // Triple-attempt navigation — PWA Android can occasionally drop a single hash change
+      try { location.hash = '#/library'; } catch(_){}
+      setTimeout(()=>{ if(!/#\/?library/.test(location.hash)){ try { location.href = '#/library'; } catch(_){} } }, 200);
+      setTimeout(()=>{ if(!/#\/?library/.test(location.hash)){ try { location.replace('#/library'); } catch(_){} } }, 500);
+    };
     try{
+      // Step 1: Upload file
+      msgEl.innerHTML = `<div class="alert alert-info">${state.lang==='kh'?'កំពុងបង្ហោះវិក្កយបត្រ…':'Uploading receipt…'}</div>`;
       const ext = (file.name.split('.').pop()||'bin').toLowerCase();
       const path = `${state.profile.id}/proof_${order.id}_${Date.now()}.${ext}`;
       const { error: upErr } = await sb.storage.from('payment-proofs').upload(path,file,{ upsert:false, contentType:file.type });
-      if(upErr) throw upErr;
-      const { data: sg } = await sb.storage.from('payment-proofs').createSignedUrl(path, 60*60*24*7);
-      await sb.from('orders').update({ proof_url: sg?.signedUrl||path, status:'pending' }).eq('id',order.id);
-      sb.functions.invoke('notify-telegram',{body:{order_id:order.id}}).catch(()=>{});
+      if(upErr) throw new Error('Upload failed: ' + (upErr.message||upErr));
+      console.log('[payment] upload ok:', path);
+
+      // Step 2: Get signed URL (best-effort — fallback to raw path if it fails)
+      let proofUrl = path;
+      try {
+        const { data: sg } = await sb.storage.from('payment-proofs').createSignedUrl(path, 60*60*24*7);
+        if(sg?.signedUrl) proofUrl = sg.signedUrl;
+      } catch(sgErr){ console.warn('[payment] signedUrl failed (using path):', sgErr); }
+
+      // Step 3: Update order — this is the critical step. If it fails, admin won't see proof.
+      msgEl.innerHTML = `<div class="alert alert-info">${state.lang==='kh'?'កំពុងបញ្ជូន…':'Submitting…'}</div>`;
+      const { error: updErr } = await sb.from('orders').update({ proof_url: proofUrl, status:'pending' }).eq('id',order.id);
+      if(updErr) throw new Error('Submit failed: ' + (updErr.message||updErr));
+      console.log('[payment] order updated to pending');
+
+      // Step 4: Side-effects (notify admin + log) — fire-and-forget, don't block UI
+      sb.functions.invoke('notify-telegram',{body:{order_id:order.id}}).catch(err=>console.warn('[payment] notify-telegram failed (non-blocking):', err));
       sb.from('activity_logs').insert({ action:'order.proof_uploaded', actor_user_id:state.profile.id, actor_username:state.profile.username, target_type:'order', target_id:order.id, details:{book_id:order.book_id} }).then(()=>{}).catch(()=>{});
-      $('#proof-msg').innerHTML = alertBox(t('pay.success'),'success');
-      setTimeout(()=>{ location.hash='#/library'; }, 1500);
+
+      // Step 5: Show success + navigate immediately (don't wait — PWA setTimeout unreliable)
+      msgEl.innerHTML = alertBox(t('pay.success'),'success');
+      console.log('[payment] success, navigating to library');
+      // Brief delay so user sees success, then triple-attempt nav for PWA reliability
+      setTimeout(navigateToLibrary, 800);
     }catch(err){
-      console.error(err);
-      $('#proof-msg').innerHTML = alertBox(err.message||t('err.uploadFailed'));
+      console.error('[payment] submit error:', err);
+      msgEl.innerHTML = alertBox(err.message||t('err.uploadFailed'));
       btn.disabled=false;
     }
   };
