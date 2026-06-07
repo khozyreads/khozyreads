@@ -1,5 +1,3 @@
-# Rewrite /sitemap.xml to the dynamic edge function (Supabase)
-# This way Google fetches a fresh sitemap with all current books.
-/sitemap.xml  https://nqvnqykukecexcxapwdc.supabase.co/functions/v1/dynamic-sitemap  200
-
+# No redirects configured.
+# /sitemap.xml is handled by functions/sitemap.xml.ts (Cloudflare Pages Function)
 # Legal pages are accessed directly: /privacy.html and /terms.html
