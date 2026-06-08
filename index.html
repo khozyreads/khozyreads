@@ -176,6 +176,12 @@ html[lang="km"] .btn{font-family:var(--font-khmer);font-weight:500}
 .hero-orn-side.right{right:18px;transform:translateY(-50%) scaleX(-1)}
 .hero h1{margin:18px 0 14px}
 .hero .lede{max-width:640px;margin:0 auto}
+.hero-trust-row{margin-top:22px;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:4px 14px;font-family:'Crimson Pro','Noto Serif Khmer',serif;font-size:13px;color:var(--muted);letter-spacing:.01em}
+.hero-trust-item{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.hero-trust-ic{font-size:14px;opacity:.9}
+.hero-trust-dot{color:var(--accent);opacity:.6}
+html[lang="km"] .hero-trust-row{font-family:var(--font-khmer);font-size:13px}
+@media (max-width:600px){.hero-trust-row{font-size:12px;gap:4px 10px}.hero-trust-dot{display:none}}
 .hero-meta{margin-top:28px;display:inline-flex;gap:36px;flex-wrap:wrap;justify-content:center;color:var(--muted);font-family:var(--font-serif);font-size:14px;letter-spacing:.16em;text-transform:uppercase}
 html[lang="km"] .hero-meta{font-family:var(--font-khmer);font-size:13px;letter-spacing:.1em}
 .hero-meta span{display:inline-flex;align-items:center;gap:10px}
@@ -789,6 +795,13 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       <div class="eyebrow" data-i18n="home.eyebrow">បណ្ណាគារខ្មែរឌីជីថល · EST. 2026</div>
       <h1 class="display display-1" data-i18n="home.title">ហាងសៀវភៅឌីជីថល</h1>
       <p class="lede" data-i18n="home.lede">ពាក្យគឺជាពណ៌នៃអាថ៌កំបាំងដួងចិត្ត។</p>
+      <div class="hero-trust-row">
+        <span class="hero-trust-item"><span class="hero-trust-ic">⚡</span><span data-i18n="trust.fast">1-tap login with Telegram</span></span>
+        <span class="hero-trust-dot">·</span>
+        <span class="hero-trust-item"><span class="hero-trust-ic">💳</span><span data-i18n="trust.pay">Secure ABA / KHQR</span></span>
+        <span class="hero-trust-dot">·</span>
+        <span class="hero-trust-item"><span class="hero-trust-ic">📚</span><span data-i18n="trust.instant">Instant access</span></span>
+      </div>
     </div>
     <div class="section-head">
       <div class="left">
@@ -1144,6 +1157,7 @@ const I18N = {
     'brand.tag':'ពាក្យគឺជាពណ៌នៃអាថ៌កំបាំងដួងចិត្ត។','nav.store':'ហាង','nav.library':'បណ្ណាល័យរបស់ខ្ញុំ','nav.login':'ចូល','nav.register':'ចុះឈ្មោះ','nav.logout':'ចេញ',
     'footer.tag':'សៀវភៅឌីជីថលដែលបន្ថែមភាពរីករាយក្នុងការអាន','footer.note':'បង្កើតដោយក្តីស្រឡាញ់ពីខ្មែរ','footer.aboutNovels':'អំពីប្រលោមលោកខ្មែរ','footer.privacy':'គោលនយោបាយឯកជនភាព','footer.terms':'លក្ខខណ្ឌនៃសេវាកម្ម','footer.contact':'ទាក់ទងតាម Telegram','footer.applyCreator':'ដាក់ពាក្យជាអ្នកនិពន្ធ','acb.eyebrow':'សម្រាប់អ្នកនិពន្ធ','acb.title':'ចង់ផ្សព្វផ្សាយសៀវភៅរបស់អ្នកនៅ KhozyReads?','acb.sub':'ដាក់ស្នើដើម្បីក្លាយជាអ្នកនិពន្ធ ហើយចែករំលែករឿងរបស់អ្នកជាមួយអ្នកអានខ្មែរ។','acb.cta':'ដាក់ពាក្យជាអ្នកនិពន្ធ',
     'home.eyebrow':'បណ្ណាគារខ្មែរឌីជីថល · EST. 2026','home.title':'ហាងសៀវភៅឌីជីថល','home.lede':'ពាក្យគឺជាពណ៌នៃអាថ៌កំបាំងដួងចិត្ត។',
+    'trust.fast':'ចូលជាមួយ Telegram (1-tap)','trust.pay':'ការទូទាត់សុវត្ថិភាព ABA / KHQR','trust.instant':'ចូលប្រើភ្លាមៗ',
     'home.all.eyebrow':'បណ្តុំសៀវភៅទាំងអស់','home.all.h':'ហាងសៀវភៅឌីជីថល','home.all.sort':'តម្រៀបតាម · ថ្មីបំផុត','home.empty':'មិនទាន់មានសៀវភៅទេ','home.search':'ស្វែងរកសៀវភៅ ឬអ្នកនិពន្ធ...',
     'detail.eyebrow':'សៀវភៅ · ឆ្នាំ ២០២៦','detail.by':'និពន្ធដោយ','detail.priceNote':'តម្លៃតែម្តង · កាន់កាប់រហូត','detail.synopsis':'ដំណើររឿងសង្ខេប',
     'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់ការទូទាត់...','cta.pendingHint':'ចុចដើម្បីបង្ហោះវិក្កយបត្រឡើងវិញ','cta.pendingNote':'រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។ មិនអាចទិញម្តងទៀតបានទេនៅពេលនេះ។','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន',
@@ -1163,6 +1177,7 @@ const I18N = {
     'brand.tag':'Words Are Colors Of The Unspoken Soul.','nav.store':'Store','nav.library':'My Library','nav.login':'Sign In','nav.register':'Register','nav.logout':'Logout',
     'footer.tag':'Digital books that bring joy to reading','footer.note':'Crafted with love from Cambodia','footer.aboutNovels':'About Khmer Novels','footer.privacy':'Privacy Policy','footer.terms':'Terms of Service','footer.contact':'Contact via Telegram','footer.applyCreator':'Apply as Creator','acb.eyebrow':'For Authors & Publishers','acb.title':'Want to publish your book on KhozyReads?','acb.sub':'Apply to become a creator and share your stories with Khmer readers worldwide.','acb.cta':'Apply as Creator',
     'home.eyebrow':'Khmer digital bookstore · EST. 2026','home.title':'Digital Book Store','home.lede':'Words Are Colors Of The Unspoken Soul.',
+    'trust.fast':'1-tap login with Telegram','trust.pay':'Secure ABA / KHQR payment','trust.instant':'Instant access',
     'home.all.eyebrow':'All books','home.all.h':'Digital Book Store','home.all.sort':'Sorted by · Newest','home.empty':'No books yet','home.search':'Search books or authors...',
     'detail.eyebrow':'Book · 2026','detail.by':'by','detail.priceNote':'One-time purchase · yours forever','detail.synopsis':'Synopsis',
     'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Verifying payment...','cta.pendingHint':'Click to re-upload your payment proof','cta.pendingNote':'Waiting for admin verification. You cannot buy again right now.','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled','cta.readFree':'Read for Free','cta.loginToRead':'Login to Read',
