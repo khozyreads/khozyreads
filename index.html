@@ -1597,8 +1597,8 @@ async function renderBookDetail(id){
   }
   const cover = scope.querySelector('[data-bind="cover"]');
   if(book.cover_url){ cover.innerHTML = `<img src="${esc(book.cover_url)}" alt=""/>`; }
-  if(book.is_coming_soon){ cover.insertAdjacentHTML('beforeend', `<span class="coming-soon-badge">✨ ${t('badge.comingSoon')}</span><div class="coming-soon-veil"></div>`); }
   else { cover.style.background = pickColor(book.id); cover.innerHTML = `<svg style="position:absolute;width:54px;height:54px;top:14px;left:14px;color:var(--accent);opacity:.9"><use href="#orn-corner"/></svg><svg style="position:absolute;width:54px;height:54px;bottom:14px;right:14px;color:var(--accent);opacity:.9;transform:rotate(180deg)"><use href="#orn-corner"/></svg>`; }
+  if(book.is_coming_soon){ cover.insertAdjacentHTML('beforeend', `<span class="coming-soon-badge">✨ ${t('badge.comingSoon')}</span><div class="coming-soon-veil"></div>`); }
   const ctaWrap = $('#detail-cta');
   const ctaMap = {
     guest: `<a class="btn btn-primary btn-lg" href="#/login">${t('cta.loginToBuy')}</a>`,
