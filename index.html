@@ -245,8 +245,18 @@ html[lang="km"] .featured-info .author{font-family:var(--font-khmer);font-style:
 .lib-tab.active{color:var(--fg)!important;border-bottom-color:var(--primary)!important;font-weight:600}
 .lib-tab:hover{color:var(--fg)}
 .book-card:hover{transform:translateY(-4px);border:0;color:var(--fg)}
-.book-cover{position:relative;aspect-ratio:3/4;background:linear-gradient(135deg,var(--bg-deep) 0%,#E8DCC0 100%);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow-sm);transition:box-shadow .25s}
-.book-card:hover .book-cover{box-shadow:var(--shadow-md)}
+/* ── 3D "real book" cover effect ──
+   Spine crease (::before) + stacked page edges (box-shadow) + subtle
+   perspective tilt on hover. */
+.book-cover{position:relative;aspect-ratio:3/4;background:linear-gradient(135deg,var(--bg-deep) 0%,#E8DCC0 100%);border:1px solid var(--border);overflow:hidden;border-radius:2px 8px 8px 2px;
+  box-shadow:2px 2px 0 -1px #FBF7EC,3px 3px 0 -1px #E2D8C2,4px 4px 0 -1px #FBF7EC,5px 5px 0 -1px #DCD1B8,7px 9px 18px rgba(30,20,10,.28);
+  transform:perspective(1000px) rotateY(0deg);transform-origin:left center;
+  transition:box-shadow .3s ease,transform .35s ease}
+.book-cover::before{content:'';position:absolute;top:0;bottom:0;left:0;width:14%;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,rgba(0,0,0,.28) 0%,rgba(255,255,255,.22) 12%,rgba(0,0,0,.14) 26%,rgba(255,255,255,.08) 48%,transparent 100%)}
+.book-card:hover .book-cover{transform:perspective(1000px) rotateY(-10deg);
+  box-shadow:3px 2px 0 -1px #FBF7EC,5px 4px 0 -1px #E2D8C2,7px 6px 0 -1px #FBF7EC,9px 8px 0 -1px #DCD1B8,16px 14px 26px rgba(30,20,10,.32)}
+.book-cover .progress-pill,.book-cover .free-badge,.book-cover .read-progress{z-index:4}
 .book-cover img{width:100%;height:100%;object-fit:cover;display:block}
 .book-cover .placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-family:var(--font-serif);font-size:13px;letter-spacing:.18em;text-transform:uppercase;background:repeating-linear-gradient(135deg, transparent 0 18px, rgba(123,45,38,.04) 18px 19px)}
 .book-cover .corner-orn{position:absolute;width:34px;height:34px;color:var(--accent);opacity:.85}
@@ -261,6 +271,20 @@ html[lang="km"] .book-author{font-family:var(--font-khmer);font-style:normal;fon
 
 .progress-pill{position:absolute;left:10px;bottom:10px;display:inline-flex;align-items:center;gap:8px;padding:6px 10px;background:rgba(30,42,58,.85);color:#FAF5E9;border-radius:999px;font-size:12px;letter-spacing:.06em;backdrop-filter:blur(4px)}
 .free-badge{position:absolute;top:10px;right:10px;padding:5px 12px;background:linear-gradient(135deg,var(--accent),var(--accent-deep));color:#1E2A3A;border-radius:999px;font-family:var(--font-serif);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;box-shadow:0 4px 12px rgba(212,165,116,.5);z-index:5}
+.coming-soon-badge{position:absolute;top:12px;right:-34px;transform:rotate(38deg);padding:6px 40px;background:linear-gradient(135deg,#5B4B8A,#3D3263);color:#FAF5E9;font-family:var(--font-serif);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;box-shadow:0 4px 12px rgba(61,50,99,.45);z-index:5;white-space:nowrap}
+html[lang="km"] .coming-soon-badge{font-family:var(--font-khmer);letter-spacing:.02em;font-size:12px}
+.coming-soon-veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(30,25,50,.05) 0%,rgba(30,25,50,.28) 100%);z-index:2;pointer-events:none}
+
+/* ── Reader audio widget (bg music + voice narration) ── */
+.reader-audio{position:fixed;right:16px;bottom:84px;z-index:60;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+.ra-btn{width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(25,20,16,.72);backdrop-filter:blur(8px);color:#FAF5E9;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35);transition:transform .15s ease,background .2s ease;padding:0}
+.ra-btn:hover{transform:scale(1.08);background:rgba(25,20,16,.9)}
+.ra-btn.ra-off{opacity:.55}
+.ra-btn.ra-active{background:var(--primary,#7B2D26);border-color:transparent}
+.ra-hint{position:absolute;right:54px;bottom:4px;padding:7px 12px;background:rgba(25,20,16,.85);color:#FAF5E9;border-radius:8px;font-size:12px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .3s ease}
+.ra-hint.show{opacity:1}
+html[lang="km"] .ra-hint{font-family:var(--font-khmer)}
+@media (max-width:540px){.reader-audio{right:12px;bottom:96px}}
 html[lang="km"] .free-badge{font-family:var(--font-khmer);letter-spacing:.02em;font-size:12px}
 .progress-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
 html[lang="km"] .progress-pill{font-family:var(--font-khmer)}
@@ -276,7 +300,10 @@ html[lang="km"] .breadcrumbs{font-family:var(--font-khmer);letter-spacing:.06em;
 .book-detail{display:grid;grid-template-columns:minmax(280px,420px) 1fr;gap:64px;padding:32px 0 64px}
 @media (max-width:860px){.book-detail{grid-template-columns:1fr}}
 .detail-cover{position:relative}
-.detail-cover .cover-img{aspect-ratio:3/4;background:linear-gradient(135deg,var(--bg-deep) 0%,#E8DCC0 100%);border:1px solid var(--border);box-shadow:var(--shadow-md);position:relative;overflow:hidden}
+.detail-cover .cover-img{aspect-ratio:3/4;background:linear-gradient(135deg,var(--bg-deep) 0%,#E8DCC0 100%);border:1px solid var(--border);position:relative;overflow:hidden;border-radius:3px 10px 10px 3px;
+  box-shadow:3px 3px 0 -1px #FBF7EC,5px 5px 0 -1px #E2D8C2,7px 7px 0 -1px #FBF7EC,9px 9px 0 -1px #DCD1B8,12px 14px 28px rgba(30,20,10,.3)}
+.detail-cover .cover-img::before{content:'';position:absolute;top:0;bottom:0;left:0;width:12%;z-index:1;pointer-events:none;
+  background:linear-gradient(90deg,rgba(0,0,0,.28) 0%,rgba(255,255,255,.22) 12%,rgba(0,0,0,.14) 26%,rgba(255,255,255,.08) 48%,transparent 100%)}
 .detail-cover .cover-img img{width:100%;height:100%;object-fit:cover;display:block}
 .detail-cover .frame{position:absolute;inset:-16px;border:1px solid var(--border-strong);pointer-events:none}
 .detail-cover .frame::before,.detail-cover .frame::after{content:"";position:absolute;width:36px;height:36px;border:1px solid var(--accent-deep)}
@@ -1160,7 +1187,7 @@ const I18N = {
     'trust.fast':'ចូលជាមួយ Telegram (1-tap)','trust.pay':'ការទូទាត់សុវត្ថិភាព ABA / KHQR','trust.instant':'ចូលប្រើភ្លាមៗ',
     'home.all.eyebrow':'បណ្តុំសៀវភៅទាំងអស់','home.all.h':'ហាងសៀវភៅឌីជីថល','home.all.sort':'តម្រៀបតាម · ថ្មីបំផុត','home.empty':'មិនទាន់មានសៀវភៅទេ','home.search':'ស្វែងរកសៀវភៅ ឬអ្នកនិពន្ធ...',
     'detail.eyebrow':'សៀវភៅ · ឆ្នាំ ២០២៦','detail.by':'និពន្ធដោយ','detail.priceNote':'តម្លៃតែម្តង · កាន់កាប់រហូត','detail.synopsis':'ដំណើររឿងសង្ខេប',
-    'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់ការទូទាត់...','cta.pendingHint':'ចុចដើម្បីបង្ហោះវិក្កយបត្រឡើងវិញ','cta.pendingNote':'រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។ មិនអាចទិញម្តងទៀតបានទេនៅពេលនេះ។','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន',
+    'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់ការទូទាត់...','cta.pendingHint':'ចុចដើម្បីបង្ហោះវិក្កយបត្រឡើងវិញ','cta.pendingNote':'រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។ មិនអាចទិញម្តងទៀតបានទេនៅពេលនេះ។','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន','badge.comingSoon':'ឆាប់ៗនេះ','cta.comingSoon':'ឆាប់ៗនេះ — សូមរង់ចាំ!','reader.bgAudio':'តន្ត្រីផ្ទៃខាងក្រោយ','reader.voice':'សំឡេងអាន','reader.tapToPlay':'ចុចដើម្បីចាក់តន្ត្រី',
     'lib.eyebrow':'បណ្ណាល័យផ្ទាល់ខ្លួន','lib.title':'បណ្ណាល័យរបស់ខ្ញុំ','lib.lede':'សៀវភៅទាំងអស់ដែលអ្នកបានទិញ — រួចរាល់ចាប់ផ្តើមអាន។','lib.empty':'មិនទាន់មានការទិញ','lib.empty.favs':'មិនទាន់មានសៀវភៅដែលចូលចិត្ត','lib.tab.books':'សៀវភៅរបស់ខ្ញុំ','lib.tab.favs':'ចូលចិត្ត',
     'pay.promo':'មានកូដប្រូម៉ូ?','pay.applyPromo':'អនុវត្ត','pay.review':'សូមពិនិត្យមើលមុនពេលបញ្ជូន','pay.book':'សៀវភៅ','pay.subtotal':'សរុបមុនបញ្ចុះតម្លៃ','pay.discount':'ការបញ្ចុះតម្លៃ','pay.total':'សរុបទាំងអស់','pay.contactAdmin':'មានបញ្ហា? ទាក់ទងអ្នកគ្រប់គ្រង','pay.contactAdminSub':'ផ្ញើសារនៅ Telegram',
     'auth.welcome':'សូមស្វាគមន៍មកកាន់','auth.loginH':'ចូលគណនី','auth.loginSub':'បន្តការអានសៀវភៅដែលអ្នកស្រឡាញ់','auth.loginBtn':'ចូលគណនី','auth.noAcc':'មិនទាន់មានគណនី?','auth.haveAcc':'មានគណនីរួចហើយ?','auth.signInGoogle':'បន្តជាមួយ Google','auth.signUpGoogle':'ចុះឈ្មោះជាមួយ Google','auth.signInTelegram':'ចូលដោយ Telegram','auth.signUpTelegram':'ចុះឈ្មោះដោយ Telegram','auth.recommended':'ណែនាំ','auth.or':'ឬ','auth.googleSub':'សុវត្ថិភាព · ឥតគិតថ្លៃ · ការចូលរហ័ស',
@@ -1180,7 +1207,7 @@ const I18N = {
     'trust.fast':'1-tap login with Telegram','trust.pay':'Secure ABA / KHQR payment','trust.instant':'Instant access',
     'home.all.eyebrow':'All books','home.all.h':'Digital Book Store','home.all.sort':'Sorted by · Newest','home.empty':'No books yet','home.search':'Search books or authors...',
     'detail.eyebrow':'Book · 2026','detail.by':'by','detail.priceNote':'One-time purchase · yours forever','detail.synopsis':'Synopsis',
-    'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Verifying payment...','cta.pendingHint':'Click to re-upload your payment proof','cta.pendingNote':'Waiting for admin verification. You cannot buy again right now.','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled','cta.readFree':'Read for Free','cta.loginToRead':'Login to Read',
+    'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Verifying payment...','cta.pendingHint':'Click to re-upload your payment proof','cta.pendingNote':'Waiting for admin verification. You cannot buy again right now.','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled','cta.readFree':'Read for Free','cta.loginToRead':'Login to Read','badge.comingSoon':'Coming Soon','cta.comingSoon':'Coming Soon — Stay tuned!','reader.bgAudio':'Background music','reader.voice':'Voice narration','reader.tapToPlay':'Tap to play music',
     'lib.eyebrow':'Personal library','lib.title':'My Library','lib.lede':'All books you own — ready to read.','lib.empty':'No purchases yet','lib.empty.favs':'No favorites yet','lib.tab.books':'My Books','lib.tab.favs':'Favorites',
     'pay.promo':'Have a promo code?','pay.applyPromo':'Apply','pay.review':'Review before submitting','pay.book':'Book','pay.subtotal':'Subtotal','pay.discount':'Discount','pay.total':'Total','pay.contactAdmin':'Need help? Contact admin','pay.contactAdminSub':'Reach us on Telegram',
     'auth.welcome':'Welcome to','auth.loginH':'Sign In','auth.loginSub':'Continue reading what you love','auth.loginBtn':'Sign In','auth.noAcc':'No account yet?','auth.haveAcc':'Already have an account?','auth.signInGoogle':'Continue with Google','auth.signUpGoogle':'Sign up with Google','auth.signInTelegram':'Sign in with Telegram','auth.signUpTelegram':'Sign up with Telegram','auth.recommended':'Recommended','auth.or':'or','auth.googleSub':'Secure · Free · One-tap access',
@@ -1434,7 +1461,7 @@ function wireFavButtons(scope){
 
 async function renderHome(){
   const [{ data:books, error }, favIds] = await Promise.all([
-    sb.from('books').select('id,title,creator,synopsis,price,currency,cover_url,is_buy_enabled,is_free,genre').eq('status','active').order('created_at',{ascending:false}),
+    sb.from('books').select('id,title,creator,synopsis,price,currency,cover_url,is_buy_enabled,is_free,is_coming_soon,genre').eq('status','active').order('created_at',{ascending:false}),
     loadFavoriteIds()
   ]);
   if(error) throw error;
@@ -1498,13 +1525,13 @@ async function renderHome(){
         ${state.profile ? favBtnHtml(b.id, favIds.has(b.id)) : ''}
         <div class="book-cover" style="background:${b.cover_url?'var(--bg-deep)':pickColor(b.id)}">
           ${b.cover_url ? `<img src="${esc(b.cover_url)}" alt="${esc(b.title)}" width="242" height="322" ${imgAttrs}/>` : `<div class="placeholder">COVER</div><svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}
-          ${b.is_free ? `<span class="free-badge">${state.lang==='kh'?'🎁 ឥតគិតថ្លៃ':'🎁 FREE'}</span>` : ''}
+          ${b.is_coming_soon ? `<span class="coming-soon-badge">✨ ${t('badge.comingSoon')}</span><div class="coming-soon-veil"></div>` : (b.is_free ? `<span class="free-badge">${state.lang==='kh'?'🎁 ឥតគិតថ្លៃ':'🎁 FREE'}</span>` : '')}
         </div>
         <div class="book-meta">
           <h3 class="book-title">${esc(b.title)}</h3>
           <p class="book-author">${esc(b.creator||'-')}</p>
           ${genreTags?`<div class="book-genre-tags">${genreTags}</div>`:''}
-          <span class="book-price">${b.is_free ? (state.lang==='kh'?'ឥតគិតថ្លៃ':'Free') : fmtMoney(b.price,b.currency)}</span>
+          <span class="book-price">${b.is_coming_soon ? t('badge.comingSoon') : (b.is_free ? (state.lang==='kh'?'ឥតគិតថ្លៃ':'Free') : fmtMoney(b.price,b.currency))}</span>
         </div>
       </a>`;
     }).join('');
@@ -1552,6 +1579,8 @@ async function renderBookDetail(id){
     action = 'login_to_read'; // guest sees a free book
   }
   if(!book.is_buy_enabled && (action==='buy'||action==='buyAgain')) action='disabled';
+  // Coming soon: tidak bisa dibeli/diklaim oleh siapa pun (yang sudah punya akses tetap bisa baca)
+  if(book.is_coming_soon && action!=='read') action='coming_soon';
   showTemplate('tpl-detail');
   const scope = $('#route-outlet');
   bindData(scope,'title',book.title);
@@ -1568,6 +1597,7 @@ async function renderBookDetail(id){
   }
   const cover = scope.querySelector('[data-bind="cover"]');
   if(book.cover_url){ cover.innerHTML = `<img src="${esc(book.cover_url)}" alt=""/>`; }
+  if(book.is_coming_soon){ cover.insertAdjacentHTML('beforeend', `<span class="coming-soon-badge">✨ ${t('badge.comingSoon')}</span><div class="coming-soon-veil"></div>`); }
   else { cover.style.background = pickColor(book.id); cover.innerHTML = `<svg style="position:absolute;width:54px;height:54px;top:14px;left:14px;color:var(--accent);opacity:.9"><use href="#orn-corner"/></svg><svg style="position:absolute;width:54px;height:54px;bottom:14px;right:14px;color:var(--accent);opacity:.9;transform:rotate(180deg)"><use href="#orn-corner"/></svg>`; }
   const ctaWrap = $('#detail-cta');
   const ctaMap = {
@@ -1578,7 +1608,8 @@ async function renderBookDetail(id){
     claim_free: `<button class="btn btn-gold btn-lg" id="claim-btn">🎁 ${t('cta.readFree')}</button>`,
     pending: `<a class="btn btn-pending btn-lg" href="#/payment/${orderId}" title="${t('cta.pendingHint')}"><span class="spin-circle" aria-hidden="true"></span><span>${t('cta.pending')}</span></a><div class="pending-note muted" style="margin-top:10px;font-size:13px;text-align:center">${t('cta.pendingNote')}</div>`,
     read: `<a class="btn btn-primary btn-lg" href="#/read/${id}">${t('cta.read')}</a>`,
-    disabled: `<button class="btn btn-ghost btn-lg" disabled>${t('cta.disabled')}${book.buy_disabled_remark?` — ${esc(book.buy_disabled_remark)}`:''}</button>`
+    disabled: `<button class="btn btn-ghost btn-lg" disabled>${t('cta.disabled')}${book.buy_disabled_remark?` — ${esc(book.buy_disabled_remark)}`:''}</button>`,
+    coming_soon: `<button class="btn btn-ghost btn-lg" disabled style="background:linear-gradient(135deg,#5B4B8A,#3D3263);color:#FAF5E9;opacity:1;cursor:default">✨ ${t('cta.comingSoon')}</button>`
   };
   ctaWrap.innerHTML = ctaMap[action];
   const buyBtn = $('#buy-btn');
@@ -1976,14 +2007,93 @@ async function renderPayment(orderId){
 
 /* ========== Reader ========== */
 let _readerCleanup = null;
-function cleanupReader(){ if(_readerCleanup){ _readerCleanup(); _readerCleanup=null; } }
+let _audioCleanup = null;
+function cleanupReader(){
+  if(_readerCleanup){ _readerCleanup(); _readerCleanup=null; }
+  if(_audioCleanup){ _audioCleanup(); _audioCleanup=null; }
+}
+
+/* ── Reader audio: background music (loop) + voice narration ──
+   - Bg music mencoba autoplay; kalau diblokir browser, mulai pada
+     interaksi pertama user (kebijakan autoplay browser).
+   - Tombol mute untuk bg music (preferensi disimpan di localStorage).
+   - Voice narration: play/pause; bg music otomatis mengecil (ducking)
+     saat voice diputar. Posisi voice diingat per buku. */
+function setupReaderAudio(bookId, bgUrl, voiceUrl){
+  if(!bgUrl && !voiceUrl) return;
+  const frame = document.getElementById('ir-frame') || document.getElementById('reader-frame');
+  if(!frame) return;
+
+  const BG_VOL = 0.35, BG_DUCK = 0.08;
+  const muted = localStorage.getItem('khozy-bg-muted') === '1';
+  let bg = null, voice = null, hintT = null;
+
+  const iconMusic = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18 V5 L21 3 V16"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`;
+  const iconMusicOff = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18 V5 L21 3 V16"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/><path d="M2 2 L22 22" stroke-width="2.2"/></svg>`;
+  const iconPlay = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4 L20 12 L7 20 Z"/></svg>`;
+  const iconPause = `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>`;
+
+  const wrap = document.createElement('div');
+  wrap.className = 'reader-audio';
+  wrap.innerHTML = `
+    ${voiceUrl?`<button type="button" class="ra-btn" id="ra-voice" aria-label="${t('reader.voice')}" title="${t('reader.voice')}">${iconPlay}</button>`:''}
+    ${bgUrl?`<button type="button" class="ra-btn" id="ra-bg" aria-label="${t('reader.bgAudio')}" title="${t('reader.bgAudio')}">${muted?iconMusicOff:iconMusic}</button>`:''}
+    <div class="ra-hint" id="ra-hint">${t('reader.tapToPlay')}</div>`;
+  frame.appendChild(wrap);
+  const bgBtn = wrap.querySelector('#ra-bg');
+  const voiceBtn = wrap.querySelector('#ra-voice');
+  const hint = wrap.querySelector('#ra-hint');
+
+  function showHint(){ hint.classList.add('show'); clearTimeout(hintT); hintT = setTimeout(()=>hint.classList.remove('show'), 5000); }
+
+  if(bgUrl){
+    bg = new Audio(bgUrl);
+    bg.loop = true; bg.preload = 'auto'; bg.volume = BG_VOL; bg.muted = muted;
+    const tryPlay = ()=> bg.play().catch(()=>{ showHint(); document.addEventListener('pointerdown', onFirstTouch, {once:true}); });
+    const onFirstTouch = ()=>{ if(bg && !bg.muted) bg.play().catch(()=>{}); hint.classList.remove('show'); };
+    if(!muted) tryPlay();
+    bgBtn.onclick = ()=>{
+      bg.muted = !bg.muted;
+      localStorage.setItem('khozy-bg-muted', bg.muted ? '1' : '0');
+      bgBtn.innerHTML = bg.muted ? iconMusicOff : iconMusic;
+      bgBtn.classList.toggle('ra-off', bg.muted);
+      if(!bg.muted && bg.paused) bg.play().catch(()=>{});
+    };
+    if(muted) bgBtn.classList.add('ra-off');
+  }
+
+  if(voiceUrl){
+    voice = new Audio(voiceUrl);
+    voice.preload = 'metadata';
+    // Lanjutkan dari posisi terakhir (per buku)
+    const savedPos = parseFloat(localStorage.getItem('khozy-voice-pos-'+bookId) || '0');
+    if(savedPos > 0){ voice.addEventListener('loadedmetadata', ()=>{ if(savedPos < (voice.duration||0) - 5) voice.currentTime = savedPos; }, {once:true}); }
+    let posT = null;
+    voice.addEventListener('timeupdate', ()=>{
+      clearTimeout(posT);
+      posT = setTimeout(()=> localStorage.setItem('khozy-voice-pos-'+bookId, String(voice.currentTime||0)), 2000);
+    });
+    const setDuck = (on)=>{ if(bg) bg.volume = on ? BG_DUCK : BG_VOL; };
+    voice.addEventListener('play', ()=>{ setDuck(true); voiceBtn.innerHTML = iconPause; voiceBtn.classList.add('ra-active'); });
+    voice.addEventListener('pause', ()=>{ setDuck(false); voiceBtn.innerHTML = iconPlay; voiceBtn.classList.remove('ra-active'); });
+    voice.addEventListener('ended', ()=>{ setDuck(false); voiceBtn.innerHTML = iconPlay; voiceBtn.classList.remove('ra-active'); localStorage.removeItem('khozy-voice-pos-'+bookId); });
+    voiceBtn.onclick = ()=>{ if(voice.paused) voice.play().catch(()=>{}); else voice.pause(); };
+  }
+
+  _audioCleanup = ()=>{
+    clearTimeout(hintT);
+    if(bg){ bg.pause(); bg.src=''; bg=null; }
+    if(voice){ voice.pause(); voice.src=''; voice=null; }
+    wrap.remove();
+  };
+}
 
 async function renderReader(bookId){
   if(!state.user||!state.profile){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.loginFirst'))}</div>`; return; }
   if(!bookId){ location.hash='#/library'; return; }
   const { data:lib } = await sb.from('user_library').select('id').eq('user_id',state.profile.id).eq('book_id',bookId).eq('access_status','active').maybeSingle();
   if(!lib){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.noAccess'))}</div>`; return; }
-  const { data:book } = await sb.from('books').select('id,title,pdf_path,pages_status,total_pages,r2_prefix').eq('id',bookId).maybeSingle();
+  const { data:book } = await sb.from('books').select('id,title,pdf_path,pages_status,total_pages,r2_prefix,bg_audio_path,voice_audio_path').eq('id',bookId).maybeSingle();
   if(!book){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.bookNotFound'))}</div>`; return; }
 
   // Decision: modern image reader vs legacy PDF.js fallback
@@ -2012,6 +2122,12 @@ async function renderReader(bookId){
       const scope = $('#route-outlet');
       bindData(scope,'title',book.title);
       initImageReader(book, pages, startPage);
+      // Reader audio (bg music + voice) — signed URLs via edge function
+      if(book.bg_audio_path || book.voice_audio_path){
+        sb.functions.invoke('get-pdf-url',{ body:{ book_id:bookId } }).then(({data:ares})=>{
+          if(ares && location.hash.startsWith('#/read/')) setupReaderAudio(book.id, ares.bg_audio_url||null, ares.voice_audio_url||null);
+        }).catch(err=>console.warn('reader audio fetch failed', err));
+      }
       return;
     }
   }
@@ -2024,6 +2140,7 @@ async function renderReader(bookId){
   const scope = $('#route-outlet');
   bindData(scope,'title',book.title);
   initReader(book, res.url);
+  setupReaderAudio(book.id, res.bg_audio_url||null, res.voice_audio_url||null);
 }
 
 // Modern fullscreen image-based reader.

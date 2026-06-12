@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
   // Get book
   const { data: book, error: bookErr } = await sb
     .from("books")
-    .select("id, pdf_path, status")
+    .select("id, pdf_path, status, bg_audio_path, voice_audio_path")
     .eq("id", bookId)
     .maybeSingle();
   if (bookErr || !book) return json({ error: "Book not found" }, 404);
@@ -88,7 +88,28 @@ Deno.serve(async (req) => {
     return json({ error: "Failed to create signed URL" }, 500);
   }
 
-  return json({ url: signed.signedUrl, expires_in: SIGNED_URL_TTL_SECONDS });
+  // Optional: signed URLs for reader audio (background music + voice narration)
+  let bgAudioUrl: string | null = null;
+  let voiceAudioUrl: string | null = null;
+  if (book.bg_audio_path) {
+    const { data: s } = await sb.storage
+      .from("book-audio")
+      .createSignedUrl(book.bg_audio_path, SIGNED_URL_TTL_SECONDS);
+    bgAudioUrl = s?.signedUrl ?? null;
+  }
+  if (book.voice_audio_path) {
+    const { data: s } = await sb.storage
+      .from("book-audio")
+      .createSignedUrl(book.voice_audio_path, SIGNED_URL_TTL_SECONDS);
+    voiceAudioUrl = s?.signedUrl ?? null;
+  }
+
+  return json({
+    url: signed.signedUrl,
+    expires_in: SIGNED_URL_TTL_SECONDS,
+    bg_audio_url: bgAudioUrl,
+    voice_audio_url: voiceAudioUrl,
+  });
 });
 
 function json(body: unknown, status = 200) {
