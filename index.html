@@ -340,18 +340,10 @@ html[lang="km"] .detail-info .price-row .price-note{font-family:var(--font-khmer
 .btn-tg-redirect{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#54A9EB;color:#fff;border:0;border-radius:6px;padding:10px 20px;font-size:15px;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;cursor:pointer;min-width:200px;height:40px;transition:background .15s,opacity .15s;line-height:1}
 .btn-tg-redirect:hover{background:#3a8cd6}
 .btn-tg-redirect:disabled{cursor:wait}
-/* In-app browser (Messenger/FB/IG) → "open in browser" guidance card */
-.inapp-auth-card{margin-top:12px;padding:18px 16px;background:linear-gradient(180deg,rgba(34,158,217,.06),rgba(34,158,217,.02));border:1px solid rgba(34,158,217,.2);border-radius:12px;text-align:center}
-.inapp-auth-ic{font-size:30px;line-height:1;margin-bottom:6px}
-.inapp-auth-title{font-weight:700;color:#1a5a78;font-size:15px;margin-bottom:6px}
-html[lang="km"] .inapp-auth-title{font-family:var(--font-khmer);font-size:16px}
-.inapp-auth-sub{color:var(--muted);font-size:13px;line-height:1.55;margin-bottom:14px}
-html[lang="km"] .inapp-auth-sub{font-family:var(--font-khmer);font-size:13px}
-.inapp-auth-card .btn{min-width:180px}
-.inapp-auth-hint{margin-top:10px;font-size:12px;color:var(--accent-deep,#9a6a3a);word-break:break-all;min-height:1em}
-html[lang="km"] .inapp-auth-hint{font-family:var(--font-khmer)}
-.inapp-auth-steps{margin-top:12px;font-size:12px;color:var(--muted)}
-html[lang="km"] .inapp-auth-steps{font-family:var(--font-khmer);font-size:12px}
+/* In-app browser (Messenger/FB/IG): small optional fallback link under the widget */
+.inapp-auth-fallback{margin-top:10px;text-align:center;font-size:12.5px;color:var(--muted)}
+.inapp-auth-fallback a{color:#1a5a78;font-weight:600;text-decoration:underline;cursor:pointer;word-break:break-all}
+html[lang="km"] .inapp-auth-fallback{font-family:var(--font-khmer);font-size:13px}
 /* Telegram "recommended" section above Google */
 .tg-section{margin-top:20px;padding:14px 12px 16px;background:linear-gradient(180deg,rgba(34,158,217,.06),rgba(34,158,217,.02));border:1px solid rgba(34,158,217,.18);border-radius:10px;position:relative}
 .tg-section-header{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}
@@ -1820,57 +1812,18 @@ function buildTelegramAuthUrl(botId, returnTo){
   return `https://oauth.telegram.org/auth?${params.toString()}`;
 }
 
-// Mount the Telegram widget. Two modes:
-//  - Normal browser: iframe widget (best UX, popup-based)
-//  - In-app browser: button → full-page redirect to oauth.telegram.org
-//    (works because top-level navigation isn't blocked by in-app browsers)
+// Mount the Telegram widget.
+// ALL browsers (including in-app browsers like Messenger/FB/IG) use the official
+// iframe widget — this is the flow that completes login in-place and worked
+// reliably before. For in-app browsers we ALSO append a small optional fallback
+// link ("open in browser") in case the widget popup is blocked, without replacing
+// the widget itself.
 function mountTelegramWidget(containerId){
   const container = document.getElementById(containerId);
   if(!container) return;
   container.innerHTML = '';
 
-  if(isInAppBrowserForAuth()){
-    // In-app browsers (Messenger/Facebook/Instagram/etc.) block the redirect
-    // back from oauth.telegram.org, so Telegram login can't complete here.
-    // Instead, guide the user to open the page in their real browser.
-    const isKh = state.lang === 'kh';
-    const openUrl = location.origin + '/#/login';
-    const card = document.createElement('div');
-    card.className = 'inapp-auth-card';
-    card.innerHTML = `
-      <div class="inapp-auth-ic">🌐</div>
-      <div class="inapp-auth-title">${isKh ? 'បើកក្នុង Browser ដើម្បីចូល' : 'Open in your browser to sign in'}</div>
-      <div class="inapp-auth-sub">${isKh
-        ? 'ការចូលដោយ Telegram មិនដំណើរការនៅក្នុង Messenger/Facebook ទេ។ សូមបើកគេហទំព័រនេះក្នុង Chrome ឬ Safari។'
-        : 'Telegram sign-in doesn’t work inside Messenger/Facebook. Please open this page in Chrome or Safari.'}</div>
-      <button type="button" class="btn btn-primary" id="inapp-open-btn">${isKh ? 'បើកក្នុង Browser' : 'Open in Browser'}</button>
-      <div class="inapp-auth-hint" id="inapp-open-hint"></div>
-      <div class="inapp-auth-steps">${isKh
-        ? 'ឬចុចម៉ឺនុយ ⋯ (ខាងលើស្ដាំ) → "បើកក្នុង Browser"'
-        : 'Or tap the ⋯ menu (top-right) → “Open in browser”'}</div>
-    `;
-    container.appendChild(card);
-    const hint = card.querySelector('#inapp-open-hint');
-    card.querySelector('#inapp-open-btn').onclick = () => {
-      const ua = navigator.userAgent || '';
-      // Android: intent:// escapes the in-app webview into the default browser.
-      if(/Android/i.test(ua)){
-        try {
-          location.href = `intent://${location.host}/#/login#Intent;scheme=https;end`;
-          return;
-        } catch(_){}
-      }
-      // iOS / fallback: copy link and instruct (no reliable programmatic escape).
-      const done = () => { hint.textContent = isKh ? 'បានចម្លងតំណ — បើក Safari រួច paste' : 'Link copied — open Safari and paste it'; };
-      try {
-        if(navigator.clipboard?.writeText){ navigator.clipboard.writeText(openUrl).then(done).catch(()=>{ hint.textContent = openUrl; }); }
-        else { hint.textContent = openUrl; }
-      } catch(_){ hint.textContent = openUrl; }
-    };
-    return;
-  }
-
-  // Normal browser: use iframe widget
+  // Official iframe widget (popup + postMessage → onTelegramAuth)
   const origin = encodeURIComponent(location.origin);
   const iframe = document.createElement('iframe');
   iframe.id = containerId + '-iframe';
@@ -1880,6 +1833,33 @@ function mountTelegramWidget(containerId){
   iframe.setAttribute('allowtransparency', 'true');
   iframe.style.cssText = 'border:0;overflow:hidden;color-scheme:light;width:238px;height:40px';
   container.appendChild(iframe);
+
+  // In-app browsers: add a small fallback link only (does NOT replace the widget)
+  if(isInAppBrowserForAuth()){
+    const isKh = state.lang === 'kh';
+    const openUrl = location.origin + '/#/login';
+    const fb = document.createElement('div');
+    fb.className = 'inapp-auth-fallback';
+    fb.innerHTML = `<span>${isKh ? 'ចូលមិនបាន?' : 'Login not working?'}</span> <a href="#" role="button">${isKh ? 'បើកក្នុង Browser' : 'Open in browser'}</a>`;
+    container.appendChild(fb);
+    const link = fb.querySelector('a');
+    link.onclick = (e) => {
+      e.preventDefault();
+      const ua = navigator.userAgent || '';
+      // Android: intent:// escapes the in-app webview into the default browser.
+      if(/Android/i.test(ua)){
+        try { location.href = `intent://${location.host}/#/login#Intent;scheme=https;end`; return; } catch(_){}
+      }
+      // iOS / fallback: copy link + instruct (no reliable programmatic escape).
+      try {
+        if(navigator.clipboard?.writeText){
+          navigator.clipboard.writeText(openUrl)
+            .then(()=>{ link.textContent = isKh ? 'បានចម្លងតំណ — paste ក្នុង Safari' : 'Link copied — paste in Safari'; })
+            .catch(()=>{ link.textContent = openUrl; });
+        } else { link.textContent = openUrl; }
+      } catch(_){ link.textContent = openUrl; }
+    };
+  }
 }
 
 // Visual debug overlay for in-app browser sessions (no F12 available)
