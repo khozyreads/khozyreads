@@ -336,6 +336,10 @@ html[lang="km"] .detail-info .price-row .price-note{font-family:var(--font-khmer
 /* Telegram official widget iframe wrapper — centers the button Telegram renders */
 .tg-widget-wrap{display:flex;justify-content:center;margin-top:10px;min-height:48px}
 .tg-widget-wrap iframe{border-radius:6px !important;max-width:100% !important}
+/* Fallback button for in-app browsers — same look as Telegram's own button */
+.btn-tg-redirect{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#54A9EB;color:#fff;border:0;border-radius:6px;padding:10px 20px;font-size:15px;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;cursor:pointer;min-width:200px;height:40px;transition:background .15s,opacity .15s;line-height:1}
+.btn-tg-redirect:hover{background:#3a8cd6}
+.btn-tg-redirect:disabled{cursor:wait}
 /* Telegram "recommended" section above Google */
 .tg-section{margin-top:20px;padding:14px 12px 16px;background:linear-gradient(180deg,rgba(34,158,217,.06),rgba(34,158,217,.02));border:1px solid rgba(34,158,217,.18);border-radius:10px;position:relative}
 .tg-section-header{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}
@@ -1745,13 +1749,93 @@ async function signInWithGoogle(btnEl, errEl){
 // On success it invokes the global callback specified in data-onauth.
 const TELEGRAM_BOT_USERNAME = 'KhozyReads_bot';
 
-// Mount the Telegram widget as a direct iframe (bypasses dynamic script-injection
-// quirks in Chrome iOS / some Android browsers). We listen for postMessage from
-// oauth.telegram.org and route auth_user events to onTelegramAuth.
+// Detect in-app browsers (Messenger/Instagram/FB/TikTok/etc) — Telegram widget
+// popup/postMessage flow is unreliable in these. We fall back to redirect-based
+// auth (top-level navigation) which works in all browsers.
+function isInAppBrowserForAuth(){
+  const ua = navigator.userAgent || '';
+  if(/CriOS|FxiOS|EdgiOS|OPiOS|YaBrowser|UCBrowser|SamsungBrowser/i.test(ua)) return false;
+  return /(FBAN|FBAV|FB_IAB|Instagram|MicroMessenger|Line\/|TwitterAndroid|Twitter for|TikTok|Snapchat|WhatsApp|KAKAOTALK|Pinterest)/i.test(ua);
+}
+
+// Cached bot id (fetched once from edge function on first need)
+let _tgBotIdCache = null;
+async function fetchTelegramBotId(){
+  if(_tgBotIdCache) return _tgBotIdCache;
+  try {
+    // Cache in localStorage so we don't refetch on every page load
+    const cached = localStorage.getItem('tg-bot-id');
+    if(cached && /^\d+$/.test(cached)){ _tgBotIdCache = cached; return cached; }
+  } catch(_){}
+  try {
+    const res = await fetch(`${CFG.SUPABASE_URL}/functions/v1/telegram-auth?info=bot`, {
+      method: 'GET',
+      headers: { 'apikey': CFG.SUPABASE_ANON_KEY },
+    });
+    if(!res.ok) return null;
+    const body = await res.json();
+    if(body?.bot_id){
+      _tgBotIdCache = String(body.bot_id);
+      try { localStorage.setItem('tg-bot-id', _tgBotIdCache); } catch(_){}
+      return _tgBotIdCache;
+    }
+  } catch(err){
+    console.warn('[tg] fetchTelegramBotId failed:', err);
+  }
+  return null;
+}
+
+// Build the official Telegram OAuth URL for redirect-based auth.
+// User authorizes in Telegram, then Telegram redirects back to `return_to`
+// with `tg_auth_result` URL param containing base64-encoded auth data.
+function buildTelegramAuthUrl(botId, returnTo){
+  const params = new URLSearchParams({
+    bot_id: String(botId),
+    origin: location.origin,
+    request_access: 'write',
+    return_to: returnTo,
+  });
+  return `https://oauth.telegram.org/auth?${params.toString()}`;
+}
+
+// Mount the Telegram widget. Two modes:
+//  - Normal browser: iframe widget (best UX, popup-based)
+//  - In-app browser: button → full-page redirect to oauth.telegram.org
+//    (works because top-level navigation isn't blocked by in-app browsers)
 function mountTelegramWidget(containerId){
   const container = document.getElementById(containerId);
   if(!container) return;
-  container.innerHTML = ''; // clear any previous widget
+  container.innerHTML = '';
+
+  if(isInAppBrowserForAuth()){
+    // Render a custom button that initiates redirect-based auth
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn-tg-redirect';
+    btn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="#fff">
+        <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.24 3.64 11.95c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
+      </svg>
+      <span>${state.lang === 'kh' ? 'ចូលជាមួយ Telegram' : 'Log in with Telegram'}</span>
+    `;
+    btn.onclick = async () => {
+      btn.disabled = true;
+      btn.style.opacity = '.7';
+      const botId = await fetchTelegramBotId();
+      if(!botId){
+        const errEl = document.getElementById('login-error') || document.getElementById('reg-error');
+        if(errEl) errEl.innerHTML = alertBox('Could not initiate Telegram login. Please try Google instead.');
+        btn.disabled = false; btn.style.opacity = '1';
+        return;
+      }
+      const returnTo = location.href;
+      location.href = buildTelegramAuthUrl(botId, returnTo);
+    };
+    container.appendChild(btn);
+    return;
+  }
+
+  // Normal browser: use iframe widget
   const origin = encodeURIComponent(location.origin);
   const iframe = document.createElement('iframe');
   iframe.id = containerId + '-iframe';
@@ -1761,6 +1845,46 @@ function mountTelegramWidget(containerId){
   iframe.setAttribute('allowtransparency', 'true');
   iframe.style.cssText = 'border:0;overflow:hidden;color-scheme:light;width:238px;height:40px';
   container.appendChild(iframe);
+}
+
+// Check URL for tg_auth_result param (returned by Telegram OAuth redirect).
+// If present, decode and process via onTelegramAuth callback. Called on
+// page init so in-app-browser users who completed the redirect-based auth
+// flow get signed in automatically.
+async function processTelegramRedirectResult(){
+  try {
+    const params = new URLSearchParams(location.search);
+    let raw = params.get('tg_auth_result');
+    if(!raw){
+      // Sometimes Telegram puts it in the fragment instead
+      const hash = location.hash || '';
+      const hashMatch = hash.match(/tg_auth_result=([^&]+)/);
+      if(hashMatch) raw = hashMatch[1];
+    }
+    if(!raw) return;
+
+    // Decode base64url to JSON
+    const padded = raw + '==='.slice(0, (4 - raw.length % 4) % 4);
+    const std = padded.replace(/-/g, '+').replace(/_/g, '/');
+    const decoded = atob(std);
+    const tgUser = JSON.parse(decoded);
+    console.log('[tg-auth] Received redirect result:', tgUser);
+
+    // Remove tg_auth_result from URL so reload won't reprocess
+    try {
+      const cleanSearch = new URLSearchParams(location.search);
+      cleanSearch.delete('tg_auth_result');
+      const newUrl = location.pathname + (cleanSearch.toString() ? '?' + cleanSearch.toString() : '') + (location.hash || '');
+      history.replaceState({}, '', newUrl);
+    } catch(_){}
+
+    // Hand off to existing handler — same flow as iframe postMessage path
+    if(typeof window.onTelegramAuth === 'function'){
+      await window.onTelegramAuth(tgUser);
+    }
+  } catch(err){
+    console.error('[tg-auth] Failed to process redirect result:', err);
+  }
 }
 
 // Global postMessage listener — installed once. Listens for Telegram OAuth events.
@@ -1818,13 +1942,13 @@ window.onTelegramAuth = async function(tgUser){
 
     // Primary path: use token_hash for in-app-browser-safe verification (no cross-origin redirect)
     if(body?.token_hash){
+      console.log('[tg-auth] Calling verifyOtp with token_hash...');
       const { data: vData, error: vErr } = await sb.auth.verifyOtp({
         type: 'magiclink',
         token_hash: body.token_hash,
       });
       if(vErr){
         console.error('[tg-auth] verifyOtp failed:', vErr);
-        // Fall through to magic_link redirect if available
         if(body.magic_link){
           console.warn('[tg-auth] Falling back to magic_link redirect');
           location.href = body.magic_link;
@@ -1832,11 +1956,31 @@ window.onTelegramAuth = async function(tgUser){
         }
         throw new Error(`Sign-in verify failed: ${vErr.message}`);
       }
-      console.log('[tg-auth] Session established:', vData?.user?.id);
-      // Session is now active in-place — navigate to home/library
-      if(errEl) errEl.innerHTML = `<div class="alert alert-success">Signed in! Redirecting…</div>`;
-      // Force full reload so all auth state is fresh (works reliably in in-app browsers)
-      setTimeout(() => { location.href = '/'; }, 300);
+      console.log('[tg-auth] Session established for user:', vData?.user?.id);
+
+      // Refresh client state directly so SPA recognises the new session
+      // without a full page reload (avoids losing session in in-app browsers)
+      try { await loadAuth(); } catch(e){ console.warn('[tg-auth] loadAuth refresh failed:', e); }
+      console.log('[tg-auth] After loadAuth, state.user:', state?.user?.id, 'profile:', state?.profile?.id);
+
+      if(errEl) errEl.innerHTML = `<div class="alert alert-success">Signed in! Welcome 🎉</div>`;
+
+      // SPA navigation: change hash, then trigger route refresh manually
+      // (don't use location.href = '/' which causes a full reload that can lose session in in-app browsers)
+      setTimeout(() => {
+        try {
+          if(location.hash === '#/' || location.hash === ''){
+            // Already at home — force re-route to refresh UI with new auth state
+            if(typeof route === 'function') route();
+            else location.reload();
+          } else {
+            location.hash = '#/';
+          }
+        } catch(e){
+          console.warn('[tg-auth] Navigation fallback:', e);
+          location.href = '/';
+        }
+      }, 600);
       return;
     }
 
@@ -2827,6 +2971,10 @@ sb.auth.onAuthStateChange(async (event)=>{
   document.documentElement.lang = state.lang==='kh'?'km':'en';
   await Promise.all([loadAuth(), loadSettings()]);
   applyI18n();
+  // Process Telegram OAuth redirect result if present in URL (in-app browser flow)
+  if(/tg_auth_result=/.test(location.href)){
+    try { await processTelegramRedirectResult(); } catch(e){ console.warn('tg redirect process failed:', e); }
+  }
   route();
   _authReady=true;
 })();

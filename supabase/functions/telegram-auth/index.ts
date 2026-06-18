@@ -19,6 +19,23 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// Cache bot info across invocations (warm function reuse)
+let _cachedBotInfo: { id: number; username: string } | null = null;
+
+async function fetchBotInfo(botToken: string){
+  if (_cachedBotInfo) return _cachedBotInfo;
+  try {
+    const res = await fetch(`https://api.telegram.org/bot${botToken}/getMe`);
+    if (!res.ok) return null;
+    const body = await res.json();
+    if (body?.ok && body?.result?.id) {
+      _cachedBotInfo = { id: body.result.id, username: body.result.username };
+      return _cachedBotInfo;
+    }
+  } catch (err) { console.warn("fetchBotInfo failed:", err); }
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -30,6 +47,17 @@ Deno.serve(async (req) => {
     const botToken = Deno.env.get("TELEGRAM_LOGIN_BOT_TOKEN") ?? Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
     if (!url || !serviceKey) return json({ error: "Supabase env missing" }, 500);
     if (!botToken) return json({ error: "TELEGRAM_LOGIN_BOT_TOKEN not set" }, 500);
+
+    // GET ?info=bot — return public bot info (id + username) for frontend redirect auth
+    if (req.method === "GET") {
+      const u = new URL(req.url);
+      if (u.searchParams.get("info") === "bot") {
+        const info = await fetchBotInfo(botToken);
+        if (!info) return json({ error: "Could not fetch bot info" }, 500);
+        return json({ bot_id: info.id, bot_username: info.username });
+      }
+      return json({ error: "Use ?info=bot for GET" }, 400);
+    }
 
     // Parse body
     const body = await req.json().catch(() => null) as Record<string, unknown> | null;
