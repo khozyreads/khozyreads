@@ -1784,7 +1784,9 @@ async function fetchTelegramBotId(){
   try {
     const res = await fetch(`${CFG.SUPABASE_URL}/functions/v1/telegram-auth?info=bot`, {
       method: 'GET',
-      headers: { 'apikey': CFG.SUPABASE_ANON_KEY },
+      // Authorization required: Supabase edge gateway rejects requests without it
+      // (401 UNAUTHORIZED_NO_AUTH_HEADER) when the function has Verify-JWT enabled.
+      headers: { 'apikey': CFG.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + CFG.SUPABASE_ANON_KEY },
     });
     if(!res.ok) return null;
     const body = await res.json();
@@ -1995,7 +1997,9 @@ window.onTelegramAuth = async function(tgUser){
   try {
     const res = await fetch(`${CFG.SUPABASE_URL}/functions/v1/telegram-auth`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': CFG.SUPABASE_ANON_KEY },
+      // Authorization required: Supabase edge gateway returns 401 (UNAUTHORIZED_NO_AUTH_HEADER)
+      // without it. The function does its own Telegram HMAC check after the gateway passes.
+      headers: { 'Content-Type': 'application/json', 'apikey': CFG.SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + CFG.SUPABASE_ANON_KEY },
       body: JSON.stringify(tgUser),
     });
     let body = null;
