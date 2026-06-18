@@ -156,6 +156,12 @@ Deno.serve(async (req) => {
     const existingByTg = (byTgId ?? [])[0] as { profile_id: string; auth_user_id: string; username: string } | undefined;
     if (existingByTg) {
       authUserId = existingByTg.auth_user_id;
+      // Keep display name + @handle fresh on every login (user may have set/changed them)
+      const { error: refreshErr } = await supabase
+        .from("users_profile")
+        .update({ telegram_username: username || null, display_name: displayName })
+        .eq("auth_user_id", authUserId);
+      if (refreshErr) console.warn("profile refresh failed:", refreshErr);
     }
 
     // (2) Fallback: lookup by placeholder email — recovers from past failed profile updates
@@ -170,7 +176,7 @@ Deno.serve(async (req) => {
         // Repair: set telegram_id on profile so next time lookup (1) works
         const { error: repairErr } = await supabase
           .from("users_profile")
-          .update({ telegram_id: tgId, telegram_username: username || null })
+          .update({ telegram_id: tgId, telegram_username: username || null, display_name: displayName })
           .eq("auth_user_id", authUserId);
         if (repairErr) console.warn("profile repair failed:", repairErr);
       }
@@ -197,24 +203,24 @@ Deno.serve(async (req) => {
       isNew = true;
 
       // Set username + telegram fields on the auto-created profile
+      // Note: `username` column has CHECK (~ '^[a-zA-Z]+[0-9]+$'); only set it
+      // when the sanitized handle satisfies that (letters + digits, no underscore).
+      // Otherwise keep the trigger-generated handle and rely on display_name.
+      const usernameValid = /^[a-zA-Z]+[0-9]+$/.test(desiredUsername);
+      const baseUpdate: Record<string, unknown> = {
+        telegram_id: tgId,
+        telegram_username: username || null,
+        display_name: displayName,
+      };
       const { error: upErr } = await supabase
         .from("users_profile")
-        .update({
-          telegram_id: tgId,
-          telegram_username: username || null,
-          username: desiredUsername,
-        })
+        .update(usernameValid ? { ...baseUpdate, username: desiredUsername } : baseUpdate)
         .eq("auth_user_id", authUserId);
       if (upErr) {
-        // Username conflict — append last 4 of telegram_id and retry
-        const fallback = `${desiredUsername}_${String(tgId).slice(-4)}`.slice(0, 30);
+        // username conflict/invalid — retry without touching the username column
         await supabase
           .from("users_profile")
-          .update({
-            telegram_id: tgId,
-            telegram_username: username || null,
-            username: fallback,
-          })
+          .update(baseUpdate)
           .eq("auth_user_id", authUserId);
       }
     }

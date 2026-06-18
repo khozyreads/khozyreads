@@ -340,6 +340,18 @@ html[lang="km"] .detail-info .price-row .price-note{font-family:var(--font-khmer
 .btn-tg-redirect{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#54A9EB;color:#fff;border:0;border-radius:6px;padding:10px 20px;font-size:15px;font-weight:600;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;cursor:pointer;min-width:200px;height:40px;transition:background .15s,opacity .15s;line-height:1}
 .btn-tg-redirect:hover{background:#3a8cd6}
 .btn-tg-redirect:disabled{cursor:wait}
+/* In-app browser (Messenger/FB/IG) → "open in browser" guidance card */
+.inapp-auth-card{margin-top:12px;padding:18px 16px;background:linear-gradient(180deg,rgba(34,158,217,.06),rgba(34,158,217,.02));border:1px solid rgba(34,158,217,.2);border-radius:12px;text-align:center}
+.inapp-auth-ic{font-size:30px;line-height:1;margin-bottom:6px}
+.inapp-auth-title{font-weight:700;color:#1a5a78;font-size:15px;margin-bottom:6px}
+html[lang="km"] .inapp-auth-title{font-family:var(--font-khmer);font-size:16px}
+.inapp-auth-sub{color:var(--muted);font-size:13px;line-height:1.55;margin-bottom:14px}
+html[lang="km"] .inapp-auth-sub{font-family:var(--font-khmer);font-size:13px}
+.inapp-auth-card .btn{min-width:180px}
+.inapp-auth-hint{margin-top:10px;font-size:12px;color:var(--accent-deep,#9a6a3a);word-break:break-all;min-height:1em}
+html[lang="km"] .inapp-auth-hint{font-family:var(--font-khmer)}
+.inapp-auth-steps{margin-top:12px;font-size:12px;color:var(--muted)}
+html[lang="km"] .inapp-auth-steps{font-family:var(--font-khmer);font-size:12px}
 /* Telegram "recommended" section above Google */
 .tg-section{margin-top:20px;padding:14px 12px 16px;background:linear-gradient(180deg,rgba(34,158,217,.06),rgba(34,158,217,.02));border:1px solid rgba(34,158,217,.18);border-radius:10px;position:relative}
 .tg-section-header{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:4px;flex-wrap:wrap}
@@ -1312,11 +1324,21 @@ async function loadAuth(){
   }
   renderAuthNav();
 }
+// Friendly display name for a profile.
+// Priority: Telegram @handle → display_name (real name, may be Khmer) → system username.
+// The system `username` stays the unique handle used for watermark/audit.
+function profileDisplay(p){
+  if(!p) return '';
+  if(p.telegram_username) return '@' + p.telegram_username;
+  if(p.display_name && p.display_name.trim()) return p.display_name.trim();
+  return '@' + (p.username || '');
+}
 function renderAuthNav(){
   const el = $('#auth-nav'); if(!el) return;
   if(state.user && state.profile){
-    const u = state.profile.username || '';
-    el.innerHTML = `<span class="user-chip"><span class="avatar">${esc(u.charAt(0).toUpperCase()||'U')}</span><span>@${esc(u)}</span></span> <a href="#" id="logout-link" class="nav-link" data-i18n="nav.logout">ចេញ</a>`;
+    const name = profileDisplay(state.profile);
+    const initial = name.replace(/^@/, '').charAt(0).toUpperCase() || 'U';
+    el.innerHTML = `<span class="user-chip"><span class="avatar">${esc(initial)}</span><span>${esc(name)}</span></span> <a href="#" id="logout-link" class="nav-link" data-i18n="nav.logout">ចេញ</a>`;
     applyI18n(el);
     $('#logout-link').onclick = e=>{ e.preventDefault(); doLogout(); };
   } else {
@@ -1808,30 +1830,43 @@ function mountTelegramWidget(containerId){
   container.innerHTML = '';
 
   if(isInAppBrowserForAuth()){
-    // Render a custom button that initiates redirect-based auth
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'btn-tg-redirect';
-    btn.innerHTML = `
-      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="#fff">
-        <path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.24 3.64 11.95c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/>
-      </svg>
-      <span>${state.lang === 'kh' ? 'ចូលជាមួយ Telegram' : 'Log in with Telegram'}</span>
+    // In-app browsers (Messenger/Facebook/Instagram/etc.) block the redirect
+    // back from oauth.telegram.org, so Telegram login can't complete here.
+    // Instead, guide the user to open the page in their real browser.
+    const isKh = state.lang === 'kh';
+    const openUrl = location.origin + '/#/login';
+    const card = document.createElement('div');
+    card.className = 'inapp-auth-card';
+    card.innerHTML = `
+      <div class="inapp-auth-ic">🌐</div>
+      <div class="inapp-auth-title">${isKh ? 'បើកក្នុង Browser ដើម្បីចូល' : 'Open in your browser to sign in'}</div>
+      <div class="inapp-auth-sub">${isKh
+        ? 'ការចូលដោយ Telegram មិនដំណើរការនៅក្នុង Messenger/Facebook ទេ។ សូមបើកគេហទំព័រនេះក្នុង Chrome ឬ Safari។'
+        : 'Telegram sign-in doesn’t work inside Messenger/Facebook. Please open this page in Chrome or Safari.'}</div>
+      <button type="button" class="btn btn-primary" id="inapp-open-btn">${isKh ? 'បើកក្នុង Browser' : 'Open in Browser'}</button>
+      <div class="inapp-auth-hint" id="inapp-open-hint"></div>
+      <div class="inapp-auth-steps">${isKh
+        ? 'ឬចុចម៉ឺនុយ ⋯ (ខាងលើស្ដាំ) → "បើកក្នុង Browser"'
+        : 'Or tap the ⋯ menu (top-right) → “Open in browser”'}</div>
     `;
-    btn.onclick = async () => {
-      btn.disabled = true;
-      btn.style.opacity = '.7';
-      const botId = await fetchTelegramBotId();
-      if(!botId){
-        const errEl = document.getElementById('login-error') || document.getElementById('reg-error');
-        if(errEl) errEl.innerHTML = alertBox('Could not initiate Telegram login. Please try Google instead.');
-        btn.disabled = false; btn.style.opacity = '1';
-        return;
+    container.appendChild(card);
+    const hint = card.querySelector('#inapp-open-hint');
+    card.querySelector('#inapp-open-btn').onclick = () => {
+      const ua = navigator.userAgent || '';
+      // Android: intent:// escapes the in-app webview into the default browser.
+      if(/Android/i.test(ua)){
+        try {
+          location.href = `intent://${location.host}/#/login#Intent;scheme=https;end`;
+          return;
+        } catch(_){}
       }
-      const returnTo = location.href;
-      location.href = buildTelegramAuthUrl(botId, returnTo);
+      // iOS / fallback: copy link and instruct (no reliable programmatic escape).
+      const done = () => { hint.textContent = isKh ? 'បានចម្លងតំណ — បើក Safari រួច paste' : 'Link copied — open Safari and paste it'; };
+      try {
+        if(navigator.clipboard?.writeText){ navigator.clipboard.writeText(openUrl).then(done).catch(()=>{ hint.textContent = openUrl; }); }
+        else { hint.textContent = openUrl; }
+      } catch(_){ hint.textContent = openUrl; }
     };
-    container.appendChild(btn);
     return;
   }
 
@@ -1847,43 +1882,93 @@ function mountTelegramWidget(containerId){
   container.appendChild(iframe);
 }
 
+// Visual debug overlay for in-app browser sessions (no F12 available)
+function showDebugOverlay(message, isError){
+  let overlay = document.getElementById('tg-debug-overlay');
+  if(!overlay){
+    overlay = document.createElement('div');
+    overlay.id = 'tg-debug-overlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#1a1410;color:#FAF5E9;padding:14px 16px;font-family:monospace;font-size:12px;line-height:1.6;max-height:50vh;overflow:auto;box-shadow:0 2px 12px rgba(0,0,0,.4);white-space:pre-wrap;word-break:break-all';
+    const closeBtn = document.createElement('button');
+    closeBtn.textContent = '×';
+    closeBtn.style.cssText = 'position:absolute;top:8px;right:12px;background:none;border:0;color:#FAF5E9;font-size:22px;cursor:pointer;line-height:1';
+    closeBtn.onclick = () => overlay.remove();
+    overlay.appendChild(closeBtn);
+    const log = document.createElement('div');
+    log.id = 'tg-debug-log';
+    overlay.appendChild(log);
+    document.body.appendChild(overlay);
+  }
+  const log = document.getElementById('tg-debug-log');
+  const line = document.createElement('div');
+  line.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+  if(isError) line.style.color = '#FF6B6B';
+  log.appendChild(line);
+}
+
 // Check URL for tg_auth_result param (returned by Telegram OAuth redirect).
-// If present, decode and process via onTelegramAuth callback. Called on
-// page init so in-app-browser users who completed the redirect-based auth
-// flow get signed in automatically.
+// If present, decode and process via onTelegramAuth callback.
 async function processTelegramRedirectResult(){
   try {
-    const params = new URLSearchParams(location.search);
-    let raw = params.get('tg_auth_result');
+    // Check both query string AND fragment for tg_auth_result
+    let raw = null;
+    const queryParams = new URLSearchParams(location.search);
+    raw = queryParams.get('tg_auth_result');
     if(!raw){
-      // Sometimes Telegram puts it in the fragment instead
-      const hash = location.hash || '';
-      const hashMatch = hash.match(/tg_auth_result=([^&]+)/);
-      if(hashMatch) raw = hashMatch[1];
+      const hashMatch = (location.hash || '').match(/tg_auth_result=([^&]+)/);
+      if(hashMatch) raw = decodeURIComponent(hashMatch[1]);
     }
-    if(!raw) return;
+    if(!raw){
+      showDebugOverlay(`tg_auth_result NOT in URL. Full URL: ${location.href}`, true);
+      return;
+    }
+    showDebugOverlay(`Got tg_auth_result (${raw.length} chars)`);
 
-    // Decode base64url to JSON
+    // Decode base64url
     const padded = raw + '==='.slice(0, (4 - raw.length % 4) % 4);
     const std = padded.replace(/-/g, '+').replace(/_/g, '/');
-    const decoded = atob(std);
-    const tgUser = JSON.parse(decoded);
-    console.log('[tg-auth] Received redirect result:', tgUser);
+    let decoded;
+    try {
+      decoded = atob(std);
+      showDebugOverlay(`Decoded: ${decoded.slice(0, 200)}...`);
+    } catch(decodeErr){
+      showDebugOverlay(`Base64 decode failed: ${decodeErr.message}`, true);
+      return;
+    }
 
-    // Remove tg_auth_result from URL so reload won't reprocess
+    let tgUser;
+    try {
+      tgUser = JSON.parse(decoded);
+      showDebugOverlay(`Parsed user: id=${tgUser.id}, name=${tgUser.first_name || ''}`);
+    } catch(jsonErr){
+      showDebugOverlay(`JSON parse failed: ${jsonErr.message}`, true);
+      return;
+    }
+
+    // Clean URL so reload won't reprocess
     try {
       const cleanSearch = new URLSearchParams(location.search);
       cleanSearch.delete('tg_auth_result');
-      const newUrl = location.pathname + (cleanSearch.toString() ? '?' + cleanSearch.toString() : '') + (location.hash || '');
+      const newUrl = location.pathname + (cleanSearch.toString() ? '?' + cleanSearch.toString() : '') + (location.hash.replace(/[?&]?tg_auth_result=[^&]*/g, '') || '');
       history.replaceState({}, '', newUrl);
     } catch(_){}
 
-    // Hand off to existing handler — same flow as iframe postMessage path
+    showDebugOverlay('Calling onTelegramAuth → edge function...');
     if(typeof window.onTelegramAuth === 'function'){
       await window.onTelegramAuth(tgUser);
+      showDebugOverlay('onTelegramAuth completed. Check session below.');
+      // Verify session was set
+      const { data: { session } } = await sb.auth.getSession();
+      if(session){
+        showDebugOverlay(`✓ Session OK: ${session.user.id}`);
+      } else {
+        showDebugOverlay(`✗ Session NOT set after auth!`, true);
+      }
+    } else {
+      showDebugOverlay(`onTelegramAuth not defined`, true);
     }
   } catch(err){
-    console.error('[tg-auth] Failed to process redirect result:', err);
+    showDebugOverlay(`Process failed: ${err.message || err}`, true);
   }
 }
 
