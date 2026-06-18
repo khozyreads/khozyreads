@@ -191,17 +191,24 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ---- Generate magic link for sign-in ----
+    // ---- Generate magic link + return token_hash for direct verification ----
+    // We return the token_hash so the frontend can call sb.auth.verifyOtp() directly,
+    // avoiding a cross-origin redirect to supabase.co (which fails inside Messenger /
+    // Instagram in-app browsers because they block external navigation).
     const { data: linkData, error: linkErr } = await supabase.auth.admin.generateLink({
       type: "magiclink",
       email: placeholderEmail,
     });
-    if (linkErr || !linkData?.properties?.action_link) {
+    if (linkErr || !linkData?.properties) {
       console.error("generateLink failed:", linkErr);
       return json({ error: "Could not generate sign-in link", details: linkErr?.message }, 500);
     }
 
     return json({
+      // Primary path: token_hash for in-app/cross-origin-safe verifyOtp
+      email: placeholderEmail,
+      token_hash: linkData.properties.hashed_token,
+      // Fallback: magic_link if frontend prefers redirect (legacy clients)
       magic_link: linkData.properties.action_link,
       is_new: isNew,
     });

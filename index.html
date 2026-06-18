@@ -1791,7 +1791,9 @@ if(!window._tgListenerInstalled){
 
 // Global callback invoked by the Telegram widget after the user authorizes.
 // We POST the payload to our edge function which verifies the HMAC and
-// returns a magic link that signs the user in via Supabase Auth.
+// returns a token_hash that we exchange for a session via verifyOtp().
+// This avoids the cross-origin redirect to supabase.co which fails inside
+// Messenger / Instagram / Facebook in-app browsers (they block external nav).
 window.onTelegramAuth = async function(tgUser){
   const errEl = document.getElementById('login-error') || document.getElementById('reg-error');
   console.log('[tg-auth] Received auth data from Telegram:', tgUser);
@@ -1813,11 +1815,39 @@ window.onTelegramAuth = async function(tgUser){
     if(!res.ok){
       throw new Error(`Edge function ${res.status}: ${body?.error || 'unknown'} ${body?.details ? '· ' + body.details : ''}`);
     }
-    if(!body?.magic_link){
-      throw new Error('No magic link returned: ' + JSON.stringify(body));
+
+    // Primary path: use token_hash for in-app-browser-safe verification (no cross-origin redirect)
+    if(body?.token_hash){
+      const { data: vData, error: vErr } = await sb.auth.verifyOtp({
+        type: 'magiclink',
+        token_hash: body.token_hash,
+      });
+      if(vErr){
+        console.error('[tg-auth] verifyOtp failed:', vErr);
+        // Fall through to magic_link redirect if available
+        if(body.magic_link){
+          console.warn('[tg-auth] Falling back to magic_link redirect');
+          location.href = body.magic_link;
+          return;
+        }
+        throw new Error(`Sign-in verify failed: ${vErr.message}`);
+      }
+      console.log('[tg-auth] Session established:', vData?.user?.id);
+      // Session is now active in-place — navigate to home/library
+      if(errEl) errEl.innerHTML = `<div class="alert alert-success">Signed in! Redirecting…</div>`;
+      // Force full reload so all auth state is fresh (works reliably in in-app browsers)
+      setTimeout(() => { location.href = '/'; }, 300);
+      return;
     }
-    // Magic link redirects to our origin and Supabase Auth picks up the session token.
-    location.href = body.magic_link;
+
+    // Fallback: magic_link redirect (legacy / external browsers only)
+    if(body?.magic_link){
+      console.warn('[tg-auth] No token_hash returned, falling back to magic_link redirect');
+      location.href = body.magic_link;
+      return;
+    }
+
+    throw new Error('No auth credentials returned: ' + JSON.stringify(body));
   } catch(err){
     console.error('[tg-auth] Failed:', err);
     if(errEl) errEl.innerHTML = alertBox(err.message || 'Telegram sign-in failed. Please try again.');
