@@ -2504,12 +2504,13 @@ async function initImageReader(book, pages, startPage){
   const wmTs = $('#ir-wm-ts');
   function refreshWatermark(pageNum){
     const ts = new Date().toLocaleString();
-    const wmText = `KhozyReads · @${state.profile.username} · ${state.profile.id.slice(0,8)} · p${pageNum} · ${ts}`;
+    // Show Telegram @handle / real name; keep the unique id slice for traceability.
+    const wmText = `KhozyReads · ${profileDisplay(state.profile)} · ${state.profile.id.slice(0,8)} · p${pageNum} · ${ts}`;
     const line = wmText + ' ' + wmText;
     const grid = Array(10).fill(line).join('\n');
     watermark.setAttribute('data-text', grid);
     // Corner stamps
-    if(wmUser) wmUser.textContent = `@${state.profile.username}`;
+    if(wmUser) wmUser.textContent = profileDisplay(state.profile);
     if(wmTs) wmTs.textContent = `${ts}\np${pageNum}`;
   }
   refreshWatermark(1);
@@ -2746,8 +2747,8 @@ async function initReader(book, pdfUrl){
   frame.querySelector('[data-theme="day"]').classList.add('active');
 
   // Watermark info — to be BAKED into canvas every render
-  const wmText = `KhozyReads · @${state.profile.username} · ${state.profile.id.slice(0,8)}`;
-  $('#disclaimer-user').textContent = '@' + state.profile.username;
+  const wmText = `KhozyReads · ${profileDisplay(state.profile)} · ${state.profile.id.slice(0,8)}`;
+  $('#disclaimer-user').textContent = profileDisplay(state.profile);
 
   // Load PDF.js
   try{
@@ -2805,7 +2806,7 @@ async function initReader(book, pdfUrl){
     ctx.textBaseline = 'top';
     ctx.fillText('KhozyReads', 14, 12);
     ctx.font = `italic ${cornerSize-2}px 'Crimson Pro', serif`;
-    ctx.fillText(`@${state.profile.username}`, 14, 12 + cornerSize + 2);
+    ctx.fillText(profileDisplay(state.profile), 14, 12 + cornerSize + 2);
     // Bottom-right: timestamp
     ctx.textAlign = 'right';
     ctx.textBaseline = 'bottom';
@@ -2949,7 +2950,7 @@ function showScreenshotWarning(reason){
   _lastWarning = now;
   const overlay = $('#ss-warning');
   const info = $('#ss-info');
-  const user = state.profile?.username||'guest';
+  const user = state.profile ? profileDisplay(state.profile) : 'guest';
   const userId = state.profile?.id?.slice(0,8)||'-';
   info.textContent = `${user} · ${userId} · ${new Date().toLocaleString()} · ${reason}`;
   overlay.classList.add('show');
