@@ -35,8 +35,9 @@ Deno.serve(async (req) => {
   try {
     const url = Deno.env.get("SUPABASE_URL") ?? Deno.env.get("BOOKSTORE_SUPABASE_URL");
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("BOOKSTORE_SERVICE_ROLE_KEY");
-    const merchantId = Deno.env.get("PAYWAY_MERCHANT_ID") ?? "";
-    const apiKey = Deno.env.get("PAYWAY_API_KEY") ?? "";
+    // trim(): stray whitespace/newline in a pasted secret silently breaks the HMAC ("Wrong Hash")
+    const merchantId = (Deno.env.get("PAYWAY_MERCHANT_ID") ?? "").trim();
+    const apiKey = (Deno.env.get("PAYWAY_API_KEY") ?? "").trim();
     const baseUrl = (Deno.env.get("PAYWAY_BASE_URL") ?? "https://checkout-sandbox.payway.com.kh").replace(/\/$/, "");
     const siteUrl = (Deno.env.get("SITE_URL") ?? "https://khozyreads.com").replace(/\/$/, "");
     if (!url || !serviceKey) return json({ error: "Server not configured" }, 500);
