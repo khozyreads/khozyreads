@@ -385,6 +385,23 @@ html[lang="km"] .field label{font-family:var(--font-khmer);letter-spacing:.06em;
 .pw-badge{display:inline-block;padding:4px 10px;border:1px solid var(--border-strong,var(--border));border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#005B8C;background:#fff}
 .pw-note{font-size:13px;line-height:1.6;margin:14px 0 0}
 html[lang="km"] .pw-note,html[lang="km"] .pw-accept{font-family:var(--font-khmer)}
+/* In-app KHQR modal */
+.pw-modal{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}
+.pw-modal-backdrop{position:absolute;inset:0;background:rgba(20,15,12,.6);backdrop-filter:blur(4px)}
+.pw-modal-card{position:relative;width:100%;max-width:400px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:16px;padding:26px 24px 20px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.35);animation:pwIn .25s ease}
+@keyframes pwIn{from{transform:translateY(12px);opacity:0}to{transform:none;opacity:1}}
+.pw-modal-close{position:absolute;top:10px;right:12px;width:34px;height:34px;border:0;background:transparent;font-size:26px;line-height:1;color:var(--muted);cursor:pointer}
+.pw-modal-amount{font-family:var(--font-display);font-size:26px;color:var(--primary);font-weight:600;margin:4px 0 14px}
+.pw-qr-box{background:#fff;border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;max-width:260px}
+.pw-qr-box img{width:100%;height:auto;display:block;image-rendering:pixelated}
+.pw-open-app{width:100%;margin-bottom:12px}
+.pw-modal-hint{font-size:13px;line-height:1.55}
+html[lang="km"] .pw-modal-hint{font-family:var(--font-khmer)}
+.pw-modal-timer{margin-top:12px;display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.pw-modal-timer .dot{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pwPulse 1.2s infinite}
+@keyframes pwPulse{0%,100%{opacity:.35}50%{opacity:1}}
+body.pw-modal-open{overflow:hidden}
+@media (max-width:540px){.pw-modal{align-items:flex-end;padding:0}.pw-modal-card{max-width:none;border-radius:16px 16px 0 0}}
 .qr-frame{background:#fff;border:1px solid var(--border);padding:28px;display:flex;flex-direction:column;align-items:center;gap:18px;position:relative}
 .qr-frame .orn{width:100px;height:32px;color:var(--accent)}
 .qr-frame img{max-width:240px;display:block}
@@ -1202,7 +1219,7 @@ const I18N = {
     'lib.eyebrow':'បណ្ណាល័យផ្ទាល់ខ្លួន','lib.title':'បណ្ណាល័យរបស់ខ្ញុំ','lib.lede':'សៀវភៅទាំងអស់ដែលអ្នកបានទិញ — រួចរាល់ចាប់ផ្តើមអាន។','lib.empty':'មិនទាន់មានការទិញ','lib.empty.favs':'មិនទាន់មានសៀវភៅដែលចូលចិត្ត','lib.tab.books':'សៀវភៅរបស់ខ្ញុំ','lib.tab.favs':'ចូលចិត្ត',
     'pay.pw.eyebrow':'បង់ប្រាក់ភ្លាមៗ · KHQR','pay.pw.title':'បង់ដោយ ABA PAY ឬ KHQR','pay.pw.btn':'បង់ប្រាក់ដោយ KHQR','pay.pw.accept':'ទទួលយក','pay.pw.note':'ការទូទាត់ត្រូវបានផ្ទៀងផ្ទាត់ដោយស្វ័យប្រវត្តិ។ បន្ទាប់ពីបង់ប្រាក់រួច សៀវភៅនឹងបើកភ្លាមៗ។',
     'pay.pw.s1h':'ចុច «បង់ប្រាក់ដោយ KHQR»','pay.pw.s1b':'ប្រអប់ទូទាត់ PayWay នឹងបង្ហាញឡើង។ បើមានកូដប្រូម៉ូ សូមដាក់មុនចុចបង់ប្រាក់។','pay.pw.s2h':'ស្កេន ឬបើកកម្មវិធីធនាគារ','pay.pw.s2b':'បង់ដោយ ABA PAY ឬស្កេន KHQR ដោយកម្មវិធីធនាគារណាមួយដែលគាំទ្រ KHQR។','pay.pw.s3h':'អានបានភ្លាមៗ','pay.pw.s3b':'ការទូទាត់ត្រូវបានផ្ទៀងផ្ទាត់ដោយស្វ័យប្រវត្តិ — មិនចាំបាច់បង្ហោះវិក្កយបត្រ ឬរង់ចាំការអនុម័តទេ។',
-    'pay.pw.preparing':'កំពុងរៀបចំការទូទាត់…','pay.pw.opening':'កំពុងបើកប្រអប់ទូទាត់ PayWay…','pay.pw.waiting':'រង់ចាំការទូទាត់… បន្ទាប់ពីបង់រួច ទំព័រនេះនឹងធ្វើបច្ចុប្បន្នភាពដោយស្វ័យប្រវត្តិ។','pay.pw.checking':'កំពុងផ្ទៀងផ្ទាត់ការទូទាត់…','pay.pw.approved':'ការទូទាត់ជោគជ័យ! សៀវភៅរបស់អ្នកមាននៅក្នុង My Library ហើយ។ 🎉','pay.pw.alreadyPaid':'ការបញ្ជាទិញនេះបានបង់ប្រាក់រួចហើយ។ សូមចូលទៅ My Library។','pay.pw.declined':'ការទូទាត់ត្រូវបានបដិសេធ។ សូមព្យាយាមម្ដងទៀត។','pay.pw.cancelled':'ការទូទាត់ត្រូវបានលុបចោល។ អ្នកអាចព្យាយាមម្ដងទៀតបាន។','pay.pw.timeout':'យើងមិនទាន់ឃើញការទូទាត់នៅឡើយទេ។ បើអ្នកបានបង់រួច សូមរង់ចាំបន្តិច ឬបើក My Library — សៀវភៅនឹងបង្ហាញនៅពេលធនាគារបញ្ជាក់។','pay.pw.notConfigured':'ការទូទាត់មិនទាន់អាចប្រើបានទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រង។',
+    'pay.pw.preparing':'កំពុងរៀបចំការទូទាត់…','pay.pw.opening':'កំពុងបើកប្រអប់ទូទាត់ PayWay…','pay.pw.waiting':'រង់ចាំការទូទាត់… បន្ទាប់ពីបង់រួច ទំព័រនេះនឹងធ្វើបច្ចុប្បន្នភាពដោយស្វ័យប្រវត្តិ។','pay.pw.checking':'កំពុងផ្ទៀងផ្ទាត់ការទូទាត់…','pay.pw.approved':'ការទូទាត់ជោគជ័យ! សៀវភៅរបស់អ្នកមាននៅក្នុង My Library ហើយ។ 🎉','pay.pw.alreadyPaid':'ការបញ្ជាទិញនេះបានបង់ប្រាក់រួចហើយ។ សូមចូលទៅ My Library។','pay.pw.declined':'ការទូទាត់ត្រូវបានបដិសេធ។ សូមព្យាយាមម្ដងទៀត។','pay.pw.cancelled':'ការទូទាត់ត្រូវបានលុបចោល។ អ្នកអាចព្យាយាមម្ដងទៀតបាន។','pay.pw.timeout':'យើងមិនទាន់ឃើញការទូទាត់នៅឡើយទេ។ បើអ្នកបានបង់រួច សូមរង់ចាំបន្តិច ឬបើក My Library — សៀវភៅនឹងបង្ហាញនៅពេលធនាគារបញ្ជាក់។','pay.pw.notConfigured':'ការទូទាត់មិនទាន់អាចប្រើបានទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រង។','pay.pw.gatewayError':'PayWay បដិសេធសំណើ',
     'pay.promo':'មានកូដប្រូម៉ូ?','pay.applyPromo':'អនុវត្ត','pay.review':'សូមពិនិត្យមើលមុនពេលបញ្ជូន','pay.book':'សៀវភៅ','pay.subtotal':'សរុបមុនបញ្ចុះតម្លៃ','pay.discount':'ការបញ្ចុះតម្លៃ','pay.total':'សរុបទាំងអស់','pay.contactAdmin':'មានបញ្ហា? ទាក់ទងអ្នកគ្រប់គ្រង','pay.contactAdminSub':'ផ្ញើសារនៅ Telegram',
     'auth.welcome':'សូមស្វាគមន៍មកកាន់','auth.loginH':'ចូលគណនី','auth.loginSub':'បន្តការអានសៀវភៅដែលអ្នកស្រឡាញ់','auth.loginBtn':'ចូលគណនី','auth.noAcc':'មិនទាន់មានគណនី?','auth.haveAcc':'មានគណនីរួចហើយ?','auth.signInGoogle':'បន្តជាមួយ Google','auth.signUpGoogle':'ចុះឈ្មោះជាមួយ Google','auth.signInTelegram':'ចូលដោយ Telegram','auth.signUpTelegram':'ចុះឈ្មោះដោយ Telegram','auth.recommended':'ណែនាំ','auth.or':'ឬ','auth.googleSub':'សុវត្ថិភាព · ឥតគិតថ្លៃ · ការចូលរហ័ស',
     'auth.join':'ចូលរួមជាមួយយើង','auth.registerH':'បង្កើតគណនី','auth.registerSub':'ចាប់ផ្តើមការដំណើរនៃការអានរបស់អ្នក','auth.registerBtn':'បង្កើតគណនី',
@@ -1225,7 +1242,7 @@ const I18N = {
     'lib.eyebrow':'Personal library','lib.title':'My Library','lib.lede':'All books you own — ready to read.','lib.empty':'No purchases yet','lib.empty.favs':'No favorites yet','lib.tab.books':'My Books','lib.tab.favs':'Favorites',
     'pay.pw.eyebrow':'Instant payment · KHQR','pay.pw.title':'Pay with ABA PAY or KHQR','pay.pw.btn':'Pay with KHQR','pay.pw.accept':'We accept','pay.pw.note':'Payment is verified automatically. Your book unlocks right after you pay.',
     'pay.pw.s1h':'Tap “Pay with KHQR”','pay.pw.s1b':'The PayWay checkout will open. Have a promo code? Apply it before you pay.','pay.pw.s2h':'Scan or open your banking app','pay.pw.s2b':'Pay with ABA PAY, or scan the KHQR with any KHQR-supported banking app.','pay.pw.s3h':'Read instantly','pay.pw.s3b':'Payment is verified automatically — no receipt upload, no waiting for approval.',
-    'pay.pw.preparing':'Preparing payment…','pay.pw.opening':'Opening PayWay checkout…','pay.pw.waiting':'Waiting for payment… this page updates automatically once you pay.','pay.pw.checking':'Verifying your payment…','pay.pw.approved':'Payment successful! Your book is now in My Library. 🎉','pay.pw.alreadyPaid':'This order is already paid. Head to My Library.','pay.pw.declined':'Payment was declined. Please try again.','pay.pw.cancelled':'Payment was cancelled. You can try again anytime.','pay.pw.timeout':'We haven’t seen the payment yet. If you already paid, give it a moment or open My Library — the book appears once the bank confirms.','pay.pw.notConfigured':'Payments are not available right now. Please contact admin.',
+    'pay.pw.preparing':'Preparing payment…','pay.pw.opening':'Opening PayWay checkout…','pay.pw.waiting':'Waiting for payment… this page updates automatically once you pay.','pay.pw.checking':'Verifying your payment…','pay.pw.approved':'Payment successful! Your book is now in My Library. 🎉','pay.pw.alreadyPaid':'This order is already paid. Head to My Library.','pay.pw.declined':'Payment was declined. Please try again.','pay.pw.cancelled':'Payment was cancelled. You can try again anytime.','pay.pw.timeout':'We haven’t seen the payment yet. If you already paid, give it a moment or open My Library — the book appears once the bank confirms.','pay.pw.notConfigured':'Payments are not available right now. Please contact admin.','pay.pw.gatewayError':'PayWay rejected the request',
     'pay.promo':'Have a promo code?','pay.applyPromo':'Apply','pay.review':'Review before submitting','pay.book':'Book','pay.subtotal':'Subtotal','pay.discount':'Discount','pay.total':'Total','pay.contactAdmin':'Need help? Contact admin','pay.contactAdminSub':'Reach us on Telegram',
     'auth.welcome':'Welcome to','auth.loginH':'Sign In','auth.loginSub':'Continue reading what you love','auth.loginBtn':'Sign In','auth.noAcc':'No account yet?','auth.haveAcc':'Already have an account?','auth.signInGoogle':'Continue with Google','auth.signUpGoogle':'Sign up with Google','auth.signInTelegram':'Sign in with Telegram','auth.signUpTelegram':'Sign up with Telegram','auth.recommended':'Recommended','auth.or':'or','auth.googleSub':'Secure · Free · One-tap access',
     'auth.join':'Join us','auth.registerH':'Create Account','auth.registerSub':'Start your reading journey','auth.registerBtn':'Create Account',
@@ -2228,15 +2245,45 @@ async function renderPayment(orderId){
       }
       if(errCode === 'PAYWAY_NOT_CONFIGURED') throw new Error(t('pay.pw.notConfigured'));
       if(errCode === 'ORDER_NOT_PENDING'){ if(res?.status === 'approved'){ location.hash = '#/library'; return; } throw new Error(t('err.generic')); }
-      if(!res?.action_url || !res?.fields) throw new Error(t('err.generic'));
+      if(errCode === 'PAYWAY_ERROR'){
+        // e.g. code 12 "Payment currency is not allowed" — show PayWay's own message
+        throw new Error(`${t('pay.pw.gatewayError')} (${esc(String(res.code||''))}: ${esc(res.message||'')})`);
+      }
 
-      // Build the PayWay form (ids/target required by the official plugin)
+      const pollCallbacks = {
+        onApproved: ()=>{
+          closePaywayQr();
+          setStatus(t('pay.pw.approved'), 'success');
+          setTimeout(()=>{ location.hash = '#/library'; }, 1200);
+        },
+        onFailed: (st)=>{
+          closePaywayQr();
+          setStatus(st === 'declined' ? t('pay.pw.declined') : t('pay.pw.cancelled'), 'error');
+          payBtn.disabled = false;
+        },
+        onTimeout: ()=>{
+          closePaywayQr();
+          setStatus(t('pay.pw.timeout'), 'info');
+          payBtn.disabled = false;
+        }
+      };
+
+      // ── Preferred: in-app KHQR modal (PayWay returned the QR payload) ──
+      if(res?.mode === 'qr' && (res.qr_image || res.qr_string)){
+        setStatus(t('pay.pw.waiting'));
+        openPaywayQr(res, ()=>{ stopPaywayPoll(); setStatus(''); payBtn.disabled = false; });
+        startPaywayPoll(res.tran_id, pollCallbacks);
+        return;
+      }
+
+      // ── Fallback: hosted checkout via form POST ──
+      if(!res?.action_url || !res?.fields) throw new Error(t('err.generic'));
       document.getElementById('aba_merchant_request')?.remove();
       const form = document.createElement('form');
       form.id = 'aba_merchant_request';
       form.method = 'POST';
       form.action = res.action_url;
-      form.target = 'aba_webservice';
+      form.target = '_self';
       form.style.display = 'none';
       for(const [k,v] of Object.entries(res.fields)){
         const inp = document.createElement('input');
@@ -2244,32 +2291,8 @@ async function renderPayment(orderId){
         form.appendChild(inp);
       }
       document.body.appendChild(form);
-
       setStatus(t('pay.pw.opening'));
-      const pluginOk = await loadPaywayPlugin();
-      if(pluginOk && window.AbaPayway && typeof window.AbaPayway.checkout === 'function'){
-        window.AbaPayway.checkout();           // modal (desktop) / bottom-sheet (mobile)
-      } else {
-        form.target = '_self';                 // fallback: hosted checkout page
-        form.submit();
-      }
-
-      // Poll verification (also covers users who close the sheet after paying)
-      setStatus(t('pay.pw.waiting'));
-      startPaywayPoll(res.tran_id, {
-        onApproved: ()=>{
-          setStatus(t('pay.pw.approved'), 'success');
-          setTimeout(()=>{ location.hash = '#/library'; }, 1200);
-        },
-        onFailed: (st)=>{
-          setStatus(st === 'declined' ? t('pay.pw.declined') : t('pay.pw.cancelled'), 'error');
-          payBtn.disabled = false;
-        },
-        onTimeout: ()=>{
-          setStatus(t('pay.pw.timeout'), 'info');
-          payBtn.disabled = false;
-        }
-      });
+      form.submit();   // user returns via continue_success_url → #/payway-return
     }catch(err){
       console.error('[payway] start failed:', err);
       setStatus(esc(err.message || t('err.generic')), 'error');
@@ -2279,19 +2302,50 @@ async function renderPayment(orderId){
 }
 
 /* ── PayWay helpers ── */
-let _pwPluginPromise = null;
-function loadPaywayPlugin(){
-  if(window.AbaPayway) return Promise.resolve(true);
-  if(_pwPluginPromise) return _pwPluginPromise;
-  _pwPluginPromise = new Promise(resolve=>{
-    const s = document.createElement('script');
-    s.src = 'https://checkout.payway.com.kh/plugins/checkout2-0.js';   // valid for sandbox + production
-    s.async = true;
-    s.onload = ()=>resolve(true);
-    s.onerror = ()=>{ _pwPluginPromise = null; resolve(false); };
-    document.head.appendChild(s);
-  });
-  return _pwPluginPromise;
+// In-app KHQR modal: shows the QR returned by PayWay, an "Open ABA Mobile"
+// deeplink button on phones, and a countdown. Verification happens via polling.
+let _pwQrTimer = null;
+function closePaywayQr(){
+  if(_pwQrTimer){ clearInterval(_pwQrTimer); _pwQrTimer = null; }
+  document.getElementById('pw-qr-modal')?.remove();
+  document.body.classList.remove('pw-modal-open');
+}
+function openPaywayQr(res, onCancel){
+  closePaywayQr();
+  const isKh = state.lang === 'kh';
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'');
+  const mins = Math.max(3, Number(res.lifetime_minutes||30));
+  const qrSrc = res.qr_image || '';
+  const wrap = document.createElement('div');
+  wrap.id = 'pw-qr-modal';
+  wrap.className = 'pw-modal';
+  wrap.innerHTML = `
+    <div class="pw-modal-backdrop"></div>
+    <div class="pw-modal-card" role="dialog" aria-modal="true">
+      <button type="button" class="pw-modal-close" id="pw-qr-close" aria-label="Close">×</button>
+      <div class="eyebrow">KHQR · ABA PayWay</div>
+      <h3 class="display display-3" style="margin:6px 0 4px">${isKh?'ស្កេនដើម្បីបង់ប្រាក់':'Scan to pay'}</h3>
+      <div class="pw-modal-amount">${esc(fmtMoney(Number(res.amount), res.currency))}</div>
+      <div class="pw-qr-box">${qrSrc ? `<img src="${esc(qrSrc)}" alt="KHQR"/>` : `<div class="muted">${esc(res.qr_string||'')}</div>`}</div>
+      ${isMobile && res.deeplink ? `<a class="btn btn-primary btn-lg pw-open-app" href="${esc(res.deeplink)}">${isKh?'បើកកម្មវិធី ABA Mobile':'Open ABA Mobile'}</a>` : ''}
+      <div class="pw-modal-hint muted">${isKh
+        ? 'ស្កេនដោយ ABA Mobile ឬកម្មវិធីធនាគារណាមួយដែលគាំទ្រ KHQR។ ទំព័រនេះនឹងធ្វើបច្ចុប្បន្នភាពដោយស្វ័យប្រវត្តិបន្ទាប់ពីបង់រួច។'
+        : 'Scan with ABA Mobile or any KHQR-supported banking app. This page updates automatically once you pay.'}</div>
+      <div class="pw-modal-timer"><span class="dot"></span><span id="pw-qr-timer">${mins}:00</span></div>
+    </div>`;
+  document.body.appendChild(wrap);
+  document.body.classList.add('pw-modal-open');
+  const cancel = ()=>{ closePaywayQr(); onCancel && onCancel(); };
+  wrap.querySelector('#pw-qr-close').onclick = cancel;
+  wrap.querySelector('.pw-modal-backdrop').onclick = cancel;
+  // Countdown
+  let left = mins*60;
+  const tEl = wrap.querySelector('#pw-qr-timer');
+  _pwQrTimer = setInterval(()=>{
+    left--; if(left<0){ cancel(); return; }
+    const m = Math.floor(left/60), s = left%60;
+    tEl.textContent = `${m}:${String(s).padStart(2,'0')}`;
+  }, 1000);
 }
 
 let _pwPollTimer = null, _pwPollDeadline = 0;

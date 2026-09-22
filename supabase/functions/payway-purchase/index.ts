@@ -152,13 +152,60 @@ Deno.serve(async (req) => {
     }
     await sb.from("orders").update({ payway_tran_id: tranId, payment_method: "ABA PayWay (KHQR)" }).eq("id", order.id);
 
-    // Only send non-empty fields to PayWay (plus hash + view_type)
-    const fields: Record<string, string> = { hash, view_type: "popup" };
+    // Only send non-empty fields to PayWay (plus hash)
+    const fields: Record<string, string> = { hash };
     for (const [k, v] of Object.entries(f)) if (v !== "") fields[k] = v;
+    const actionUrl = `${baseUrl}/api/payment-gateway/v1/payments/purchase`;
 
+    // ---- Preferred: call PayWay server-side and get the KHQR payload ----
+    // For payment_option=abapay_khqr PayWay returns JSON { qrImage, qrString,
+    // abapay_deeplink, ... } instead of an HTML checkout page. We render that
+    // QR in our own in-app modal (no plugin, no page navigation).
+    try {
+      const fd = new FormData();
+      for (const [k, v] of Object.entries(fields)) fd.append(k, v);
+      const pwRes = await fetch(actionUrl, { method: "POST", body: fd });
+      const txt = await pwRes.text();
+      let pw: any = null;
+      try { pw = JSON.parse(txt); } catch { pw = null; }
+      if (pw && String(pw?.status?.code ?? "") === "00" && (pw.qrImage || pw.qrString)) {
+        return json({
+          mode: "qr",
+          tran_id: tranId,
+          amount: amountStr,
+          currency,
+          qr_image: pw.qrImage ?? null,
+          qr_string: pw.qrString ?? null,
+          deeplink: pw.abapay_deeplink ?? null,
+          app_store: pw.app_store ?? null,
+          play_store: pw.play_store ?? null,
+          lifetime_minutes: Number(lifetime),
+        });
+      }
+      // PayWay returned an error JSON
+      if (pw && pw?.status && String(pw.status.code ?? "") !== "00") {
+        const code = Number(pw.status.code);
+        // 6 = "Requested domain is not in whitelist": server-to-server call has no Origin.
+        // The browser form (origin khozyreads.com) is whitelisted → fall back to form mode.
+        if (code === 6) {
+          console.warn("PayWay server-side call not whitelisted; falling back to form mode");
+        } else {
+          // Real request problem (e.g. 12 currency not allowed) → surface it clearly
+          console.warn("PayWay purchase error:", pw.status);
+          return json({ error: "PAYWAY_ERROR", code: pw.status.code, message: pw.status.message ?? "" }, 502);
+        }
+      }
+      // Non-JSON (HTML) or unexpected → fall back to browser form submit below
+      console.warn("PayWay server-side purchase returned non-QR response; falling back to form mode");
+    } catch (e) {
+      console.warn("PayWay server-side purchase failed; falling back to form mode:", e);
+    }
+
+    // ---- Fallback: browser submits the form (hosted checkout) ----
     return json({
-      action_url: `${baseUrl}/api/payment-gateway/v1/payments/purchase`,
-      fields,
+      mode: "form",
+      action_url: actionUrl,
+      fields: { ...fields, view_type: "hosted_view" },
       tran_id: tranId,
     });
   } catch (err) {
