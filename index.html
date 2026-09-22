@@ -373,6 +373,18 @@ html[lang="km"] .field label{font-family:var(--font-khmer);letter-spacing:.06em;
 .pay-wrap{padding:48px 0 80px;display:grid;grid-template-columns:1.1fr 1fr;gap:64px}
 @media (max-width:860px){.pay-wrap{grid-template-columns:1fr}}
 .pay-card{background:var(--bg-elevated);border:1px solid var(--border);padding:40px;position:relative;box-shadow:var(--shadow-md)}
+/* ── ABA PayWay (KHQR) checkout card ── */
+.pw-card{display:flex;flex-direction:column;align-items:stretch}
+.pw-amount{display:flex;justify-content:space-between;align-items:baseline;padding:16px 18px;margin-bottom:18px;background:var(--bg);border:1px solid var(--border);border-radius:10px}
+.pw-amount strong{font-size:26px;color:var(--primary);font-weight:600}
+.pw-pay-btn{width:100%;display:inline-flex;align-items:center;justify-content:center;gap:10px;font-size:17px;padding:16px 20px}
+.pw-pay-btn:disabled{opacity:.6;cursor:wait}
+.pw-status{margin-top:14px;min-height:0}
+.pw-status .alert{margin:0}
+.pw-accept{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:18px;font-size:13px}
+.pw-badge{display:inline-block;padding:4px 10px;border:1px solid var(--border-strong,var(--border));border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.08em;color:#005B8C;background:#fff}
+.pw-note{font-size:13px;line-height:1.6;margin:14px 0 0}
+html[lang="km"] .pw-note,html[lang="km"] .pw-accept{font-family:var(--font-khmer)}
 .qr-frame{background:#fff;border:1px solid var(--border);padding:28px;display:flex;flex-direction:column;align-items:center;gap:18px;position:relative}
 .qr-frame .orn{width:100px;height:32px;color:var(--accent)}
 .qr-frame img{max-width:240px;display:block}
@@ -1003,44 +1015,35 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       <span class="muted" data-i18n="pay.crumb">បង់ប្រាក់</span>
     </nav>
     <div class="hero" style="padding:32px 0 16px;text-align:left">
-      <div class="eyebrow" data-i18n="pay.eyebrow">ការទូទាត់សុវត្ថិភាព · ABA / KHQR</div>
+      <div class="eyebrow" data-i18n="pay.eyebrow">ការទូទាត់សុវត្ថិភាព · ABA PayWay · KHQR</div>
       <h1 class="display display-2" data-i18n="pay.title">បញ្ចប់ការទិញរបស់អ្នក</h1>
     </div>
     <div class="pay-wrap">
-      <div class="pay-card">
-        <div class="eyebrow" data-i18n="pay.step1">ជំហានទី ១ · ស្កេន QR</div>
-        <h3 class="display display-3" style="margin:8px 0 24px" data-i18n="pay.scan">ស្កេនកូដខាងក្រោម</h3>
-        <div class="qr-frame">
-          <svg class="orn"><use href="#orn-divider"/></svg>
-          <div id="qr-holder"><div class="qr-placeholder-fallback"></div></div>
-          <svg class="orn" style="transform:rotate(180deg)"><use href="#orn-divider"/></svg>
-          <div class="qr-label"><span data-i18n="pay.amount">ចំនួន</span> · <span id="pay-amount-label" data-bind="amount"></span></div>
+      <div class="pay-card pw-card">
+        <div class="eyebrow" data-i18n="pay.pw.eyebrow">បង់ប្រាក់ភ្លាមៗ · KHQR</div>
+        <h3 class="display display-3" style="margin:8px 0 18px" data-i18n="pay.pw.title">បង់ដោយ ABA PAY ឬ KHQR</h3>
+        <div class="pw-amount">
+          <span class="muted" data-i18n="pay.amount">ចំនួន</span>
+          <strong id="pay-amount-label" class="serif" data-bind="amount"></strong>
         </div>
-        <div class="row" style="margin-top:24px;justify-content:space-between">
-          <div>
-            <div class="eyebrow" data-i18n="pay.acc">ឈ្មោះគណនី</div>
-            <div class="serif" style="font-size:18px" data-bind="abaName"></div>
-          </div>
-          <div>
-            <div class="eyebrow" data-i18n="pay.num">លេខគណនី</div>
-            <div class="serif" style="font-size:18px" data-bind="abaNum"></div>
-          </div>
+        <button id="pw-pay-btn" class="btn btn-primary btn-lg pw-pay-btn" type="button">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h3v3h-3zM20 14v.01M17 20h3M14 20v.01M20 17v.01"/></svg>
+          <span data-i18n="pay.pw.btn">បង់ប្រាក់ដោយ KHQR</span>
+        </button>
+        <div id="pw-status" class="pw-status" aria-live="polite"></div>
+        <div class="pw-accept">
+          <span class="muted" data-i18n="pay.pw.accept">ទទួលយក</span>
+          <span class="pw-badge">ABA PAY</span><span class="pw-badge">KHQR</span>
         </div>
+        <p class="muted pw-note" data-i18n="pay.pw.note">ការទូទាត់ត្រូវបានផ្ទៀងផ្ទាត់ដោយស្វ័យប្រវត្តិ។ បន្ទាប់ពីបង់ប្រាក់រួច សៀវភៅនឹងបើកភ្លាមៗ។</p>
       </div>
       <div>
         <div class="steps">
-          <div class="step"><div class="n">១</div><div><h4 data-i18n="pay.s1h">ស្កេន QR និងបង់ប្រាក់</h4><p data-i18n="pay.s1b">បើកកម្មវិធី ABA Mobile ហើយស្កេនកូដខាងស្តាំ ឬផ្ទេរប្រាក់ដោយផ្ទាល់ទៅគណនី។</p></div></div>
-          <div class="step"><div class="n">២</div><div><h4 data-i18n="pay.s2h">បន្ទាប់​មក​បង្ហោះ​វិក្កយបត្រ</h4><p data-i18n="pay.s2b">ថត​អេក្រង់​នៃ​ការបង់ប្រាក់ និង​បង្ហោះ​នៅ​ក្នុង​ប្រអប់​ខាង​ក្រោម។</p></div></div>
-          <div class="step"><div class="n">៣</div><div><h4 data-i18n="pay.s3h">រង់​ចាំ​ការ​អនុម័ត</h4><p data-i18n="pay.s3b">ក្រុមការងារ​នឹង​ផ្ទៀង​ផ្ទាត់​ក្នុង​រយៈពេល ១ ទៅ ២ ម៉ោង។ អ្នក​នឹង​អាច​អាន​សៀវភៅ​បាន​ភ្លាមៗ។</p></div></div>
+          <div class="step"><div class="n">១</div><div><h4 data-i18n="pay.pw.s1h">ចុច «បង់ប្រាក់ដោយ KHQR»</h4><p data-i18n="pay.pw.s1b">ប្រអប់ទូទាត់ PayWay នឹងបង្ហាញឡើង។ បើមានកូដប្រូម៉ូ សូមដាក់មុនចុចបង់ប្រាក់។</p></div></div>
+          <div class="step"><div class="n">២</div><div><h4 data-i18n="pay.pw.s2h">ស្កេន ឬបើកកម្មវិធីធនាគារ</h4><p data-i18n="pay.pw.s2b">បង់ដោយ ABA PAY ឬស្កេន KHQR ដោយកម្មវិធីធនាគារណាមួយដែលគាំទ្រ KHQR។</p></div></div>
+          <div class="step"><div class="n">៣</div><div><h4 data-i18n="pay.pw.s3h">អានបានភ្លាមៗ</h4><p data-i18n="pay.pw.s3b">ការទូទាត់ត្រូវបានផ្ទៀងផ្ទាត់ដោយស្វ័យប្រវត្តិ — មិនចាំបាច់បង្ហោះវិក្កយបត្រ ឬរង់ចាំការអនុម័តទេ។</p></div></div>
         </div>
-        <form id="proof-form">
-          <label class="upload-zone">
-            <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 4 L12 16 M6 10 L12 4 L18 10 M4 20 L20 20"/></svg>
-            <div class="serif" style="font-size:17px;margin-bottom:4px" data-i18n="pay.upload">បង្ហោះវិក្កយបត្រ</div>
-            <div class="muted" style="font-size:14px" data-i18n="pay.uploadSub">JPG · PNG · PDF · អតិបរមា 8MB</div>
-            <div id="proof-filename" class="muted" style="font-size:13px;margin-top:8px"></div>
-            <input type="file" name="proof" accept="image/jpeg,image/png,image/webp,application/pdf" required/>
-          </label>
+        <div id="pw-panel">
           <div id="proof-msg"></div>
           <div class="promo-panel" style="margin-top:18px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;background:var(--bg-elevated)">
             <div class="eyebrow" data-i18n="pay.promo">មានកូដប្រូម៉ូ?</div>
@@ -1057,8 +1060,7 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
             <div class="sum-row" id="sum-discount-row" style="display:none;justify-content:space-between;margin-top:6px;color:#2d6a4f"><span data-i18n="pay.discount">ការបញ្ចុះតម្លៃ</span><span id="sum-discount"></span></div>
             <div class="sum-row" style="display:flex;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);font-weight:600;font-size:18px"><span data-i18n="pay.total">សរុបទាំងអស់</span><span id="sum-total" class="serif"></span></div>
           </div>
-          <button class="btn btn-primary btn-lg" style="width:100%;margin-top:18px" type="submit" data-i18n="pay.submit">បញ្ជូនការបង់ប្រាក់</button>
-        </form>
+        </div>
         <div id="payment-notice" class="alert alert-info" style="margin-top:18px;display:none"></div>
         <a id="contact-admin-btn" href="#" target="_blank" rel="noopener" style="display:none;margin-top:16px;padding:14px 16px;border:1px solid var(--border);border-radius:10px;text-decoration:none;color:var(--fg);background:var(--bg-elevated);display:flex;align-items:center;gap:12px;transition:transform .15s,box-shadow .15s">
           <svg style="width:24px;height:24px;flex:0 0 24px;color:#229ED9" viewBox="0 0 24 24" fill="currentColor"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
@@ -1196,8 +1198,11 @@ const I18N = {
     'trust.fast':'ចូលជាមួយ Telegram (1-tap)','trust.pay':'ការទូទាត់សុវត្ថិភាព ABA / KHQR','trust.instant':'ចូលប្រើភ្លាមៗ',
     'home.all.eyebrow':'បណ្តុំសៀវភៅទាំងអស់','home.all.h':'ហាងសៀវភៅឌីជីថល','home.all.sort':'តម្រៀបតាម · ថ្មីបំផុត','home.empty':'មិនទាន់មានសៀវភៅទេ','home.search':'ស្វែងរកសៀវភៅ ឬអ្នកនិពន្ធ...',
     'detail.eyebrow':'សៀវភៅ · ឆ្នាំ ២០២៦','detail.by':'និពន្ធដោយ','detail.priceNote':'តម្លៃតែម្តង · កាន់កាប់រហូត','detail.synopsis':'ដំណើររឿងសង្ខេប',
-    'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់ការទូទាត់...','cta.pendingHint':'ចុចដើម្បីបង្ហោះវិក្កយបត្រឡើងវិញ','cta.pendingNote':'រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។ មិនអាចទិញម្តងទៀតបានទេនៅពេលនេះ។','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន','badge.comingSoon':'ឆាប់ៗនេះ','cta.comingSoon':'ឆាប់ៗនេះ — សូមរង់ចាំ!','reader.bgAudio':'តន្ត្រីផ្ទៃខាងក្រោយ','reader.voice':'សំឡេងអាន','reader.tapToPlay':'ចុចដើម្បីចាក់តន្ត្រី',
+    'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់ការទូទាត់...','cta.pendingHint':'ចុចដើម្បីបង្ហោះវិក្កយបត្រឡើងវិញ','cta.pendingNote':'រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។ មិនអាចទិញម្តងទៀតបានទេនៅពេលនេះ។','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន','badge.comingSoon':'ឆាប់ៗនេះ','cta.comingSoon':'ឆាប់ៗនេះ — សូមរង់ចាំ!','cta.continuePay':'បន្តការទូទាត់','cta.continuePayNote':'អ្នកបានចាប់ផ្តើមទិញសៀវភៅនេះ។ ចុចដើម្បីបង់ប្រាក់ដោយ KHQR ហើយអានភ្លាមៗ។','reader.bgAudio':'តន្ត្រីផ្ទៃខាងក្រោយ','reader.voice':'សំឡេងអាន','reader.tapToPlay':'ចុចដើម្បីចាក់តន្ត្រី',
     'lib.eyebrow':'បណ្ណាល័យផ្ទាល់ខ្លួន','lib.title':'បណ្ណាល័យរបស់ខ្ញុំ','lib.lede':'សៀវភៅទាំងអស់ដែលអ្នកបានទិញ — រួចរាល់ចាប់ផ្តើមអាន។','lib.empty':'មិនទាន់មានការទិញ','lib.empty.favs':'មិនទាន់មានសៀវភៅដែលចូលចិត្ត','lib.tab.books':'សៀវភៅរបស់ខ្ញុំ','lib.tab.favs':'ចូលចិត្ត',
+    'pay.pw.eyebrow':'បង់ប្រាក់ភ្លាមៗ · KHQR','pay.pw.title':'បង់ដោយ ABA PAY ឬ KHQR','pay.pw.btn':'បង់ប្រាក់ដោយ KHQR','pay.pw.accept':'ទទួលយក','pay.pw.note':'ការទូទាត់ត្រូវបានផ្ទៀងផ្ទាត់ដោយស្វ័យប្រវត្តិ។ បន្ទាប់ពីបង់ប្រាក់រួច សៀវភៅនឹងបើកភ្លាមៗ។',
+    'pay.pw.s1h':'ចុច «បង់ប្រាក់ដោយ KHQR»','pay.pw.s1b':'ប្រអប់ទូទាត់ PayWay នឹងបង្ហាញឡើង។ បើមានកូដប្រូម៉ូ សូមដាក់មុនចុចបង់ប្រាក់។','pay.pw.s2h':'ស្កេន ឬបើកកម្មវិធីធនាគារ','pay.pw.s2b':'បង់ដោយ ABA PAY ឬស្កេន KHQR ដោយកម្មវិធីធនាគារណាមួយដែលគាំទ្រ KHQR។','pay.pw.s3h':'អានបានភ្លាមៗ','pay.pw.s3b':'ការទូទាត់ត្រូវបានផ្ទៀងផ្ទាត់ដោយស្វ័យប្រវត្តិ — មិនចាំបាច់បង្ហោះវិក្កយបត្រ ឬរង់ចាំការអនុម័តទេ។',
+    'pay.pw.preparing':'កំពុងរៀបចំការទូទាត់…','pay.pw.opening':'កំពុងបើកប្រអប់ទូទាត់ PayWay…','pay.pw.waiting':'រង់ចាំការទូទាត់… បន្ទាប់ពីបង់រួច ទំព័រនេះនឹងធ្វើបច្ចុប្បន្នភាពដោយស្វ័យប្រវត្តិ។','pay.pw.checking':'កំពុងផ្ទៀងផ្ទាត់ការទូទាត់…','pay.pw.approved':'ការទូទាត់ជោគជ័យ! សៀវភៅរបស់អ្នកមាននៅក្នុង My Library ហើយ។ 🎉','pay.pw.alreadyPaid':'ការបញ្ជាទិញនេះបានបង់ប្រាក់រួចហើយ។ សូមចូលទៅ My Library។','pay.pw.declined':'ការទូទាត់ត្រូវបានបដិសេធ។ សូមព្យាយាមម្ដងទៀត។','pay.pw.cancelled':'ការទូទាត់ត្រូវបានលុបចោល។ អ្នកអាចព្យាយាមម្ដងទៀតបាន។','pay.pw.timeout':'យើងមិនទាន់ឃើញការទូទាត់នៅឡើយទេ។ បើអ្នកបានបង់រួច សូមរង់ចាំបន្តិច ឬបើក My Library — សៀវភៅនឹងបង្ហាញនៅពេលធនាគារបញ្ជាក់។','pay.pw.notConfigured':'ការទូទាត់មិនទាន់អាចប្រើបានទេ។ សូមទាក់ទងអ្នកគ្រប់គ្រង។',
     'pay.promo':'មានកូដប្រូម៉ូ?','pay.applyPromo':'អនុវត្ត','pay.review':'សូមពិនិត្យមើលមុនពេលបញ្ជូន','pay.book':'សៀវភៅ','pay.subtotal':'សរុបមុនបញ្ចុះតម្លៃ','pay.discount':'ការបញ្ចុះតម្លៃ','pay.total':'សរុបទាំងអស់','pay.contactAdmin':'មានបញ្ហា? ទាក់ទងអ្នកគ្រប់គ្រង','pay.contactAdminSub':'ផ្ញើសារនៅ Telegram',
     'auth.welcome':'សូមស្វាគមន៍មកកាន់','auth.loginH':'ចូលគណនី','auth.loginSub':'បន្តការអានសៀវភៅដែលអ្នកស្រឡាញ់','auth.loginBtn':'ចូលគណនី','auth.noAcc':'មិនទាន់មានគណនី?','auth.haveAcc':'មានគណនីរួចហើយ?','auth.signInGoogle':'បន្តជាមួយ Google','auth.signUpGoogle':'ចុះឈ្មោះជាមួយ Google','auth.signInTelegram':'ចូលដោយ Telegram','auth.signUpTelegram':'ចុះឈ្មោះដោយ Telegram','auth.recommended':'ណែនាំ','auth.or':'ឬ','auth.googleSub':'សុវត្ថិភាព · ឥតគិតថ្លៃ · ការចូលរហ័ស',
     'auth.join':'ចូលរួមជាមួយយើង','auth.registerH':'បង្កើតគណនី','auth.registerSub':'ចាប់ផ្តើមការដំណើរនៃការអានរបស់អ្នក','auth.registerBtn':'បង្កើតគណនី',
@@ -1216,8 +1221,11 @@ const I18N = {
     'trust.fast':'1-tap login with Telegram','trust.pay':'Secure ABA / KHQR payment','trust.instant':'Instant access',
     'home.all.eyebrow':'All books','home.all.h':'Digital Book Store','home.all.sort':'Sorted by · Newest','home.empty':'No books yet','home.search':'Search books or authors...',
     'detail.eyebrow':'Book · 2026','detail.by':'by','detail.priceNote':'One-time purchase · yours forever','detail.synopsis':'Synopsis',
-    'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Verifying payment...','cta.pendingHint':'Click to re-upload your payment proof','cta.pendingNote':'Waiting for admin verification. You cannot buy again right now.','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled','cta.readFree':'Read for Free','cta.loginToRead':'Login to Read','badge.comingSoon':'Coming Soon','cta.comingSoon':'Coming Soon — Stay tuned!','reader.bgAudio':'Background music','reader.voice':'Voice narration','reader.tapToPlay':'Tap to play music',
+    'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Verifying payment...','cta.pendingHint':'Click to re-upload your payment proof','cta.pendingNote':'Waiting for admin verification. You cannot buy again right now.','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled','cta.readFree':'Read for Free','cta.loginToRead':'Login to Read','badge.comingSoon':'Coming Soon','cta.comingSoon':'Coming Soon — Stay tuned!','cta.continuePay':'Continue payment','cta.continuePayNote':'You started buying this book. Tap to pay with KHQR and read instantly.','reader.bgAudio':'Background music','reader.voice':'Voice narration','reader.tapToPlay':'Tap to play music',
     'lib.eyebrow':'Personal library','lib.title':'My Library','lib.lede':'All books you own — ready to read.','lib.empty':'No purchases yet','lib.empty.favs':'No favorites yet','lib.tab.books':'My Books','lib.tab.favs':'Favorites',
+    'pay.pw.eyebrow':'Instant payment · KHQR','pay.pw.title':'Pay with ABA PAY or KHQR','pay.pw.btn':'Pay with KHQR','pay.pw.accept':'We accept','pay.pw.note':'Payment is verified automatically. Your book unlocks right after you pay.',
+    'pay.pw.s1h':'Tap “Pay with KHQR”','pay.pw.s1b':'The PayWay checkout will open. Have a promo code? Apply it before you pay.','pay.pw.s2h':'Scan or open your banking app','pay.pw.s2b':'Pay with ABA PAY, or scan the KHQR with any KHQR-supported banking app.','pay.pw.s3h':'Read instantly','pay.pw.s3b':'Payment is verified automatically — no receipt upload, no waiting for approval.',
+    'pay.pw.preparing':'Preparing payment…','pay.pw.opening':'Opening PayWay checkout…','pay.pw.waiting':'Waiting for payment… this page updates automatically once you pay.','pay.pw.checking':'Verifying your payment…','pay.pw.approved':'Payment successful! Your book is now in My Library. 🎉','pay.pw.alreadyPaid':'This order is already paid. Head to My Library.','pay.pw.declined':'Payment was declined. Please try again.','pay.pw.cancelled':'Payment was cancelled. You can try again anytime.','pay.pw.timeout':'We haven’t seen the payment yet. If you already paid, give it a moment or open My Library — the book appears once the bank confirms.','pay.pw.notConfigured':'Payments are not available right now. Please contact admin.',
     'pay.promo':'Have a promo code?','pay.applyPromo':'Apply','pay.review':'Review before submitting','pay.book':'Book','pay.subtotal':'Subtotal','pay.discount':'Discount','pay.total':'Total','pay.contactAdmin':'Need help? Contact admin','pay.contactAdminSub':'Reach us on Telegram',
     'auth.welcome':'Welcome to','auth.loginH':'Sign In','auth.loginSub':'Continue reading what you love','auth.loginBtn':'Sign In','auth.noAcc':'No account yet?','auth.haveAcc':'Already have an account?','auth.signInGoogle':'Continue with Google','auth.signUpGoogle':'Sign up with Google','auth.signInTelegram':'Sign in with Telegram','auth.signUpTelegram':'Sign up with Telegram','auth.recommended':'Recommended','auth.or':'or','auth.googleSub':'Secure · Free · One-tap access',
     'auth.join':'Join us','auth.registerH':'Create Account','auth.registerSub':'Start your reading journey','auth.registerBtn':'Create Account',
@@ -1432,7 +1440,8 @@ function showTemplate(id){
 }
 function parseHash(){
   const h = location.hash.replace(/^#\/?/,'')||'';
-  const parts = h.split('/').filter(Boolean);
+  const path = h.split('?')[0];                 // strip query (#/payway-return?tran_id=…)
+  const parts = path.split('/').filter(Boolean);
   return { name: parts[0]||'', id: parts[1]||null };
 }
 function route(){
@@ -1447,7 +1456,7 @@ function route(){
   _spinnerTimer = setTimeout(()=>{ if(!isStale()) $('#route-outlet').innerHTML=`<div class="center" style="padding:80px"><span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span></div>`; }, 150);
   // Reset meta tags first; per-route handlers (e.g. book detail) override as needed
   resetPageMeta();
-  const handlers = {'':renderHome, 'home':renderHome, 'book':renderBookDetail, 'library':renderLibrary, 'login':renderLogin, 'register':renderRegister, 'payment':renderPayment, 'read':renderReader};
+  const handlers = {'':renderHome, 'home':renderHome, 'book':renderBookDetail, 'library':renderLibrary, 'login':renderLogin, 'register':renderRegister, 'payment':renderPayment, 'payway-return':renderPaywayReturn, 'read':renderReader};
   const h = handlers[r.name] || renderHome;
   Promise.resolve(h(r.id, isStale)).catch(err=>{ if(isStale()) return; console.error(err); $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(err.message||String(err))}</div>`; }).finally(()=>{ if(_spinnerTimer){clearTimeout(_spinnerTimer);_spinnerTimer=null;} updateTelegramBubble(); updateFacebookBubble(); updateApplyCreatorLinks(); window.scrollTo(0,0); });
 }
@@ -1625,7 +1634,7 @@ async function renderBookDetail(id){
     buy: `<button class="btn btn-primary btn-lg" id="buy-btn">${t('cta.buy')} · ${fmtMoney(book.price,book.currency)}</button>`,
     buyAgain: `<button class="btn btn-primary btn-lg" id="buy-btn">${t('cta.buyAgain')}</button>`,
     claim_free: `<button class="btn btn-gold btn-lg" id="claim-btn">🎁 ${t('cta.readFree')}</button>`,
-    pending: `<a class="btn btn-pending btn-lg" href="#/payment/${orderId}" title="${t('cta.pendingHint')}"><span class="spin-circle" aria-hidden="true"></span><span>${t('cta.pending')}</span></a><div class="pending-note muted" style="margin-top:10px;font-size:13px;text-align:center">${t('cta.pendingNote')}</div>`,
+    pending: `<a class="btn btn-primary btn-lg" href="#/payment/${orderId}">${t('cta.continuePay')} · ${fmtMoney(book.price,book.currency)}</a><div class="pending-note muted" style="margin-top:10px;font-size:13px;text-align:center">${t('cta.continuePayNote')}</div>`,
     read: `<a class="btn btn-primary btn-lg" href="#/read/${id}">${t('cta.read')}</a>`,
     disabled: `<button class="btn btn-ghost btn-lg" disabled>${t('cta.disabled')}${book.buy_disabled_remark?` — ${esc(book.buy_disabled_remark)}`:''}</button>`,
     coming_soon: `<button class="btn btn-ghost btn-lg" disabled style="background:linear-gradient(135deg,#5B4B8A,#3D3263);color:#FAF5E9;opacity:1;cursor:default">✨ ${t('cta.comingSoon')}</button>`
@@ -1634,7 +1643,7 @@ async function renderBookDetail(id){
   const buyBtn = $('#buy-btn');
   if(buyBtn) buyBtn.onclick = async ()=>{
     buyBtn.disabled = true;
-    const { data:order, error } = await sb.from('orders').insert({ user_id:state.profile.id, book_id:book.id, amount:book.price, currency:book.currency, payment_method:'ABA QR / KHQR', status:'pending' }).select('id').single();
+    const { data:order, error } = await sb.from('orders').insert({ user_id:state.profile.id, book_id:book.id, amount:book.price, currency:book.currency, payment_method:'ABA PayWay (KHQR)', status:'pending' }).select('id').single();
     if(error){ alert(error.message); buyBtn.disabled=false; return; }
     sb.from('activity_logs').insert({ action:'order.create', actor_user_id:state.profile.id, actor_username:state.profile.username, target_type:'order', target_id:order.id, details:{book_id:book.id} }).then(()=>{}).catch(()=>{});
     location.hash = `#/payment/${order.id}`;
@@ -2092,13 +2101,7 @@ async function renderPayment(orderId){
   const scope = $('#route-outlet');
   bindData(scope,'bookTitle',order.books?.title||'');
   bindData(scope,'amount',fmtMoney(order.amount,order.currency));
-  bindData(scope,'abaName',state.settings.aba_account_name||'-');
-  bindData(scope,'abaNum',state.settings.aba_account_number||'-');
   scope.querySelectorAll('[data-bind="bookLink"]').forEach(a=>a.href=`#/book/${order.books?.id||''}`);
-  if(state.settings.aba_qr_path){
-    const qr = await publicUrl('site-assets', state.settings.aba_qr_path);
-    $('#qr-holder').innerHTML = `<img src="${esc(qr)}" alt="ABA QR"/>`;
-  }
   const noticeKey = state.lang==='kh'?'payment_notice_kh':'payment_notice_en';
   const notice = state.settings[noticeKey]||state.settings.payment_notice_en;
   if(notice){ const el=$('#payment-notice'); el.textContent=notice; el.style.display='block'; }
@@ -2194,59 +2197,155 @@ async function renderPayment(orderId){
     };
   }
 
-  const fileInput = $('#proof-form input[name=proof]');
-  fileInput.addEventListener('change',()=>{ const f=fileInput.files[0]; $('#proof-filename').textContent = f?f.name:''; });
-  $('#proof-form').onsubmit = async e=>{
-    e.preventDefault();
-    const file = fileInput.files[0]; if(!file) return;
-    const allowed = ['image/jpeg','image/png','image/webp','application/pdf'];
-    if(!allowed.includes(file.type)){ $('#proof-msg').innerHTML = alertBox(t('err.invalidFile')); return; }
-    if(file.size > 8*1024*1024){ $('#proof-msg').innerHTML = alertBox(t('err.fileTooLarge')); return; }
-    const btn = e.target.querySelector('button[type=submit]'); btn.disabled=true;
-    const msgEl = $('#proof-msg');
-    const navigateToLibrary = () => {
-      // Triple-attempt navigation — PWA Android can occasionally drop a single hash change
-      try { location.hash = '#/library'; } catch(_){}
-      setTimeout(()=>{ if(!/#\/?library/.test(location.hash)){ try { location.href = '#/library'; } catch(_){} } }, 200);
-      setTimeout(()=>{ if(!/#\/?library/.test(location.hash)){ try { location.replace('#/library'); } catch(_){} } }, 500);
-    };
+  // ── ABA PayWay (KHQR) checkout ──
+  // 1) Ask our edge function for signed form fields (hash computed server-side).
+  // 2) Submit to PayWay via the official popup plugin (modal / bottom-sheet).
+  // 3) Poll payway-verify until PayWay confirms APPROVED → order auto-approved.
+  const payBtn = $('#pw-pay-btn');
+  const statusEl = $('#pw-status');
+  const setStatus = (html, kind) => { statusEl.innerHTML = html ? `<div class="alert alert-${kind||'info'}">${html}</div>` : ''; };
+
+  // Already paid? (e.g. user came back to this page)
+  if(order.status === 'approved'){
+    setStatus(t('pay.pw.alreadyPaid'), 'success');
+    payBtn.disabled = true;
+    return;
+  }
+
+  payBtn.onclick = async ()=>{
+    payBtn.disabled = true;
+    setStatus(t('pay.pw.preparing'));
     try{
-      // Step 1: Upload file
-      msgEl.innerHTML = `<div class="alert alert-info">${state.lang==='kh'?'កំពុងបង្ហោះវិក្កយបត្រ…':'Uploading receipt…'}</div>`;
-      const ext = (file.name.split('.').pop()||'bin').toLowerCase();
-      const path = `${state.profile.id}/proof_${order.id}_${Date.now()}.${ext}`;
-      const { error: upErr } = await sb.storage.from('payment-proofs').upload(path,file,{ upsert:false, contentType:file.type });
-      if(upErr) throw new Error('Upload failed: ' + (upErr.message||upErr));
-      console.log('[payment] upload ok:', path);
+      const { data:res, error:fnErr } = await sb.functions.invoke('payway-purchase', { body:{ order_id: order.id } });
+      const errCode = res?.error || fnErr?.context?.error || null;
+      if(fnErr && !res){
+        // Try to read the JSON error body from the edge function
+        let detail = null;
+        try { detail = await fnErr.context?.json?.(); } catch(_){}
+        if(detail?.error === 'PAYWAY_NOT_CONFIGURED') throw new Error(t('pay.pw.notConfigured'));
+        if(detail?.error === 'ORDER_NOT_PENDING' && detail?.status === 'approved'){ location.hash = '#/library'; return; }
+        throw new Error(detail?.error || fnErr.message || t('err.generic'));
+      }
+      if(errCode === 'PAYWAY_NOT_CONFIGURED') throw new Error(t('pay.pw.notConfigured'));
+      if(errCode === 'ORDER_NOT_PENDING'){ if(res?.status === 'approved'){ location.hash = '#/library'; return; } throw new Error(t('err.generic')); }
+      if(!res?.action_url || !res?.fields) throw new Error(t('err.generic'));
 
-      // Step 2: Get signed URL (best-effort — fallback to raw path if it fails)
-      let proofUrl = path;
-      try {
-        const { data: sg } = await sb.storage.from('payment-proofs').createSignedUrl(path, 60*60*24*7);
-        if(sg?.signedUrl) proofUrl = sg.signedUrl;
-      } catch(sgErr){ console.warn('[payment] signedUrl failed (using path):', sgErr); }
+      // Build the PayWay form (ids/target required by the official plugin)
+      document.getElementById('aba_merchant_request')?.remove();
+      const form = document.createElement('form');
+      form.id = 'aba_merchant_request';
+      form.method = 'POST';
+      form.action = res.action_url;
+      form.target = 'aba_webservice';
+      form.style.display = 'none';
+      for(const [k,v] of Object.entries(res.fields)){
+        const inp = document.createElement('input');
+        inp.type = 'hidden'; inp.name = k; inp.value = String(v);
+        form.appendChild(inp);
+      }
+      document.body.appendChild(form);
 
-      // Step 3: Update order — this is the critical step. If it fails, admin won't see proof.
-      msgEl.innerHTML = `<div class="alert alert-info">${state.lang==='kh'?'កំពុងបញ្ជូន…':'Submitting…'}</div>`;
-      const { error: updErr } = await sb.from('orders').update({ proof_url: proofUrl, status:'pending' }).eq('id',order.id);
-      if(updErr) throw new Error('Submit failed: ' + (updErr.message||updErr));
-      console.log('[payment] order updated to pending');
+      setStatus(t('pay.pw.opening'));
+      const pluginOk = await loadPaywayPlugin();
+      if(pluginOk && window.AbaPayway && typeof window.AbaPayway.checkout === 'function'){
+        window.AbaPayway.checkout();           // modal (desktop) / bottom-sheet (mobile)
+      } else {
+        form.target = '_self';                 // fallback: hosted checkout page
+        form.submit();
+      }
 
-      // Step 4: Side-effects (notify admin + log) — fire-and-forget, don't block UI
-      sb.functions.invoke('notify-telegram',{body:{order_id:order.id}}).catch(err=>console.warn('[payment] notify-telegram failed (non-blocking):', err));
-      sb.from('activity_logs').insert({ action:'order.proof_uploaded', actor_user_id:state.profile.id, actor_username:state.profile.username, target_type:'order', target_id:order.id, details:{book_id:order.book_id} }).then(()=>{}).catch(()=>{});
-
-      // Step 5: Show success + navigate immediately (don't wait — PWA setTimeout unreliable)
-      msgEl.innerHTML = alertBox(t('pay.success'),'success');
-      console.log('[payment] success, navigating to library');
-      // Brief delay so user sees success, then triple-attempt nav for PWA reliability
-      setTimeout(navigateToLibrary, 800);
+      // Poll verification (also covers users who close the sheet after paying)
+      setStatus(t('pay.pw.waiting'));
+      startPaywayPoll(res.tran_id, {
+        onApproved: ()=>{
+          setStatus(t('pay.pw.approved'), 'success');
+          setTimeout(()=>{ location.hash = '#/library'; }, 1200);
+        },
+        onFailed: (st)=>{
+          setStatus(st === 'declined' ? t('pay.pw.declined') : t('pay.pw.cancelled'), 'error');
+          payBtn.disabled = false;
+        },
+        onTimeout: ()=>{
+          setStatus(t('pay.pw.timeout'), 'info');
+          payBtn.disabled = false;
+        }
+      });
     }catch(err){
-      console.error('[payment] submit error:', err);
-      msgEl.innerHTML = alertBox(err.message||t('err.uploadFailed'));
-      btn.disabled=false;
+      console.error('[payway] start failed:', err);
+      setStatus(esc(err.message || t('err.generic')), 'error');
+      payBtn.disabled = false;
     }
   };
+}
+
+/* ── PayWay helpers ── */
+let _pwPluginPromise = null;
+function loadPaywayPlugin(){
+  if(window.AbaPayway) return Promise.resolve(true);
+  if(_pwPluginPromise) return _pwPluginPromise;
+  _pwPluginPromise = new Promise(resolve=>{
+    const s = document.createElement('script');
+    s.src = 'https://checkout.payway.com.kh/plugins/checkout2-0.js';   // valid for sandbox + production
+    s.async = true;
+    s.onload = ()=>resolve(true);
+    s.onerror = ()=>{ _pwPluginPromise = null; resolve(false); };
+    document.head.appendChild(s);
+  });
+  return _pwPluginPromise;
+}
+
+let _pwPollTimer = null, _pwPollDeadline = 0;
+function stopPaywayPoll(){ if(_pwPollTimer){ clearTimeout(_pwPollTimer); _pwPollTimer = null; } }
+function startPaywayPoll(tranId, cb){
+  stopPaywayPoll();
+  _pwPollDeadline = Date.now() + 30*60*1000;   // matches PayWay `lifetime` (30 min)
+  let delay = 4000;
+  const tick = async ()=>{
+    if(Date.now() > _pwPollDeadline){ stopPaywayPoll(); cb.onTimeout?.(); return; }
+    try{
+      const r = await verifyPaywayTran(tranId);
+      if(r?.status === 'approved'){ stopPaywayPoll(); cb.onApproved?.(r); return; }
+      if(r?.status === 'declined' || r?.status === 'cancelled'){ stopPaywayPoll(); cb.onFailed?.(r.status); return; }
+    }catch(e){ console.warn('[payway] poll error:', e); }
+    delay = Math.min(delay + 1000, 10000);      // gentle backoff 4s → 10s
+    _pwPollTimer = setTimeout(tick, delay);
+  };
+  _pwPollTimer = setTimeout(tick, 5000);
+  window.addEventListener('hashchange', stopPaywayPoll, { once:true });
+}
+async function verifyPaywayTran(tranId){
+  // Verify JWT is OFF on this function (PayWay webhook needs it); send apikey + bearer anyway.
+  const res = await fetch(`${CFG.SUPABASE_URL}/functions/v1/payway-verify`, {
+    method:'POST',
+    headers:{ 'Content-Type':'application/json', 'apikey': CFG.SUPABASE_ANON_KEY, 'Authorization':'Bearer ' + CFG.SUPABASE_ANON_KEY },
+    body: JSON.stringify({ tran_id: tranId })
+  });
+  return res.json().catch(()=>null);
+}
+
+// Route: #/payway-return?tran_id=XXX  (continue_success_url after PayWay payment)
+async function renderPaywayReturn(){
+  if(!state.user){ location.hash='#/login'; return; }
+  const m = (location.hash||'').match(/[?&]tran_id=([^&]+)/);
+  const tranId = m ? decodeURIComponent(m[1]) : '';
+  const outlet = $('#route-outlet');
+  outlet.innerHTML = `<div class="container" style="padding:60px 0;max-width:560px"><div class="pay-card pw-card" style="text-align:center"><div class="lotus-loader" style="margin:0 auto 14px"><svg><use href="#orn-lotus"/></svg></div><div id="pwr-msg" class="serif" style="font-size:17px">${t('pay.pw.checking')}</div><div id="pwr-actions" style="margin-top:18px"></div></div></div>`;
+  if(!tranId){ $('#pwr-msg').textContent = t('err.generic'); return; }
+  const done = (msg, kind, showLib)=>{
+    $('#pwr-msg').innerHTML = `<div class="alert alert-${kind}">${msg}</div>`;
+    $('#pwr-actions').innerHTML = showLib
+      ? `<a class="btn btn-primary btn-lg" href="#/library">${t('nav.library')}</a>`
+      : `<a class="btn btn-ghost" href="#/library">${t('nav.library')}</a>`;
+  };
+  // Try a few times — the webhook / bank settlement can lag a couple seconds
+  for(let i=0;i<8;i++){
+    const r = await verifyPaywayTran(tranId).catch(()=>null);
+    if(r?.status === 'approved'){ done(t('pay.pw.approved'), 'success', true); return; }
+    if(r?.status === 'declined'){ done(t('pay.pw.declined'), 'error', false); return; }
+    if(r?.status === 'cancelled'){ done(t('pay.pw.cancelled'), 'error', false); return; }
+    await new Promise(res=>setTimeout(res, 2500));
+  }
+  done(t('pay.pw.timeout'), 'info', false);
 }
 
 /* ========== Reader ========== */
