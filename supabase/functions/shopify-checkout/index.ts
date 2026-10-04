@@ -20,7 +20,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const VERSION = "2026-10-04-shopify-1";
+const VERSION = "2026-10-04-shopify-4-product";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
     const orderId = body?.order_id;
     if (!orderId) return json({ error: "order_id required" }, 400);
     const { data: order } = await sb.from("orders")
-      .select("id, user_id, book_id, amount, currency, status, shopify_checkout_url, shopify_draft_order_id, books(title)")
+      .select("id, user_id, book_id, amount, currency, status, shopify_checkout_url, shopify_draft_order_id, books(id, title, creator, cover_url, shopify_product_id, shopify_variant_id, shopify_synced_price)")
       .eq("id", orderId).maybeSingle();
     if (!order) return json({ error: "Order not found" }, 404);
     if (order.user_id !== profile.id) return json({ error: "Not your order" }, 403);
@@ -70,14 +70,37 @@ Deno.serve(async (req) => {
       return json({ checkout_url: order.shopify_checkout_url, draft_order_id: order.shopify_draft_order_id, reused: true });
     }
 
-    const currency = String(order.currency || "USD").toUpperCase();
-    const amount = Number(order.amount);
-    if (!(amount > 0)) return json({ error: "Invalid amount" }, 400);
+    const orderCurrency = String(order.currency || "USD").toUpperCase();
+    const orderAmount = Number(order.amount);
+    if (!(orderAmount > 0)) return json({ error: "Invalid amount" }, 400);
     const bookTitle = String((order as any).books?.title ?? "KhozyReads Book");
 
     // ---- Shopify Admin token (client credentials) ----
     const accessToken = await getAdminToken(shop, clientId, clientSecret);
     const gql = (query: string, variables: Record<string, unknown>) => shopifyGraphQL(shop, apiVersion, accessToken, query, variables);
+
+    // ---- Charge in the STORE currency (Shopify + ABA require it). Convert if needed. ----
+    // USD↔KHR rate from site_settings.usd_khr_rate (default 4100). KHR must be a whole number ≥ 100.
+    const shopInfo = await gql(`{ shop { currencyCode } }`, {});
+    const storeCurrency = String(shopInfo?.data?.shop?.currencyCode ?? "USD").toUpperCase();
+    let rate = 4100;
+    const { data: rateRow } = await sb.from("site_settings").select("setting_value").eq("setting_key", "usd_khr_rate").maybeSingle();
+    if (rateRow?.setting_value && Number(rateRow.setting_value) > 0) rate = Number(rateRow.setting_value);
+
+    let chargeAmount = orderAmount;
+    if (orderCurrency !== storeCurrency) {
+      if (orderCurrency === "USD" && storeCurrency === "KHR") chargeAmount = orderAmount * rate;
+      else if (orderCurrency === "KHR" && storeCurrency === "USD") chargeAmount = orderAmount / rate;
+      else return json({ error: "SHOPIFY_ERROR", message: `Store currency ${storeCurrency} not supported for ${orderCurrency} orders` }, 502);
+    }
+    if (storeCurrency === "KHR") {
+      chargeAmount = Math.round(chargeAmount / 100) * 100;      // round to nearest 100 riel (clean for payers)
+      if (chargeAmount < 100) chargeAmount = 100;
+    } else {
+      chargeAmount = Math.round(chargeAmount * 100) / 100;
+    }
+    const chargeStr = storeCurrency === "KHR" ? String(Math.round(chargeAmount)) : chargeAmount.toFixed(2);
+    const priceNote = orderCurrency !== storeCurrency ? ` — ${orderAmount} ${orderCurrency} ≈ ${chargeStr} ${storeCurrency}` : "";
 
     // ---- Make sure the orders/paid webhook exists (idempotent, once per warm instance) ----
     if (!_webhookChecked) {
@@ -85,31 +108,58 @@ Deno.serve(async (req) => {
       catch (e) { console.warn("ensureWebhook failed (non-blocking):", e); }
     }
 
-    // ---- Create draft order (custom line item, no product needed) ----
+    // ---- Ensure a Shopify product exists for this book (cover + clean title in checkout) ----
+    const book: any = (order as any).books || {};
+    let variantId: string | null = null;
+    try {
+      variantId = await ensureBookProduct(sb, gql, book, chargeStr, storeCurrency);
+    } catch (e) {
+      console.warn("ensureBookProduct failed; falling back to custom line item:", e);
+    }
+
+    // ---- Create draft order ----
     const m = `mutation DraftCreate($input: DraftOrderInput!) {
       draftOrderCreate(input: $input) {
         draftOrder { id name invoiceUrl }
         userErrors { field message }
       }
     }`;
+    const lineItem = variantId
+      ? { variantId, quantity: 1 }
+      : { title: bookTitle, quantity: 1, originalUnitPrice: chargeStr, requiresShipping: false, taxable: false };
     const input: Record<string, unknown> = {
-      lineItems: [{ title: `${bookTitle} (digital book)`, quantity: 1, originalUnitPrice: amount.toFixed(2), requiresShipping: false, taxable: false }],
-      note: `KhozyReads order ${order.id} · @${profile.username}`,
+      lineItems: [lineItem],
+      note: `KhozyReads order ${order.id} · @${profile.username}${priceNote}`,
       tags: ["khozyreads", "digital"],
       customAttributes: [
         { key: "khozy_order_id", value: order.id },
         { key: "khozy_user", value: profile.username ?? "" },
         { key: "khozy_book_id", value: order.book_id },
+        { key: "khozy_amount", value: `${orderAmount} ${orderCurrency}` },
       ],
-      presentmentCurrencyCode: currency,
     };
     if (profile.email && /@/.test(profile.email) && !/khozyreads\.local$/.test(profile.email)) input.email = profile.email;
 
+    // Prefill billing address so the buyer only has to press "Pay" (digital goods — address is not used).
+    const fullName = String(profile.display_name || profile.username || "KhozyReads Reader").trim();
+    const [firstName, ...rest] = fullName.split(/\s+/);
+    const billing = {
+      firstName: firstName || "KhozyReads",
+      lastName: rest.join(" ") || "Reader",
+      address1: "Digital purchase - KhozyReads.com",
+      city: "Phnom Penh",
+      countryCode: "KH",
+      zip: "12000",
+    };
+    input.billingAddress = billing;
+    input.useCustomerDefaultAddress = false;
+
     let res = await gql(m, { input });
     let errs = res?.data?.draftOrderCreate?.userErrors ?? [];
-    // If the store doesn't support that presentment currency, retry without it (store currency)
-    if (errs.length && JSON.stringify(errs).toLowerCase().includes("currency")) {
-      delete input.presentmentCurrencyCode;
+    // If Shopify rejects the prefilled address for any reason, retry without it (buyer fills it in)
+    if (errs.length && /address|province|zip|country/i.test(JSON.stringify(errs))) {
+      console.warn("billing prefill rejected, retrying without:", JSON.stringify(errs));
+      delete input.billingAddress; delete input.useCustomerDefaultAddress;
       res = await gql(m, { input });
       errs = res?.data?.draftOrderCreate?.userErrors ?? [];
     }
@@ -165,6 +215,55 @@ async function shopifyGraphQL(shop: string, ver: string, token: string, query: s
   if (!r.ok) throw new Error(`Shopify GraphQL HTTP ${r.status}: ${JSON.stringify(body)}`);
   if (body?.errors?.length) throw new Error(`Shopify GraphQL errors: ${JSON.stringify(body.errors)}`);
   return body;
+}
+
+// Create (once) a Shopify product for the book with its cover image, and keep the
+// variant price in sync with the amount we charge. Returns the variant GID.
+async function ensureBookProduct(sb: any, gql: (q: string, v: Record<string, unknown>) => Promise<any>, book: any, priceStr: string, currency: string): Promise<string | null> {
+  if (!book?.id) return null;
+  let productId: string | null = book.shopify_product_id || null;
+  let variantId: string | null = book.shopify_variant_id || null;
+  const syncedPrice = `${priceStr} ${currency}`;
+
+  if (!productId || !variantId) {
+    const createM = `mutation PC($input: ProductInput!, $media: [CreateMediaInput!]) {
+      productCreate(input: $input, media: $media) {
+        product { id variants(first: 1) { nodes { id } } }
+        userErrors { field message }
+      }
+    }`;
+    const input = {
+      title: String(book.title || "KhozyReads Book"),
+      vendor: String(book.creator || "KhozyReads"),
+      productType: "Digital Book",
+      status: "ACTIVE",
+      tags: ["khozyreads", "digital"],
+      descriptionHtml: `<p>Digital book from <a href="https://khozyreads.com">KhozyReads</a>. Delivered instantly to your KhozyReads library — no shipping.</p>`,
+    };
+    const media = book.cover_url ? [{ originalSource: book.cover_url, mediaContentType: "IMAGE", alt: String(book.title || "") }] : [];
+    const r = await gql(createM, { input, media });
+    const errs = r?.data?.productCreate?.userErrors ?? [];
+    const p = r?.data?.productCreate?.product;
+    if (errs.length || !p?.id) throw new Error("productCreate: " + JSON.stringify(errs));
+    productId = p.id;
+    variantId = p.variants?.nodes?.[0]?.id ?? null;
+    if (!variantId) throw new Error("productCreate: no default variant");
+    await sb.from("books").update({ shopify_product_id: productId, shopify_variant_id: variantId, shopify_synced_price: null }).eq("id", book.id);
+  }
+
+  // Sync price / digital flags when changed (or on first creation)
+  if (book.shopify_synced_price !== syncedPrice) {
+    const upd = `mutation PV($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+      productVariantsBulkUpdate(productId: $productId, variants: $variants) {
+        userErrors { field message }
+      }
+    }`;
+    const r = await gql(upd, { productId, variants: [{ id: variantId, price: priceStr, taxable: false, inventoryItem: { tracked: false, requiresShipping: false } }] });
+    const errs = r?.data?.productVariantsBulkUpdate?.userErrors ?? [];
+    if (errs.length) throw new Error("productVariantsBulkUpdate: " + JSON.stringify(errs));
+    await sb.from("books").update({ shopify_synced_price: syncedPrice }).eq("id", book.id);
+  }
+  return variantId;
 }
 
 async function ensureWebhook(gql: (q: string, v: Record<string, unknown>) => Promise<any>, callbackUrl: string) {
