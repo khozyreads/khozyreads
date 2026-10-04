@@ -1641,10 +1641,13 @@ function route(){
 window.addEventListener('hashchange', route);
 
 /* ========== Pages ========== */
-async function loadFavoriteIds(){
+let _favCache = null, _favAt = 0;
+async function loadFavoriteIds(force){
   if(!state.profile) return new Set();
+  if(!force && _favCache && (Date.now()-_favAt) < 90_000) return _favCache;
   const { data } = await sb.from('book_favorites').select('book_id').eq('user_id', state.profile.id);
-  return new Set((data||[]).map(r=>r.book_id));
+  _favCache = new Set((data||[]).map(r=>r.book_id)); _favAt = Date.now();
+  return _favCache;
 }
 function favBtnHtml(bookId, isFav){
   return `<button class="fav-btn ${isFav?'is-fav':''}" data-fav="${bookId}" aria-label="Favorite" type="button">
@@ -1661,16 +1664,64 @@ function wireFavButtons(scope){
       btn.classList.remove('busy');
       if(error){ console.error(error); return; }
       btn.classList.toggle('is-fav', !!data?.favorited);
+      if(_favCache){ if(data?.favorited) _favCache.add(btn.dataset.fav); else _favCache.delete(btn.dataset.fav); }
     };
   });
 }
 
-async function renderHome(){
-  const [{ data:books, error }, favIds] = await Promise.all([
-    sb.from('books').select('id,title,creator,synopsis,price,currency,cover_url,is_buy_enabled,is_free,is_coming_soon,genre').eq('status','active').order('created_at',{ascending:false}),
-    loadFavoriteIds()
-  ]);
+/* ========== Lightweight in-memory cache (stale-while-revalidate) ==========
+   Makes navigation feel instant: pages render from cache immediately, then
+   refresh quietly in the background. Invalidated on login/logout & purchases. */
+const _cache = { books:null, booksAt:0, lib:null, libAt:0, plans:null, plansAt:0 };
+const CACHE_TTL = 90_000;
+const BOOK_LIST_COLS = 'id,title,creator,synopsis,price,currency,cover_url,is_buy_enabled,is_free,is_coming_soon,genre,buy_disabled_remark,status,created_at';
+function cacheFresh(at){ return at && (Date.now() - at) < CACHE_TTL; }
+function invalidateCache(what){
+  if(!what || what==='books'){ _cache.books=null; _cache.booksAt=0; }
+  if(!what || what==='lib'){ _cache.lib=null; _cache.libAt=0; }
+  if(!what || what==='plans'){ _cache.plans=null; _cache.plansAt=0; }
+}
+async function fetchBooks(force){
+  if(!force && cacheFresh(_cache.booksAt) && _cache.books) return _cache.books;
+  const { data, error } = await sb.from('books').select(BOOK_LIST_COLS).eq('status','active').order('created_at',{ascending:false});
   if(error) throw error;
+  _cache.books = data || []; _cache.booksAt = Date.now();
+  return _cache.books;
+}
+function getBooksCached(){ return cacheFresh(_cache.booksAt) ? _cache.books : null; }
+// Set of book_ids the signed-in user owns outright (lifetime access)
+async function fetchLibrarySet(force){
+  if(!state.profile) return new Set();
+  if(!force && cacheFresh(_cache.libAt) && _cache.lib) return _cache.lib;
+  const { data } = await sb.from('user_library').select('book_id').eq('user_id',state.profile.id).eq('access_status','active');
+  _cache.lib = new Set((data||[]).map(r=>r.book_id)); _cache.libAt = Date.now();
+  return _cache.lib;
+}
+async function fetchPlans(force){
+  if(!force && cacheFresh(_cache.plansAt) && _cache.plans) return _cache.plans;
+  const { data, error } = await sb.from('subscription_plans').select('*').eq('is_active', true).order('sort_order');
+  if(error) throw error;
+  _cache.plans = data || []; _cache.plansAt = Date.now();
+  return _cache.plans;
+}
+// Warm caches right after boot so the first click is instant
+function warmCaches(){
+  fetchBooks().catch(()=>{});
+  if(state.profile){ fetchLibrarySet().catch(()=>{}); loadFavoriteIds().catch(()=>{}); }
+  fetchPlans().catch(()=>{});
+}
+
+async function renderHome(){
+  let books = getBooksCached();
+  let favIds;
+  if(books){
+    favIds = await loadFavoriteIds();          // cheap; books already in memory → near-instant
+    fetchBooks(true).then(fresh=>{             // quiet refresh; re-render only if the list changed
+      if(location.hash.replace(/^#\/?/,'').split('/')[0]==='' && JSON.stringify(fresh.map(b=>b.id+b.price+b.is_coming_soon+b.is_free)) !== JSON.stringify(books.map(b=>b.id+b.price+b.is_coming_soon+b.is_free))) route();
+    }).catch(()=>{});
+  } else {
+    [books, favIds] = await Promise.all([fetchBooks(), loadFavoriteIds()]);
+  }
   showTemplate('tpl-home');
   const grid = $('#book-grid');
   const searchInput = $('#book-search');
@@ -1759,8 +1810,15 @@ async function renderHome(){
 
 async function renderBookDetail(id){
   if(!id){ location.hash='#/'; return; }
-  const { data:book, error } = await sb.from('books').select('*').eq('id',id).maybeSingle();
-  if(error||!book){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.bookNotFound'))}</div>`; return; }
+  // Book from cache when possible (list has every field the detail page needs)
+  let book = (getBooksCached()||[]).find(b=>b.id===id) || null;
+  const libP = state.profile ? fetchLibrarySet() : Promise.resolve(new Set());
+  if(!book){
+    const { data, error } = await sb.from('books').select(BOOK_LIST_COLS).eq('id',id).maybeSingle();
+    if(error||!data){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.bookNotFound'))}</div>`; return; }
+    book = data;
+  }
+  const libSet = await libP;
   // SEO: update tab title + share metadata + Book schema for rich snippets
   setPageMeta(
     `${book.title} · KhozyReads`,
@@ -1771,7 +1829,7 @@ async function renderBookDetail(id){
   setBookJsonLd(book);
   let action='guest', orderId=null;
   if(state.user&&state.profile){
-    const { data:lib } = await sb.from('user_library').select('id').eq('user_id',state.profile.id).eq('book_id',id).eq('access_status','active').maybeSingle();
+    const lib = libSet.has(id);
     if(lib) action='read';                              // bought before → lifetime access
     else if(book.is_free){ action='claim_free'; }
     else if(hasActiveSub()){ action='read'; }           // reading pass active → read
@@ -1838,6 +1896,7 @@ async function renderBookDetail(id){
     claimBtn.disabled = true;
     claimBtn.textContent = '...';
     const { error } = await sb.rpc('claim_free_book', { p_book_id: book.id });
+    invalidateCache('lib');
     if(error){ alert(error.message); claimBtn.disabled=false; claimBtn.textContent='🎁 '+t('cta.readFree'); return; }
     location.hash = `#/read/${book.id}`;
   };
@@ -1860,7 +1919,7 @@ async function renderSubscribe(){
   // Fetch everything first, then render (the router shows a spinner while we await)
   const [, plansRes] = await Promise.all([
     loadSubscription(),
-    sb.from('subscription_plans').select('*').eq('is_active', true).order('sort_order')
+    fetchPlans().then(d=>({data:d,error:null})).catch(e=>({data:null,error:e}))
   ]);
   const { data:plans, error } = plansRes;
   showTemplate('tpl-subscribe');
@@ -2356,13 +2415,14 @@ async function renderRegister(){
 async function renderPayment(orderId){
   if(!state.user){ location.hash='#/login'; return; }
   if(!orderId){ location.hash='#/library'; return; }
-  const { data:order, error } = await sb.from('orders').select('*, books(id,title)').eq('id',orderId).maybeSingle();
+  const [{ data:order, error }, plansAll] = await Promise.all([
+    sb.from('orders').select('*, books(id,title)').eq('id',orderId).maybeSingle(),
+    fetchPlans().catch(()=>[])
+  ]);
   if(error||!order){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.bookNotFound'))}</div>`; return; }
   if(order.user_id !== state.profile.id){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.noAccess'))}</div>`; return; }
-  // Fetch plan BEFORE showing the template (router spinner would overwrite it during an await)
   const isSubOrder = order.kind === 'subscription';
-  let planRow = null;
-  if(isSubOrder){ const { data:pl } = await sb.from('subscription_plans').select('*').eq('code', order.plan_code).maybeSingle(); planRow = pl; }
+  const planRow = isSubOrder ? ((plansAll||[]).find(p=>p.code===order.plan_code) || null) : null;
   showTemplate('tpl-payment');
   const scope = $('#route-outlet');
   const payTitle = isSubOrder ? `${t('sub.payTitle')} · ${planRow ? (state.lang==='kh'?planRow.name_kh:planRow.name_en) : String(order.plan_code||'').toUpperCase()}` : (order.books?.title||'');
@@ -2574,6 +2634,21 @@ function wireShopifyCheckout(order, payBtn, setStatus){
   const isKh = state.lang === 'kh';
   let checkoutUrl = order.shopify_checkout_url || null;
   let polling = false;
+  // Prepare the Shopify checkout NOW (token + product + draft order take a few seconds),
+  // so the Pay button opens instantly. Errors are swallowed here and surface on click.
+  let prefetch = null;
+  const createCheckout = async ()=>{
+    const { data:res, error:fnErr } = await sb.functions.invoke('shopify-checkout', { body:{ order_id: order.id } });
+    let detail = res;
+    if(fnErr && !res){ try { detail = await fnErr.context?.json?.(); } catch(_){ detail = null; } }
+    if(detail?.error === 'SHOPIFY_NOT_CONFIGURED') throw new Error(t('pay.pw.notConfigured'));
+    if(detail?.error === 'ORDER_NOT_PENDING'){ const e = new Error('ORDER_NOT_PENDING'); e.status = detail?.status; throw e; }
+    if(detail?.error === 'SHOPIFY_ERROR') throw new Error(`${t('pay.pw.gatewayError')}: ${esc(detail.message||'')}`);
+    if(!detail?.checkout_url) throw new Error(detail?.error || fnErr?.message || t('err.generic'));
+    checkoutUrl = detail.checkout_url; order.shopify_checkout_url = checkoutUrl;
+    return checkoutUrl;
+  };
+  if(!checkoutUrl && order.status === 'pending'){ prefetch = createCheckout().catch(e=>{ prefetch = null; console.warn('[shopify] prefetch failed:', e); return null; }); }
 
   const startPoll = ()=>{
     if(polling) return; polling = true;
@@ -2583,7 +2658,7 @@ function wireShopifyCheckout(order, payBtn, setStatus){
       if(Date.now() > deadline){ stopShopifyPoll(); polling = false; setStatus(t('pay.pw.timeout'), 'info'); payBtn.disabled = false; return; }
       try{
         const st = await shopifyOrderStatus(order.id);
-        if(st === 'approved'){ stopShopifyPoll(); setStatus(t('pay.pw.approved'), 'success'); setTimeout(()=>{ location.hash = '#/library'; }, 1200); return; }
+        if(st === 'approved'){ stopShopifyPoll(); invalidateCache('lib'); setStatus(t('pay.pw.approved'), 'success'); setTimeout(()=>{ location.hash = '#/library'; }, 1200); return; }
         if(st === 'rejected'){ stopShopifyPoll(); polling = false; setStatus(t('pay.pw.declined'), 'error'); payBtn.disabled = false; return; }
       }catch(e){ console.warn('[shopify] poll error:', e); }
       delay = Math.min(delay + 1000, 10000);
@@ -2613,18 +2688,12 @@ function wireShopifyCheckout(order, payBtn, setStatus){
     try{
       if(!checkoutUrl){
         setStatus(t('pay.pw.preparing'));
-        const { data:res, error:fnErr } = await sb.functions.invoke('shopify-checkout', { body:{ order_id: order.id } });
-        let detail = res;
-        if(fnErr && !res){ try { detail = await fnErr.context?.json?.(); } catch(_){ detail = null; } }
-        if(detail?.error === 'SHOPIFY_NOT_CONFIGURED') throw new Error(t('pay.pw.notConfigured'));
-        if(detail?.error === 'ORDER_NOT_PENDING'){ if(detail?.status === 'approved'){ location.hash = '#/library'; return; } throw new Error(t('err.generic')); }
-        if(detail?.error === 'SHOPIFY_ERROR') throw new Error(`${t('pay.pw.gatewayError')}: ${esc(detail.message||'')}`);
-        if(!detail?.checkout_url) throw new Error(detail?.error || fnErr?.message || t('err.generic'));
-        checkoutUrl = detail.checkout_url;
-        order.shopify_checkout_url = checkoutUrl;
+        if(prefetch){ await prefetch; }           // already in flight → just wait for it
+        if(!checkoutUrl){ await createCheckout(); }
       }
       openCheckout(checkoutUrl);
     }catch(err){
+      if(err && err.message === 'ORDER_NOT_PENDING'){ if(err.status === 'approved'){ location.hash = '#/library'; return; } }
       console.error('[shopify] checkout failed:', err);
       setStatus(esc(err.message || t('err.generic')), 'error');
       payBtn.disabled = false;
@@ -3530,13 +3599,14 @@ sb.auth.onAuthStateChange(async (event)=>{
   if(!_authReady) return;
   // Skip if we are in the middle of an explicit logout (already cleared state)
   if(event === 'SIGNED_OUT' && _loggingOut) return;
-  if(['SIGNED_IN','SIGNED_OUT'].includes(event)){ await loadAuth(); }
+  if(['SIGNED_IN','SIGNED_OUT'].includes(event)){ invalidateCache('lib'); await loadAuth(); }
 });
 (async()=>{
   document.querySelectorAll('#lang-switcher button').forEach(b=>b.classList.toggle('active', b.dataset.lang===state.lang));
   document.documentElement.lang = state.lang==='kh'?'km':'en';
   await Promise.all([loadAuth(), loadSettings()]);
   applyI18n();
+  warmCaches();
   // Process Telegram OAuth redirect result if present in URL (in-app browser flow)
   if(/tg_auth_result=/.test(location.href)){
     try { await processTelegramRedirectResult(); } catch(e){ console.warn('tg redirect process failed:', e); }
