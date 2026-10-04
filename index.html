@@ -1465,6 +1465,9 @@ function route(){
   const token = ++_routeToken;
   const isStale = ()=>token!==_routeToken;
   cleanupReader();
+  // Close any open PayWay QR modal + stop polling when navigating away
+  if(typeof closePaywayQr === 'function') closePaywayQr();
+  if(typeof stopPaywayPoll === 'function') stopPaywayPoll();
   const r = parseHash();
   const showChrome = r.name!=='read';
   $('#site-header').style.display = showChrome?'':'none';
