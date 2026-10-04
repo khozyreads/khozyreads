@@ -1468,6 +1468,7 @@ function route(){
   // Close any open PayWay QR modal + stop polling when navigating away
   if(typeof closePaywayQr === 'function') closePaywayQr();
   if(typeof stopPaywayPoll === 'function') stopPaywayPoll();
+  if(typeof stopShopifyPoll === 'function') stopShopifyPoll();
   const r = parseHash();
   const showChrome = r.name!=='read';
   $('#site-header').style.display = showChrome?'':'none';
@@ -2232,6 +2233,13 @@ async function renderPayment(orderId){
     return;
   }
 
+  // ── Provider switch: 'shopify' (ABA PayWay via Shopify checkout) or 'payway' (direct API) ──
+  const provider = String(state.settings?.payment_provider || 'shopify').toLowerCase();
+  if(provider === 'shopify'){
+    wireShopifyCheckout(order, payBtn, setStatus);
+    return;
+  }
+
   payBtn.onclick = async ()=>{
     payBtn.disabled = true;
     setStatus(t('pay.pw.preparing'));
@@ -2302,6 +2310,82 @@ async function renderPayment(orderId){
       payBtn.disabled = false;
     }
   };
+}
+
+/* ── Shopify checkout (ABA PayWay KHQR via Shopify) ── */
+// Click → edge fn creates a Shopify draft order → open its checkout in a new tab.
+// This tab stays and polls our order status; the Shopify orders/paid webhook
+// flips it to "approved" → we show success and send the buyer to the library.
+let _shopPollTimer = null;
+function stopShopifyPoll(){ if(_shopPollTimer){ clearTimeout(_shopPollTimer); _shopPollTimer = null; } }
+async function shopifyOrderStatus(orderId){
+  const { data, error } = await sb.functions.invoke('shopify-webhook', { body:{ order_id: orderId } });
+  if(error) throw error;
+  return data?.status || null;
+}
+function wireShopifyCheckout(order, payBtn, setStatus){
+  const isKh = state.lang === 'kh';
+  let checkoutUrl = order.shopify_checkout_url || null;
+  let polling = false;
+
+  const startPoll = ()=>{
+    if(polling) return; polling = true;
+    const deadline = Date.now() + 45*60*1000;
+    let delay = 4000;
+    const tick = async ()=>{
+      if(Date.now() > deadline){ stopShopifyPoll(); polling = false; setStatus(t('pay.pw.timeout'), 'info'); payBtn.disabled = false; return; }
+      try{
+        const st = await shopifyOrderStatus(order.id);
+        if(st === 'approved'){ stopShopifyPoll(); setStatus(t('pay.pw.approved'), 'success'); setTimeout(()=>{ location.hash = '#/library'; }, 1200); return; }
+        if(st === 'rejected'){ stopShopifyPoll(); polling = false; setStatus(t('pay.pw.declined'), 'error'); payBtn.disabled = false; return; }
+      }catch(e){ console.warn('[shopify] poll error:', e); }
+      delay = Math.min(delay + 1000, 10000);
+      _shopPollTimer = setTimeout(tick, delay);
+    };
+    _shopPollTimer = setTimeout(tick, 5000);
+    window.addEventListener('hashchange', stopShopifyPoll, { once:true });
+  };
+
+  const openCheckout = (url)=>{
+    const w = window.open(url, '_blank', 'noopener');
+    const waitingMsg = (isKh
+      ? 'ទំព័រទូទាត់បានបើកក្នុងផ្ទាំងថ្មី។ សូមបង់ប្រាក់ដោយ KHQR នៅទីនោះ — ទំព័រនេះនឹងធ្វើបច្ចុប្បន្នភាពដោយស្វ័យប្រវត្តិ។'
+      : 'The payment page opened in a new tab. Pay there with KHQR — this page will update automatically.')
+      + ` <a href="${esc(url)}" target="_blank" rel="noopener" style="font-weight:600">${isKh?'បើកម្ដងទៀត':'Open again'}</a>`;
+    setStatus(waitingMsg, 'info');
+    if(!w){ // popup blocked → same-tab navigation as fallback
+      setStatus((isKh?'កំពុងបើកទំព័រទូទាត់…':'Opening payment page…'), 'info');
+      setTimeout(()=>{ location.href = url; }, 400);
+      return;
+    }
+    startPoll();
+  };
+
+  payBtn.onclick = async ()=>{
+    payBtn.disabled = true;
+    try{
+      if(!checkoutUrl){
+        setStatus(t('pay.pw.preparing'));
+        const { data:res, error:fnErr } = await sb.functions.invoke('shopify-checkout', { body:{ order_id: order.id } });
+        let detail = res;
+        if(fnErr && !res){ try { detail = await fnErr.context?.json?.(); } catch(_){ detail = null; } }
+        if(detail?.error === 'SHOPIFY_NOT_CONFIGURED') throw new Error(t('pay.pw.notConfigured'));
+        if(detail?.error === 'ORDER_NOT_PENDING'){ if(detail?.status === 'approved'){ location.hash = '#/library'; return; } throw new Error(t('err.generic')); }
+        if(detail?.error === 'SHOPIFY_ERROR') throw new Error(`${t('pay.pw.gatewayError')}: ${esc(detail.message||'')}`);
+        if(!detail?.checkout_url) throw new Error(detail?.error || fnErr?.message || t('err.generic'));
+        checkoutUrl = detail.checkout_url;
+        order.shopify_checkout_url = checkoutUrl;
+      }
+      openCheckout(checkoutUrl);
+    }catch(err){
+      console.error('[shopify] checkout failed:', err);
+      setStatus(esc(err.message || t('err.generic')), 'error');
+      payBtn.disabled = false;
+    }
+  };
+
+  // If buyer comes back to this page with a checkout already created, resume polling quietly
+  if(checkoutUrl){ startPoll(); }
 }
 
 /* ── PayWay helpers ── */

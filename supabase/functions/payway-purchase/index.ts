@@ -28,8 +28,12 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const VERSION = "2026-09-22-khqr";
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  // GET → version check (lets us confirm which build is live)
+  if (req.method === "GET") return json({ fn: "payway-purchase", version: VERSION });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   try {
@@ -97,7 +101,11 @@ Deno.serve(async (req) => {
     const continueSuccessUrl = `${siteUrl}/#/payway-return?tran_id=${tranId}`;
     const customFields = b64utf8(JSON.stringify({ order_id: order.id, user: profile.username }));
     const returnParams = order.id;
-    const paymentOption = "abapay_khqr";
+    // Payment method shown by PayWay. Default = KHQR only.
+    // For sandbox testing set PAYWAY_PAYMENT_OPTION=cards (test card numbers work in sandbox;
+    // ABA PAY/KHQR sandbox payments need ABA's assistance). Set to "" to let PayWay show all.
+    // KHQR only (ABA PAY + KHQR member banks). Override via PAYWAY_PAYMENT_OPTION if needed.
+    const paymentOption = (Deno.env.get("PAYWAY_PAYMENT_OPTION") ?? "abapay_khqr").trim() || "abapay_khqr";
     const type = "purchase";
     const lifetime = "30";            // minutes
     const skipSuccessPage = "1";      // go straight to continue_success_url

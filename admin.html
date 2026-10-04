@@ -465,6 +465,18 @@ details.row-details .detail-body{margin-top:8px;padding:12px;background:var(--bg
       </div>
     </div>
     <div class="form-section">
+      <h3>Online Payment Provider</h3>
+      <p class="section-desc">Which checkout buyers see when they click "Pay". <strong>Shopify</strong> = ABA PayWay (KHQR) through your Shopify checkout (works today). <strong>PayWay direct</strong> = in-site KHQR modal via the PayWay API (needs production credentials from ABA).</p>
+      <div class="form-grid">
+        <div class="field"><label>Payment provider</label>
+          <select class="input" name="payment_provider">
+            <option value="shopify">Shopify checkout (ABA PayWay KHQR)</option>
+            <option value="payway">PayWay direct API (in-site KHQR)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="form-section">
       <h3>Modern Reader (R2)</h3>
       <p class="section-desc">Public URL of your Cloudflare R2 bucket for pre-rendered book pages. Set up once per docs/R2_SETUP.md.</p>
       <div class="form-grid">
@@ -1153,7 +1165,7 @@ async function renderSettings(){
   showTemplate('tpl-settings');
   const form = $('#settings-form');
   // populate fields
-  ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text','facebook_page_url','apply_creator_link','r2_public_url'].forEach(k=>{
+  ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text','facebook_page_url','apply_creator_link','r2_public_url','payment_provider'].forEach(k=>{
     const el = form.elements[k]; if(el!=null) el.value = map[k]||'';
   });
   // QR preview
@@ -1176,7 +1188,7 @@ async function renderSettings(){
         if(error) throw error;
         await sb.from('site_settings').upsert({setting_key:'aba_qr_path',setting_value:path}, {onConflict:'setting_key'});
       }
-      const keys = ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text','facebook_page_url','apply_creator_link','r2_public_url'];
+      const keys = ['website_name','default_currency','default_language','aba_account_name','aba_account_number','working_hours_start','working_hours_end','payment_notice_kh','payment_notice_en','telegram_admin_chat_id','telegram_group_link','telegram_button_text','facebook_page_url','apply_creator_link','r2_public_url','payment_provider'];
       const updates = keys.map(k=>({setting_key:k,setting_value:String(fd.get(k)||'')}));
       const tok = fd.get('telegram_bot_token');
       if(tok && String(tok).trim()) updates.push({setting_key:'telegram_bot_token',setting_value:String(tok).trim()});

@@ -178,8 +178,8 @@ async function notifyTelegram(sb: any, order: any, tranId: string, apv: string) 
   }
   // Admin
   if (adminBot) {
-    const { data: s } = await sb.from("site_settings").select("value").eq("key", "telegram_admin_chat_id").maybeSingle();
-    const chatId = s?.value;
+    const { data: s } = await sb.from("site_settings").select("setting_value").eq("setting_key", "telegram_admin_chat_id").maybeSingle();
+    const chatId = s?.setting_value;
     if (chatId) {
       await tgSend(adminBot, String(chatId),
         `💳 PayWay payment received (auto-approved)\n\nOrder: ${order.id.slice(0, 8)}\nBook: ${bookTitle}\nAmount: ${amount}\nTran: ${tranId}${apv ? `\nAPV: ${apv}` : ""}`);
