@@ -1857,13 +1857,18 @@ function subBannerHtml(opts){
 }
 
 async function renderSubscribe(){
+  // Fetch everything first, then render (the router shows a spinner while we await)
+  const [, plansRes] = await Promise.all([
+    loadSubscription(),
+    sb.from('subscription_plans').select('*').eq('is_active', true).order('sort_order')
+  ]);
+  const { data:plans, error } = plansRes;
   showTemplate('tpl-subscribe');
-  await loadSubscription();
   const cur = $('#sub-current');
-  if(state.profile && state.sub){ cur.innerHTML = subBannerHtml({ showManage:false }); cur.style.display = 'block'; }
+  if(cur && state.profile && state.sub){ cur.innerHTML = subBannerHtml({ showManage:false }); cur.style.display = 'block'; }
   const grid = $('#plan-grid');
-  const { data:plans, error } = await sb.from('subscription_plans').select('*').eq('is_active', true).order('sort_order');
-  if(error || !plans?.length){ grid.innerHTML = alertBox(t('err.generic')); return; }
+  if(!grid) return;
+  if(error || !plans?.length){ grid.innerHTML = alertBox(error?.message || t('err.generic')); return; }
   const best = plans.reduce((a,b)=> (Number(a.price)/a.duration_days) <= (Number(b.price)/b.duration_days) ? a : b);
   const popular = plans.find(p=>p.code==='monthly') || plans[Math.min(2, plans.length-1)];
   grid.innerHTML = plans.map(p=>{
@@ -2354,11 +2359,12 @@ async function renderPayment(orderId){
   const { data:order, error } = await sb.from('orders').select('*, books(id,title)').eq('id',orderId).maybeSingle();
   if(error||!order){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.bookNotFound'))}</div>`; return; }
   if(order.user_id !== state.profile.id){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.noAccess'))}</div>`; return; }
-  showTemplate('tpl-payment');
-  const scope = $('#route-outlet');
+  // Fetch plan BEFORE showing the template (router spinner would overwrite it during an await)
   const isSubOrder = order.kind === 'subscription';
   let planRow = null;
   if(isSubOrder){ const { data:pl } = await sb.from('subscription_plans').select('*').eq('code', order.plan_code).maybeSingle(); planRow = pl; }
+  showTemplate('tpl-payment');
+  const scope = $('#route-outlet');
   const payTitle = isSubOrder ? `${t('sub.payTitle')} · ${planRow ? (state.lang==='kh'?planRow.name_kh:planRow.name_en) : String(order.plan_code||'').toUpperCase()}` : (order.books?.title||'');
   bindData(scope,'bookTitle',payTitle);
   bindData(scope,'amount',fmtMoney(order.amount,order.currency));
