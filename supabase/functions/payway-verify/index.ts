@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
 
     const { data: order } = await sb
       .from("orders")
-      .select("id, user_id, book_id, status, amount, currency, books(title)")
+      .select("id, user_id, book_id, kind, plan_code, status, amount, currency, books(title)")
       .eq("id", tx.order_id)
       .maybeSingle();
     if (!order) return json({ error: "Order not found" }, 404);
@@ -128,10 +128,15 @@ Deno.serve(async (req) => {
       return json({ error: "Could not approve order" }, 500);
     }
 
-    await sb.from("user_library").upsert(
-      { user_id: order.user_id, book_id: order.book_id, access_status: "active" },
-      { onConflict: "user_id,book_id" },
-    );
+    if (order.kind === "subscription") {
+      const { error: gErr } = await sb.rpc("grant_subscription_for_order", { p_order_id: order.id });
+      if (gErr) console.error("grant_subscription_for_order failed:", gErr);
+    } else if (order.book_id) {
+      await sb.from("user_library").upsert(
+        { user_id: order.user_id, book_id: order.book_id, access_status: "active" },
+        { onConflict: "user_id,book_id" },
+      );
+    }
     await sb.from("payway_transactions")
       .update({ status: "approved", apv: apv || null, verified_at: nowIso })
       .eq("tran_id", tranId);

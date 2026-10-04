@@ -20,7 +20,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const VERSION = "2026-10-04-shopify-4-product";
+const VERSION = "2026-10-05-shopify-5-subs";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -59,7 +59,7 @@ Deno.serve(async (req) => {
     const orderId = body?.order_id;
     if (!orderId) return json({ error: "order_id required" }, 400);
     const { data: order } = await sb.from("orders")
-      .select("id, user_id, book_id, amount, currency, status, shopify_checkout_url, shopify_draft_order_id, books(id, title, creator, cover_url, shopify_product_id, shopify_variant_id, shopify_synced_price)")
+      .select("id, user_id, book_id, kind, plan_code, amount, currency, status, shopify_checkout_url, shopify_draft_order_id, books(id, title, creator, cover_url, shopify_product_id, shopify_variant_id, shopify_synced_price)")
       .eq("id", orderId).maybeSingle();
     if (!order) return json({ error: "Order not found" }, 404);
     if (order.user_id !== profile.id) return json({ error: "Not your order" }, 403);
@@ -73,7 +73,16 @@ Deno.serve(async (req) => {
     const orderCurrency = String(order.currency || "USD").toUpperCase();
     const orderAmount = Number(order.amount);
     if (!(orderAmount > 0)) return json({ error: "Invalid amount" }, 400);
-    const bookTitle = String((order as any).books?.title ?? "KhozyReads Book");
+    const isSub = (order as any).kind === "subscription";
+    let plan: any = null;
+    if (isSub) {
+      const { data: p } = await sb.from("subscription_plans").select("*").eq("code", (order as any).plan_code).maybeSingle();
+      if (!p) return json({ error: "Plan not found" }, 404);
+      plan = p;
+    }
+    const bookTitle = isSub
+      ? `KhozyReads ${plan.name_en} Pass (${plan.duration_days} day${plan.duration_days > 1 ? "s" : ""})`
+      : String((order as any).books?.title ?? "KhozyReads Book");
 
     // ---- Shopify Admin token (client credentials) ----
     const accessToken = await getAdminToken(shop, clientId, clientSecret);
@@ -108,13 +117,13 @@ Deno.serve(async (req) => {
       catch (e) { console.warn("ensureWebhook failed (non-blocking):", e); }
     }
 
-    // ---- Ensure a Shopify product exists for this book (cover + clean title in checkout) ----
-    const book: any = (order as any).books || {};
+    // ---- Ensure a Shopify product exists (book: cover + title; plan: pass product) ----
     let variantId: string | null = null;
     try {
-      variantId = await ensureBookProduct(sb, gql, book, chargeStr, storeCurrency);
+      if (isSub) variantId = await ensurePlanProduct(sb, gql, plan, chargeStr, storeCurrency, siteLogoUrl());
+      else variantId = await ensureBookProduct(sb, gql, (order as any).books || {}, chargeStr, storeCurrency);
     } catch (e) {
-      console.warn("ensureBookProduct failed; falling back to custom line item:", e);
+      console.warn("ensure product failed; falling back to custom line item:", e);
     }
 
     // ---- Create draft order ----
@@ -134,7 +143,9 @@ Deno.serve(async (req) => {
       customAttributes: [
         { key: "khozy_order_id", value: order.id },
         { key: "khozy_user", value: profile.username ?? "" },
-        { key: "khozy_book_id", value: order.book_id },
+        { key: "khozy_book_id", value: order.book_id ?? "" },
+        { key: "khozy_kind", value: isSub ? "subscription" : "book" },
+        { key: "khozy_plan", value: isSub ? String(plan.code) : "" },
         { key: "khozy_amount", value: `${orderAmount} ${orderCurrency}` },
       ],
     };
@@ -174,6 +185,8 @@ Deno.serve(async (req) => {
       shopify_checkout_url: draft.invoiceUrl,
       payment_method: "ABA PayWay via Shopify (KHQR)",
     }).eq("id", order.id);
+    // sanity: tags differ for passes
+    void isSub;
 
     await sb.from("activity_logs").insert({
       action: "order.checkout_created", actor_user_id: profile.id, actor_username: profile.username,
@@ -262,6 +275,43 @@ async function ensureBookProduct(sb: any, gql: (q: string, v: Record<string, unk
     const errs = r?.data?.productVariantsBulkUpdate?.userErrors ?? [];
     if (errs.length) throw new Error("productVariantsBulkUpdate: " + JSON.stringify(errs));
     await sb.from("books").update({ shopify_synced_price: syncedPrice }).eq("id", book.id);
+  }
+  return variantId;
+}
+
+function siteLogoUrl(): string {
+  return (Deno.env.get("SITE_LOGO_URL") ?? "https://khozyreads.com/icon-512.png").trim();
+}
+
+// Create (once) a Shopify product for a subscription plan; keep price in sync.
+async function ensurePlanProduct(sb: any, gql: (q: string, v: Record<string, unknown>) => Promise<any>, plan: any, priceStr: string, currency: string, logoUrl: string): Promise<string | null> {
+  let productId: string | null = plan.shopify_product_id || null;
+  let variantId: string | null = plan.shopify_variant_id || null;
+  const syncedPrice = `${priceStr} ${currency}`;
+  if (!productId || !variantId) {
+    const createM = `mutation PC($input: ProductInput!, $media: [CreateMediaInput!]) {
+      productCreate(input: $input, media: $media) { product { id variants(first: 1) { nodes { id } } } userErrors { field message } }
+    }`;
+    const title = `KhozyReads ${plan.name_en} Pass — read all books for ${plan.duration_days} day${plan.duration_days > 1 ? "s" : ""}`;
+    const input = { title, vendor: "KhozyReads", productType: "Reading Pass", status: "ACTIVE", tags: ["khozyreads", "subscription", String(plan.code)],
+      descriptionHtml: `<p>Unlimited reading of all paid books on <a href="https://khozyreads.com">KhozyReads</a> for ${plan.duration_days} day(s). Activated instantly after payment. No auto-renewal.</p>` };
+    const media = logoUrl ? [{ originalSource: logoUrl, mediaContentType: "IMAGE", alt: title }] : [];
+    const r = await gql(createM, { input, media });
+    const errs = r?.data?.productCreate?.userErrors ?? [];
+    const p = r?.data?.productCreate?.product;
+    if (errs.length || !p?.id) throw new Error("productCreate(plan): " + JSON.stringify(errs));
+    productId = p.id; variantId = p.variants?.nodes?.[0]?.id ?? null;
+    if (!variantId) throw new Error("productCreate(plan): no default variant");
+    await sb.from("subscription_plans").update({ shopify_product_id: productId, shopify_variant_id: variantId, shopify_synced_price: null }).eq("code", plan.code);
+  }
+  if (plan.shopify_synced_price !== syncedPrice) {
+    const upd = `mutation PV($productId: ID!, $variants: [ProductVariantsBulkInput!]!) {
+      productVariantsBulkUpdate(productId: $productId, variants: $variants) { userErrors { field message } }
+    }`;
+    const r = await gql(upd, { productId, variants: [{ id: variantId, price: priceStr, taxable: false, inventoryItem: { tracked: false, requiresShipping: false } }] });
+    const errs = r?.data?.productVariantsBulkUpdate?.userErrors ?? [];
+    if (errs.length) throw new Error("productVariantsBulkUpdate(plan): " + JSON.stringify(errs));
+    await sb.from("subscription_plans").update({ shopify_synced_price: syncedPrice }).eq("code", plan.code);
   }
   return variantId;
 }

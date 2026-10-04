@@ -321,6 +321,21 @@ details.row-details .detail-body{margin-top:8px;padding:12px;background:var(--bg
 </section>
 </template>
 
+<template id="tpl-plans">
+<section>
+  <div class="page-head"><div><h1>Reading Pass</h1><p class="page-sub">Subscription plans — one pass unlocks every paid book. No auto-renewal: when a pass expires the reader pays again.</p></div></div>
+  <div id="plans-msg"></div>
+  <div class="panel">
+    <div class="panel-head"><div><h2>Plans</h2><div class="meta">Edit the price, then click Save on that row. Inactive plans are hidden from readers.</div></div></div>
+    <div class="panel-body"><table class="table"><thead><tr><th>Plan</th><th>Khmer name</th><th>Duration</th><th>Price</th><th>Currency</th><th>Active</th><th></th></tr></thead><tbody id="plans-body"></tbody></table></div>
+  </div>
+  <div class="panel" style="margin-top:18px">
+    <div class="panel-head"><div><h2>Active &amp; recent passes</h2><div class="meta" id="subs-meta">—</div></div></div>
+    <div class="panel-body"><table class="table"><thead><tr><th>Reader</th><th>Plan</th><th>Starts</th><th>Ends</th><th>Status</th></tr></thead><tbody id="subs-body"></tbody></table></div>
+  </div>
+</section>
+</template>
+
 <template id="tpl-promos">
 <section class="route">
   <div class="page-head"><div><div class="eyebrow">Marketing</div><h1>Promo Codes</h1></div></div>
@@ -666,7 +681,7 @@ function renderTopNav(){
   if(!state.user || state.profile?.role!=='admin'){ nav.innerHTML=''; userNav.innerHTML=''; return; }
   const cur = (location.hash.replace(/^#\/?/,'').split('/')[0])||'dashboard';
   const link = (h,label)=>`<a class="nav-link ${cur===h?'active':''}" href="#/${h}" data-route="${h}">${label}</a>`;
-  nav.innerHTML = link('dashboard','Dashboard')+link('books','Books')+link('orders','Orders')+link('users','Users')+link('promos','Promos')+link('broadcast','Broadcast')+link('settings','Settings')+link('logs','Logs');
+  nav.innerHTML = link('dashboard','Dashboard')+link('books','Books')+link('orders','Orders')+link('users','Users')+link('promos','Promos')+link('plans','Reading Pass')+link('broadcast','Broadcast')+link('settings','Settings')+link('logs','Logs');
   const u = state.profile.username||'';
   userNav.innerHTML = `<span class="user-chip"><span class="avatar">${esc(u.charAt(0).toUpperCase()||'A')}</span>@${esc(u)}</span><a class="btn btn-ghost btn-sm" href="#" id="logout-btn">Logout</a>`;
   $('#logout-btn').onclick = e=>{ e.preventDefault(); doLogout(); };
@@ -692,7 +707,7 @@ function route(){
   _spinnerTimer = setTimeout(()=>{ if(!isStale()) $('#route-outlet').innerHTML=`<div class="center" style="padding:80px"><span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span></div>`; }, 150);
   const hash = location.hash.replace(/^#\/?/,'');
   const [page] = hash.split('/');
-  const handlers = {'':renderDashboard, 'dashboard':renderDashboard, 'books':renderBooks, 'orders':renderOrders, 'users':renderUsers, 'promos':renderPromos, 'broadcast':renderBroadcast, 'settings':renderSettings, 'logs':renderLogs, 'login':renderLogin};
+  const handlers = {'':renderDashboard, 'dashboard':renderDashboard, 'books':renderBooks, 'orders':renderOrders, 'users':renderUsers, 'promos':renderPromos, 'plans':renderPlans, 'broadcast':renderBroadcast, 'settings':renderSettings, 'logs':renderLogs, 'login':renderLogin};
   const h = handlers[page] || renderDashboard;
   Promise.resolve(h()).catch(err=>{ if(isStale()) return; console.error(err); $('#route-outlet').innerHTML=`<div>${alertBox(err.message||String(err))}</div>`; }).finally(()=>{ if(_spinnerTimer){clearTimeout(_spinnerTimer);_spinnerTimer=null;} renderTopNav(); window.scrollTo(0,0); });
 }
@@ -734,7 +749,7 @@ async function renderDashboard(){
   $('#s-pending').textContent = pendingCount||0;
   $('#s-approved').textContent = approvedCount||0;
   $('#s-users').textContent = userCount||0;
-  $('#recent-body').innerHTML = (recent||[]).map(o=>`<tr><td class="cell-mono">${esc(fmtDateShort(o.created_at))}</td><td><strong>@${esc(o.username||'-')}</strong></td><td><div class="cell-title">${esc(o.book_title||'-')}</div></td><td>${fmtMoney(o.amount,o.currency)}</td><td><span class="badge b-${o.status}"><span class="dot"></span>${esc(o.status)}</span></td></tr>`).join('') || `<tr><td colspan="5" class="empty">No orders yet</td></tr>`;
+  $('#recent-body').innerHTML = (recent||[]).map(o=>`<tr><td class="cell-mono">${esc(fmtDateShort(o.created_at))}</td><td><strong>@${esc(o.username||'-')}</strong></td><td><div class="cell-title">${o.kind==='subscription' ? `🎫 Pass · ${esc(String(o.plan_code||'').toUpperCase())}` : esc(o.book_title||'-')}</div></td><td>${fmtMoney(o.amount,o.currency)}</td><td><span class="badge b-${o.status}"><span class="dot"></span>${esc(o.status)}</span></td></tr>`).join('') || `<tr><td colspan="5" class="empty">No orders yet</td></tr>`;
 }
 
 async function renderBooks(){
@@ -901,7 +916,7 @@ async function renderOrders(){
     const promoCell = o.promo_code
       ? `<div><span class="tag" style="background:var(--accent,#d4a373);color:#fff;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">${esc(o.promo_code)}</span> <span class="muted" style="font-size:11px">-${o.promo_discount_percent}%</span></div>${o.promo_notes?`<div style="font-size:11px;color:var(--muted);margin-top:4px;font-style:italic">${esc(o.promo_notes)}</div>`:''}`
       : '<span class="muted">—</span>';
-    return `<tr><td class="cell-mono">${esc(fmtDateShort(o.created_at))}</td><td><strong>@${esc(o.username||'-')}</strong></td><td><div class="cell-title">${esc(o.book_title||'-')}</div><div style="font-size:12px;color:var(--muted)">Order <span class="tag">${esc(o.order_id.slice(0,8))}</span></div></td><td>${amountCell}</td><td>${promoCell}</td><td>${o.proof_url?`<a href="${esc(o.proof_url)}" target="_blank" rel="noopener">View receipt</a>`:'<span class="muted">—</span>'}</td><td><span class="badge b-${o.status}"><span class="dot"></span>${esc(o.status)}</span>${o.reject_reason?`<div style="font-size:11px;color:var(--muted);margin-top:4px">${esc(o.reject_reason)}</div>`:''}</td><td>${o.status==='pending'?`<div style="display:flex;gap:6px"><button class="btn btn-success btn-sm" data-approve="${o.order_id}">Approve</button><button class="btn btn-danger btn-sm" data-reject="${o.order_id}">Reject</button></div>`:''}</td></tr>`;
+    return `<tr><td class="cell-mono">${esc(fmtDateShort(o.created_at))}</td><td><strong>@${esc(o.username||'-')}</strong></td><td><div class="cell-title">${o.kind==='subscription' ? `🎫 Reading Pass · ${esc(String(o.plan_code||'').toUpperCase())}` : esc(o.book_title||'-')}</div><div style="font-size:12px;color:var(--muted)">Order <span class="tag">${esc(o.order_id.slice(0,8))}</span>${o.payment_method?` · ${esc(o.payment_method)}`:''}</div></td><td>${amountCell}</td><td>${promoCell}</td><td>${o.proof_url?`<a href="${esc(o.proof_url)}" target="_blank" rel="noopener">View receipt</a>`:'<span class="muted">—</span>'}</td><td><span class="badge b-${o.status}"><span class="dot"></span>${esc(o.status)}</span>${o.reject_reason?`<div style="font-size:11px;color:var(--muted);margin-top:4px">${esc(o.reject_reason)}</div>`:''}</td><td>${o.status==='pending'?`<div style="display:flex;gap:6px"><button class="btn btn-success btn-sm" data-approve="${o.order_id}">Approve</button><button class="btn btn-danger btn-sm" data-reject="${o.order_id}">Reject</button></div>`:''}</td></tr>`;
   }).join('') || `<tr><td colspan="8" class="empty">No ${filter} orders</td></tr>`;
   $$('[data-approve]').forEach(b=>b.onclick=async ()=>{
     if(!confirm('Approve this order? Buyer will get access to the book.')) return;
@@ -1084,6 +1099,41 @@ async function renderUsers(){
 
 function fmtMoneyAdmin(n){ return '$' + (Number(n)||0).toFixed(2); }
 function fmtDateAdmin(d){ if(!d) return '—'; try{ return new Date(d).toLocaleDateString(); }catch(_){ return '—'; } }
+
+async function renderPlans(){
+  showTemplate('tpl-plans');
+  const msg = $('#plans-msg');
+  const { data:plans, error } = await sb.from('subscription_plans').select('*').order('sort_order');
+  if(error){ msg.innerHTML = alertBox(error.message); return; }
+  $('#plans-body').innerHTML = (plans||[]).map(p=>`<tr data-code="${esc(p.code)}">
+    <td><strong>${esc(p.name_en)}</strong><div style="font-size:11px;color:var(--muted)">${esc(p.code)}</div></td>
+    <td>${esc(p.name_kh)}</td>
+    <td>${p.duration_days} day${p.duration_days>1?'s':''}</td>
+    <td><input class="input" type="number" min="1" step="1" name="price" value="${Number(p.price)}" style="width:130px"/></td>
+    <td><select class="input" name="currency" style="width:90px"><option ${p.currency==='KHR'?'selected':''}>KHR</option><option ${p.currency==='USD'?'selected':''}>USD</option></select></td>
+    <td><label><input type="checkbox" name="is_active" ${p.is_active?'checked':''} style="width:auto"/> Active</label></td>
+    <td><button class="btn btn-primary btn-sm" data-save="${esc(p.code)}">Save</button></td>
+  </tr>`).join('');
+  $$('[data-save]').forEach(b=>b.onclick=async ()=>{
+    const tr = b.closest('tr'); b.disabled = true;
+    const payload = { price: Number(tr.querySelector('[name=price]').value), currency: tr.querySelector('[name=currency]').value, is_active: tr.querySelector('[name=is_active]').checked, updated_at: new Date().toISOString() };
+    if(!(payload.price > 0)){ msg.innerHTML = alertBox('Price must be greater than 0'); b.disabled=false; return; }
+    if(payload.currency==='KHR' && payload.price < 100){ msg.innerHTML = alertBox('KHR price must be at least 100'); b.disabled=false; return; }
+    const { error:uErr } = await sb.from('subscription_plans').update(payload).eq('code', b.dataset.save);
+    msg.innerHTML = uErr ? alertBox(uErr.message) : `<div class="notice success">✅ ${esc(b.dataset.save)} saved. Shopify price syncs automatically on the next checkout.</div>`;
+    b.disabled = false;
+  });
+  // Subscribers
+  const { data:subs } = await sb.from('subscriptions').select('plan_code,starts_at,ends_at,users_profile(username,display_name)').order('ends_at',{ascending:false}).limit(100);
+  const now = Date.now();
+  const active = (subs||[]).filter(x=>new Date(x.ends_at).getTime() > now).length;
+  $('#subs-meta').textContent = `${active} active · ${(subs||[]).length} shown`;
+  $('#subs-body').innerHTML = (subs||[]).map(x=>{
+    const isActive = new Date(x.ends_at).getTime() > now;
+    const u = x.users_profile||{};
+    return `<tr><td><strong>@${esc(u.username||'-')}</strong>${u.display_name?`<div style="font-size:12px;color:var(--muted)">${esc(u.display_name)}</div>`:''}</td><td>${esc(x.plan_code)}</td><td class="cell-mono">${esc(fmtDateShort(x.starts_at))}</td><td class="cell-mono">${esc(fmtDateShort(x.ends_at))}</td><td><span class="badge ${isActive?'b-active':'b-archived'}"><span class="dot"></span>${isActive?'active':'expired'}</span></td></tr>`;
+  }).join('') || `<tr><td colspan="5" class="empty">No passes yet</td></tr>`;
+}
 
 async function renderPromos(){
   showTemplate('tpl-promos');

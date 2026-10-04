@@ -77,7 +77,10 @@ Deno.serve(async (req) => {
       .eq("book_id", bookId)
       .eq("access_status", "active")
       .maybeSingle();
-    if (!lib) return json({ error: "No access to this book" }, 403);
+    if (!lib) {
+      const { data: hasSub } = await sb.rpc("has_active_subscription", { p_user_id: profile.id });
+      if (!hasSub) return json({ error: "No access to this book" }, 403);
+    }
   }
 
   // Generate signed URL

@@ -17,7 +17,7 @@
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
 
-const VERSION = "2026-10-04-shopify-1";
+const VERSION = "2026-10-05-shopify-2-subs";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-shopify-hmac-sha256, x-shopify-topic, x-shopify-shop-domain",
@@ -87,10 +87,11 @@ Deno.serve(async (req) => {
 // ---- approve (mirrors payway-verify) ----
 async function approveOrder(sb: any, orderId: string, info: { shopifyOrderId: string; shopifyOrderName: string; payload: any }) {
   const { data: order } = await sb.from("orders")
-    .select("id, user_id, book_id, status, amount, currency, books(title)")
+    .select("id, user_id, book_id, kind, plan_code, status, amount, currency, books(title)")
     .eq("id", orderId).maybeSingle();
   if (!order) return { approved: false, reason: "order not found" };
   if (order.status === "approved") return { approved: true, already: true };
+  const isSub = order.kind === "subscription";
 
   const nowIso = new Date().toISOString();
   const { error: updErr } = await sb.from("orders").update({
@@ -100,7 +101,14 @@ async function approveOrder(sb: any, orderId: string, info: { shopifyOrderId: st
   }).eq("id", order.id).eq("status", "pending");
   if (updErr) { console.error("order update failed:", updErr); return { approved: false, reason: updErr.message }; }
 
-  await sb.from("user_library").upsert({ user_id: order.user_id, book_id: order.book_id, access_status: "active" }, { onConflict: "user_id,book_id" });
+  let endsAt: string | null = null;
+  if (isSub) {
+    const { data: e, error: gErr } = await sb.rpc("grant_subscription_for_order", { p_order_id: order.id });
+    if (gErr) console.error("grant_subscription_for_order failed:", gErr);
+    endsAt = e ?? null;
+  } else if (order.book_id) {
+    await sb.from("user_library").upsert({ user_id: order.user_id, book_id: order.book_id, access_status: "active" }, { onConflict: "user_id,book_id" });
+  }
   await sb.from("payment_approval_logs").insert({
     order_id: order.id, action: "approved", action_by: "Shopify / ABA PayWay", action_source: "shopify",
     remark: info.shopifyOrderName ? `Shopify ${info.shopifyOrderName}` : null,
@@ -108,22 +116,26 @@ async function approveOrder(sb: any, orderId: string, info: { shopifyOrderId: st
   const gateway = info.payload?.payment_gateway_names?.join(", ") ?? "";
   await sb.from("activity_logs").insert({
     action: "order.approved", actor_user_id: order.user_id, actor_username: "shopify", target_type: "order", target_id: order.id,
-    details: { source: "shopify", shopify_order: info.shopifyOrderName, shopify_order_id: info.shopifyOrderId, gateway, amount: order.amount, currency: order.currency },
+    details: { source: "shopify", shopify_order: info.shopifyOrderName, shopify_order_id: info.shopifyOrderId, gateway, amount: order.amount, currency: order.currency, kind: order.kind, plan_code: order.plan_code, ends_at: endsAt },
   });
 
-  notifyTelegram(sb, order, info.shopifyOrderName).catch((e) => console.warn("telegram notify failed:", e));
-  return { approved: true };
+  notifyTelegram(sb, order, info.shopifyOrderName, endsAt).catch((e) => console.warn("telegram notify failed:", e));
+  return { approved: true, ends_at: endsAt };
 }
 
-async function notifyTelegram(sb: any, order: any, ref: string) {
-  const bookTitle = order?.books?.title ?? "Book";
+async function notifyTelegram(sb: any, order: any, ref: string, endsAt: string | null) {
+  const isSub = order.kind === "subscription";
+  const until = endsAt ? new Date(endsAt).toLocaleString("en-GB", { timeZone: "Asia/Phnom_Penh", dateStyle: "medium", timeStyle: "short" }) : "";
+  const bookTitle = isSub ? `${String(order.plan_code).toUpperCase()} reading pass${until ? ` · until ${until}` : ""}` : (order?.books?.title ?? "Book");
   const amount = `${order.amount} ${order.currency}`;
   const loginBot = Deno.env.get("TELEGRAM_LOGIN_BOT_TOKEN") ?? Deno.env.get("TELEGRAM_BOT_TOKEN");
   const adminBot = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? loginBot;
   if (loginBot) {
     const { data: buyer } = await sb.from("users_profile").select("telegram_id").eq("id", order.user_id).maybeSingle();
     if (buyer?.telegram_id) await tgSend(loginBot, String(buyer.telegram_id),
-      `✅ ការទូទាត់ជោគជ័យ / Payment successful\n\n📖 ${bookTitle}\n💵 ${amount}\n\nសៀវភៅរបស់អ្នកមាននៅក្នុង My Library ហើយ។\nYour book is now in My Library. Happy reading!`);
+      isSub
+        ? `✅ ការទូទាត់ជោគជ័យ / Payment successful\n\n🎫 ${bookTitle}\n💵 ${amount}\n\nអ្នកអាចអានសៀវភៅទាំងអស់បានហើយ។\nYou can now read all books on KhozyReads. Happy reading!`
+        : `✅ ការទូទាត់ជោគជ័យ / Payment successful\n\n📖 ${bookTitle}\n💵 ${amount}\n\nសៀវភៅរបស់អ្នកមាននៅក្នុង My Library ហើយ។\nYour book is now in My Library. Happy reading!`);
   }
   if (adminBot) {
     const { data: s } = await sb.from("site_settings").select("setting_value").eq("setting_key", "telegram_admin_chat_id").maybeSingle();

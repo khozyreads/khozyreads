@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
     // ---- Load order (must be buyer's own, still pending) ----
     const { data: order, error: orderErr } = await sb
       .from("orders")
-      .select("id, user_id, book_id, amount, currency, status, books(title)")
+      .select("id, user_id, book_id, kind, plan_code, amount, currency, status, books(title)")
       .eq("id", orderId)
       .maybeSingle();
     if (orderErr || !order) return json({ error: "Order not found" }, 404);
@@ -93,7 +93,9 @@ Deno.serve(async (req) => {
     const tranId = `KR${Date.now().toString(36).toUpperCase()}${randBase36(4)}`;
 
     // ---- Build request fields (empty string for unused hash fields) ----
-    const bookTitle = String((order as any).books?.title ?? "KhozyReads Book");
+    const bookTitle = (order as any).kind === "subscription"
+      ? `KhozyReads ${String((order as any).plan_code ?? "").toUpperCase()} reading pass`
+      : String((order as any).books?.title ?? "KhozyReads Book");
     const reqTime = utcReqTime();
     const items = b64utf8(JSON.stringify([{ name: bookTitle.slice(0, 80), quantity: 1, price: Number(amountStr) }]));
     const returnUrl = b64utf8(`${url}/functions/v1/payway-verify`);

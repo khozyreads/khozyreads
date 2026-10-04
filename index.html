@@ -530,6 +530,33 @@ html[lang="km"] .reader-disclaimer{font-family:var(--font-khmer);letter-spacing:
 .reader-sepia{--bg:#E8D9B5;--bg-elevated:#F0E4C8;--bg-deep:#DCC89C;--fg:#4A3520;--fg-soft:#6B4E2E;--muted:#8B6F4A;--border:#C9B98E;--border-strong:#B09872;--primary:#7B2D26}
 .reader-sepia .reader-page{background:var(--bg-elevated);color:var(--fg)}
 
+/* ── Reading pass (subscription) ── */
+.nav-pass{color:var(--primary);font-weight:600}
+.sub-banner{margin:0 auto 10px;max-width:860px}
+.sub-banner-inner{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:14px;border:1px solid var(--border);background:var(--bg-elevated);flex-wrap:wrap}
+.sub-banner-inner.active{border-color:rgba(45,106,79,.35);background:linear-gradient(180deg,rgba(45,106,79,.07),rgba(45,106,79,.02))}
+.sub-banner-inner.expired{border-color:rgba(230,57,70,.35);background:linear-gradient(180deg,rgba(230,57,70,.07),rgba(230,57,70,.02))}
+.sub-banner-inner .sub-ic{font-size:26px;line-height:1}
+.sub-banner-inner .sub-text{flex:1;min-width:200px;display:flex;flex-direction:column;gap:3px}
+.sub-banner-inner .sub-text strong{font-size:15px;color:var(--fg)}
+.sub-banner-inner .sub-text small{font-size:12.5px;color:var(--muted)}
+html[lang="km"] .sub-banner-inner{font-family:var(--font-khmer)}
+.plan-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:8px}
+@media (max-width:960px){.plan-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:480px){.plan-grid{grid-template-columns:1fr}}
+.plan-card{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:28px 18px 22px;background:var(--bg-elevated);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow-sm);transition:transform .2s,box-shadow .2s}
+.plan-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.plan-card.is-popular{border-color:var(--primary);box-shadow:0 14px 34px rgba(123,45,38,.18)}
+.plan-tag{position:absolute;top:-11px;left:50%;transform:translateX(-50%);padding:4px 12px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#fff;white-space:nowrap}
+.plan-tag.pop{background:var(--primary)}.plan-tag.best{background:#2D6A4F}
+html[lang="km"] .plan-tag{font-family:var(--font-khmer);letter-spacing:.02em;text-transform:none;font-size:12px}
+.plan-name{font-family:var(--font-display);font-size:20px;font-weight:600;color:var(--fg)}
+html[lang="km"] .plan-name{font-family:var(--font-khmer);font-size:18px}
+.plan-price{font-family:var(--font-display);font-size:30px;color:var(--primary);font-weight:600;line-height:1.1}
+.plan-sub{font-size:12.5px}
+.plan-card .plan-btn{margin-top:8px;width:100%}
+.sub-notes{margin-top:34px;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media (max-width:860px){.sub-notes{grid-template-columns:1fr}}
 /* ── Customer-service widget: cute CS avatar → pick Telegram / Facebook ── */
 #cs-widget{position:fixed;right:24px;bottom:24px;z-index:40;display:none;flex-direction:column;align-items:flex-end;gap:12px}
 #cs-widget.show{display:flex}
@@ -800,6 +827,7 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       <nav class="header-nav">
         <a class="nav-link" href="#/" data-i18n="nav.store">ហាង</a>
         <a class="nav-link" href="#/library" data-i18n="nav.library">បណ្ណាល័យរបស់ខ្ញុំ</a>
+        <a class="nav-link nav-pass" href="#/subscribe"><span data-i18n="nav.subscribe">កាតអាន</span></a>
         <span id="lang-switcher" role="group" aria-label="Language">
           <button class="km" data-lang="kh">ខ្មែរ</button>
           <button data-lang="en">EN</button>
@@ -1000,6 +1028,27 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
 </section>
 </template>
 
+<template id="tpl-subscribe">
+<section class="route">
+  <div class="container">
+    <div class="hero" style="padding:56px 0 24px">
+      <svg class="hero-orn-top"><use href="#orn-crest"/></svg>
+      <div class="eyebrow" data-i18n="sub.eyebrow">កាតអាន · KHOZYREADS PASS</div>
+      <h1 class="display display-2" data-i18n="sub.title">អានសៀវភៅទាំងអស់ ក្នុងតម្លៃតែមួយ</h1>
+      <p class="lede" data-i18n="sub.lede">ជ្រើសរើសរយៈពេល បង់ដោយ KHQR ហើយអានសៀវភៅបង់ប្រាក់ទាំងអស់បានភ្លាមៗ។ គ្មានការកាត់ប្រាក់ដោយស្វ័យប្រវត្តិ — ផុតកំណត់ហើយ អ្នកសម្រេចថាបន្តឬអត់។</p>
+    </div>
+    <div id="sub-current" class="sub-banner" style="display:none;margin-bottom:22px"></div>
+    <div id="plan-grid" class="plan-grid"></div>
+    <div id="sub-msg" style="margin-top:16px"></div>
+    <div class="sub-notes">
+      <div class="step"><div class="n">១</div><div><h4 data-i18n="sub.n1h">ជ្រើសរើសកញ្ចប់</h4><p data-i18n="sub.n1b">ប្រចាំថ្ងៃ សប្តាហ៍ ខែ ឬឆ្នាំ — ចាប់ផ្តើមតាមតម្លៃសមរម្យ។</p></div></div>
+      <div class="step"><div class="n">២</div><div><h4 data-i18n="sub.n2h">បង់ដោយ KHQR</h4><p data-i18n="sub.n2b">ABA PAY ឬកម្មវិធីធនាគារណាមួយដែលគាំទ្រ KHQR។ ផ្ទៀងផ្ទាត់ដោយស្វ័យប្រវត្តិ។</p></div></div>
+      <div class="step"><div class="n">៣</div><div><h4 data-i18n="sub.n3h">អានគ្រប់សៀវភៅ</h4><p data-i18n="sub.n3b">សៀវភៅបង់ប្រាក់ទាំងអស់បើកភ្លាមៗ រហូតដល់ថ្ងៃផុតកំណត់។ ផុតកំណត់ហើយ គ្រាន់តែបង់ម្ដងទៀតដើម្បីបន្ត។</p></div></div>
+    </div>
+  </div>
+</section>
+</template>
+
 <template id="tpl-library">
 <section class="route">
   <div class="container">
@@ -1009,6 +1058,7 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       <h1 class="display display-2" data-i18n="lib.title">បណ្ណាល័យរបស់ខ្ញុំ</h1>
       <p class="lede" data-i18n="lib.lede">សៀវភៅទាំងអស់ដែលអ្នកបានទិញ — រួចរាល់ចាប់ផ្តើមអាន។</p>
     </div>
+    <div id="sub-banner" class="sub-banner" style="display:none"></div>
     <div class="lib-tabs" style="display:flex;gap:8px;justify-content:center;margin-bottom:24px;border-bottom:1px solid var(--border)">
       <button class="lib-tab active" data-tab="books" style="background:none;border:0;padding:12px 20px;cursor:pointer;font-size:15px;color:var(--fg);border-bottom:2px solid transparent;transition:all .2s"><span data-i18n="lib.tab.books">My Books</span> <span class="muted" id="lib-count-books"></span></button>
       <button class="lib-tab" data-tab="favs" style="background:none;border:0;padding:12px 20px;cursor:pointer;font-size:15px;color:var(--muted);border-bottom:2px solid transparent;transition:all .2s"><span data-i18n="lib.tab.favs">Favorites</span> <span class="muted" id="lib-count-favs"></span></button>
@@ -1286,7 +1336,7 @@ const I18N = {
     'trust.fast':'ចូលជាមួយ Telegram (1-tap)','trust.pay':'ការទូទាត់សុវត្ថិភាព ABA / KHQR','trust.instant':'ចូលប្រើភ្លាមៗ',
     'home.all.eyebrow':'បណ្តុំសៀវភៅទាំងអស់','home.all.h':'ហាងសៀវភៅឌីជីថល','home.all.sort':'តម្រៀបតាម · ថ្មីបំផុត','home.empty':'មិនទាន់មានសៀវភៅទេ','home.search':'ស្វែងរកសៀវភៅ ឬអ្នកនិពន្ធ...',
     'detail.eyebrow':'សៀវភៅ · ឆ្នាំ ២០២៦','detail.by':'និពន្ធដោយ','detail.priceNote':'តម្លៃតែម្តង · កាន់កាប់រហូត','detail.synopsis':'ដំណើររឿងសង្ខេប',
-    'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់ការទូទាត់...','cta.pendingHint':'ចុចដើម្បីបង្ហោះវិក្កយបត្រឡើងវិញ','cta.pendingNote':'រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។ មិនអាចទិញម្តងទៀតបានទេនៅពេលនេះ។','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន','badge.comingSoon':'ឆាប់ៗនេះ','cta.comingSoon':'ឆាប់ៗនេះ — សូមរង់ចាំ!','cs.badge':'ជំនួយ','cs.title':'សួស្តី! ត្រូវការជំនួយទេ?','cs.sub':'ជ្រើសរើសកន្លែងដែលអ្នកចង់ជជែក','cs.tgSub':'ឆ្លើយតបលឿនបំផុត','cs.fbSub':'Messenger · ទំព័រហ្វេសប៊ុក','cta.continuePay':'បន្តការទូទាត់','cta.continuePayNote':'អ្នកបានចាប់ផ្តើមទិញសៀវភៅនេះ។ ចុចដើម្បីបង់ប្រាក់ដោយ KHQR ហើយអានភ្លាមៗ។','reader.bgAudio':'តន្ត្រីផ្ទៃខាងក្រោយ','reader.voice':'សំឡេងអាន','reader.tapToPlay':'ចុចដើម្បីចាក់តន្ត្រី',
+    'cta.buy':'ទិញឥឡូវ','cta.buyAgain':'ទិញម្ដងទៀត','cta.read':'អានសៀវភៅ','cta.pending':'កំពុងផ្ទៀងផ្ទាត់ការទូទាត់...','cta.pendingHint':'ចុចដើម្បីបង្ហោះវិក្កយបត្រឡើងវិញ','cta.pendingNote':'រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។ មិនអាចទិញម្តងទៀតបានទេនៅពេលនេះ។','cta.loginToBuy':'ចូលដើម្បីទិញ','cta.disabled':'ការទិញត្រូវបានបិទ','cta.readFree':'អានឥតគិតថ្លៃ','cta.loginToRead':'ចូលដើម្បីអាន','badge.comingSoon':'ឆាប់ៗនេះ','cta.comingSoon':'ឆាប់ៗនេះ — សូមរង់ចាំ!','cta.subscribe':'ទទួលយកកាតអាន (Pass)','cta.renew':'បន្តកាតអាន','cta.loginToSubscribe':'ចូលដើម្បីអាន','cta.subscribeNote':'សៀវភៅនេះរួមបញ្ចូលក្នុង KhozyReads Pass — កាតមួយ អានបានគ្រប់សៀវភៅ។','cta.renewNote':'កាតអានរបស់អ្នកបានផុតកំណត់។ បង់ម្ដងទៀតដើម្បីបន្តអាន។','detail.passPrice':'KhozyReads Pass','detail.passNote':'រួមបញ្ចូលក្នុងកាតអាន · ចាប់ពី 2,000៛/ថ្ងៃ','detail.freeNote':'អានឥតគិតថ្លៃ · ចុះឈ្មោះរួចអានភ្លាម','sub.eyebrow':'កាតអាន · KHOZYREADS PASS','sub.title':'អានសៀវភៅទាំងអស់ ក្នុងតម្លៃតែមួយ','sub.lede':'ជ្រើសរើសរយៈពេល បង់ដោយ KHQR ហើយអានសៀវភៅបង់ប្រាក់ទាំងអស់បានភ្លាមៗ។ គ្មានការកាត់ប្រាក់ដោយស្វ័យប្រវត្តិ — ផុតកំណត់ហើយ អ្នកសម្រេចថាបន្តឬអត់។','sub.n1h':'ជ្រើសរើសកញ្ចប់','sub.n1b':'ប្រចាំថ្ងៃ សប្តាហ៍ ខែ ឬឆ្នាំ — ចាប់ផ្តើមតាមតម្លៃសមរម្យ។','sub.n2h':'បង់ដោយ KHQR','sub.n2b':'ABA PAY ឬកម្មវិធីធនាគារណាមួយដែលគាំទ្រ KHQR។ ផ្ទៀងផ្ទាត់ដោយស្វ័យប្រវត្តិ។','sub.n3h':'អានគ្រប់សៀវភៅ','sub.n3b':'សៀវភៅបង់ប្រាក់ទាំងអស់បើកភ្លាមៗ រហូតដល់ថ្ងៃផុតកំណត់។ ផុតកំណត់ហើយ គ្រាន់តែបង់ម្ដងទៀតដើម្បីបន្ត។','sub.choose':'ជ្រើសរើស','sub.perDay':'ថ្ងៃ','sub.days':'ថ្ងៃ','sub.popular':'ពេញនិយម','sub.bestValue':'សន្សំបំផុត','sub.activeUntil':'កាតអានរបស់អ្នកដំណើរការរហូតដល់','sub.expiredOn':'កាតអានរបស់អ្នកបានផុតកំណត់នៅ','sub.extendNote':'បង់ឥឡូវ → រយៈពេលថ្មីបន្តពីថ្ងៃផុតកំណត់បច្ចុប្បន្ន។','sub.renewBtn':'បន្តកាតអាន','sub.manage':'មើលកញ្ចប់','sub.none':'អ្នកមិនទាន់មានកាតអានទេ។ ទទួលយកមួយដើម្បីអានសៀវភៅទាំងអស់។','sub.getBtn':'ទទួលយកកាតអាន','sub.payTitle':'KhozyReads Pass','nav.subscribe':'កាតអាន','badge.pass':'កាតអាន','badge.passExpired':'ផុតកំណត់ · បន្ត','cs.badge':'ជំនួយ','cs.title':'សួស្តី! ត្រូវការជំនួយទេ?','cs.sub':'ជ្រើសរើសកន្លែងដែលអ្នកចង់ជជែក','cs.tgSub':'ឆ្លើយតបលឿនបំផុត','cs.fbSub':'Messenger · ទំព័រហ្វេសប៊ុក','cta.continuePay':'បន្តការទូទាត់','cta.continuePayNote':'អ្នកបានចាប់ផ្តើមទិញសៀវភៅនេះ។ ចុចដើម្បីបង់ប្រាក់ដោយ KHQR ហើយអានភ្លាមៗ។','reader.bgAudio':'តន្ត្រីផ្ទៃខាងក្រោយ','reader.voice':'សំឡេងអាន','reader.tapToPlay':'ចុចដើម្បីចាក់តន្ត្រី',
     'lib.eyebrow':'បណ្ណាល័យផ្ទាល់ខ្លួន','lib.title':'បណ្ណាល័យរបស់ខ្ញុំ','lib.lede':'សៀវភៅទាំងអស់ដែលអ្នកបានទិញ — រួចរាល់ចាប់ផ្តើមអាន។','lib.empty':'មិនទាន់មានការទិញ','lib.empty.favs':'មិនទាន់មានសៀវភៅដែលចូលចិត្ត','lib.tab.books':'សៀវភៅរបស់ខ្ញុំ','lib.tab.favs':'ចូលចិត្ត',
     'pay.pw.eyebrow':'បង់ប្រាក់ភ្លាមៗ · KHQR','pay.pw.title':'បង់ដោយ ABA PAY ឬ KHQR','pay.pw.btn':'បង់ប្រាក់ដោយ KHQR','pay.pw.accept':'ទទួលយក','pay.pw.note':'ការទូទាត់ត្រូវបានផ្ទៀងផ្ទាត់ដោយស្វ័យប្រវត្តិ។ បន្ទាប់ពីបង់ប្រាក់រួច សៀវភៅនឹងបើកភ្លាមៗ។',
     'pay.pw.s1h':'ចុច «បង់ប្រាក់ដោយ KHQR»','pay.pw.s1b':'ប្រអប់ទូទាត់ PayWay នឹងបង្ហាញឡើង។ បើមានកូដប្រូម៉ូ សូមដាក់មុនចុចបង់ប្រាក់។','pay.pw.s2h':'ស្កេន ឬបើកកម្មវិធីធនាគារ','pay.pw.s2b':'បង់ដោយ ABA PAY ឬស្កេន KHQR ដោយកម្មវិធីធនាគារណាមួយដែលគាំទ្រ KHQR។','pay.pw.s3h':'អានបានភ្លាមៗ','pay.pw.s3b':'ការទូទាត់ត្រូវបានផ្ទៀងផ្ទាត់ដោយស្វ័យប្រវត្តិ — មិនចាំបាច់បង្ហោះវិក្កយបត្រ ឬរង់ចាំការអនុម័តទេ។',
@@ -1299,7 +1349,7 @@ const I18N = {
     'pay.acc':'ឈ្មោះគណនី','pay.num':'លេខគណនី','pay.s1h':'ស្កេន QR និងបង់ប្រាក់','pay.s1b':'បើកកម្មវិធី ABA Mobile ហើយស្កេនកូដខាងស្តាំ ឬផ្ទេរប្រាក់ដោយផ្ទាល់ទៅគណនី។','pay.s2h':'បន្ទាប់​មក​បង្ហោះ​វិក្កយបត្រ','pay.s2b':'ថត​អេក្រង់​នៃ​ការបង់ប្រាក់ និង​បង្ហោះ​នៅ​ក្នុង​ប្រអប់​ខាង​ក្រោម។','pay.s3h':'រង់​ចាំ​ការ​អនុម័ត','pay.s3b':'ក្រុមការងារ​នឹង​ផ្ទៀង​ផ្ទាត់​ក្នុង​រយៈពេល ១ ទៅ ២ ម៉ោង។','pay.upload':'បង្ហោះវិក្កយបត្រ','pay.uploadSub':'JPG · PNG · PDF · អតិបរមា 8MB','pay.submit':'បញ្ជូនការបង់ប្រាក់','pay.success':'ដាក់ស្នើដោយជោគជ័យ! រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។',
     'reader.loading':'កំពុងផ្ទុក PDF…','reader.failed':'មិនអាចផ្ទុក PDF បានទេ','reader.licensed':'ផ្តល់សិទ្ធិឱ្យ','reader.tracked':'ការថត និងការថតវីដេអូត្រូវបានតាមដាន',
     'badge.pending':'កំពុងរង់ចាំ','badge.approved':'យល់ព្រម','badge.rejected':'បដិសេធ','badge.continue':'បន្តអាន','badge.page':'ទំព័រ',
-    'err.bookNotFound':'រកសៀវភៅមិនឃើញ','err.loginFirst':'សូមចូលគណនីមុនសិន','err.noAccess':'អ្នកត្រូវទិញសៀវភៅនេះមុនអាន','err.uploadFailed':'បរាជ័យក្នុងការបង្ហោះ','err.fileTooLarge':'ឯកសារធំជាង 8MB','err.invalidFile':'ប្រភេទឯកសារមិនត្រឹមត្រូវ',
+    'err.bookNotFound':'រកសៀវភៅមិនឃើញ','err.loginFirst':'សូមចូលគណនីមុនសិន','err.noAccess':'អ្នកត្រូវការកាតអានដើម្បីអានសៀវភៅនេះ','err.generic':'មានអ្វីមួយខុស។ សូមព្យាយាមម្ដងទៀត។','err.uploadFailed':'បរាជ័យក្នុងការបង្ហោះ','err.fileTooLarge':'ឯកសារធំជាង 8MB','err.invalidFile':'ប្រភេទឯកសារមិនត្រឹមត្រូវ',
     'ss.title':'ការការពារមាតិកាបានបើក','ss.body':'មិនអនុញ្ញាតិឱ្យថតរូប, ថតវីដេអូ ឬធ្វើការចែកចាយបន្តដោយគ្មានការអនុញ្ញាតិជាលាយលក្ខណ៍អក្សរពីខូហ្ស៊ីរីដ។','ss.dismiss':'ខ្ញុំយល់ហើយ','pwa.install':'ដំឡើងកម្មវិធី'
   },
   en: {
@@ -1309,7 +1359,7 @@ const I18N = {
     'trust.fast':'1-tap login with Telegram','trust.pay':'Secure ABA / KHQR payment','trust.instant':'Instant access',
     'home.all.eyebrow':'All books','home.all.h':'Digital Book Store','home.all.sort':'Sorted by · Newest','home.empty':'No books yet','home.search':'Search books or authors...',
     'detail.eyebrow':'Book · 2026','detail.by':'by','detail.priceNote':'One-time purchase · yours forever','detail.synopsis':'Synopsis',
-    'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Verifying payment...','cta.pendingHint':'Click to re-upload your payment proof','cta.pendingNote':'Waiting for admin verification. You cannot buy again right now.','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled','cta.readFree':'Read for Free','cta.loginToRead':'Login to Read','badge.comingSoon':'Coming Soon','cta.comingSoon':'Coming Soon — Stay tuned!','cs.badge':'Need help?','cs.title':'Hi there! Need a hand?','cs.sub':'Pick where you’d like to chat with us','cs.tgSub':'Fastest reply','cs.fbSub':'Messenger · Facebook page','cta.continuePay':'Continue payment','cta.continuePayNote':'You started buying this book. Tap to pay with KHQR and read instantly.','reader.bgAudio':'Background music','reader.voice':'Voice narration','reader.tapToPlay':'Tap to play music',
+    'cta.buy':'Buy Now','cta.buyAgain':'Buy Again','cta.read':'Read Book','cta.pending':'Verifying payment...','cta.pendingHint':'Click to re-upload your payment proof','cta.pendingNote':'Waiting for admin verification. You cannot buy again right now.','cta.loginToBuy':'Login to Buy','cta.disabled':'Buy is disabled','cta.readFree':'Read for Free','cta.loginToRead':'Login to Read','badge.comingSoon':'Coming Soon','cta.comingSoon':'Coming Soon — Stay tuned!','cta.subscribe':'Get a Reading Pass','cta.renew':'Renew Reading Pass','cta.loginToSubscribe':'Login to Read','cta.subscribeNote':'This book is included in the KhozyReads Pass — one pass, every book.','cta.renewNote':'Your reading pass has expired. Pay again to keep reading.','detail.passPrice':'KhozyReads Pass','detail.passNote':'Included in the reading pass · from 2,000៛/day','detail.freeNote':'Free to read · sign in and start','sub.eyebrow':'Reading pass · KHOZYREADS PASS','sub.title':'Read every book, one simple price','sub.lede':'Pick a period, pay with KHQR, and read all paid books instantly. No auto-renewal — when it expires, you decide whether to continue.','sub.n1h':'Pick a plan','sub.n1b':'Daily, weekly, monthly or annual — start as small as you like.','sub.n2h':'Pay with KHQR','sub.n2b':'ABA PAY or any KHQR-supported banking app. Verified automatically.','sub.n3h':'Read everything','sub.n3b':'All paid books unlock instantly until the expiry date. When it ends, just pay again to continue.','sub.choose':'Choose','sub.perDay':'day','sub.days':'days','sub.popular':'Popular','sub.bestValue':'Best value','sub.activeUntil':'Your reading pass is active until','sub.expiredOn':'Your reading pass expired on','sub.extendNote':'Pay now → the new period is added after your current expiry.','sub.renewBtn':'Renew pass','sub.manage':'View plans','sub.none':'You don’t have a reading pass yet. Get one to read every book.','sub.getBtn':'Get a reading pass','sub.payTitle':'KhozyReads Pass','nav.subscribe':'Pass','badge.pass':'Reading pass','badge.passExpired':'Expired · renew','cs.badge':'Need help?','cs.title':'Hi there! Need a hand?','cs.sub':'Pick where you’d like to chat with us','cs.tgSub':'Fastest reply','cs.fbSub':'Messenger · Facebook page','cta.continuePay':'Continue payment','cta.continuePayNote':'You started buying this book. Tap to pay with KHQR and read instantly.','reader.bgAudio':'Background music','reader.voice':'Voice narration','reader.tapToPlay':'Tap to play music',
     'lib.eyebrow':'Personal library','lib.title':'My Library','lib.lede':'All books you own — ready to read.','lib.empty':'No purchases yet','lib.empty.favs':'No favorites yet','lib.tab.books':'My Books','lib.tab.favs':'Favorites',
     'pay.pw.eyebrow':'Instant payment · KHQR','pay.pw.title':'Pay with ABA PAY or KHQR','pay.pw.btn':'Pay with KHQR','pay.pw.accept':'We accept','pay.pw.note':'Payment is verified automatically. Your book unlocks right after you pay.',
     'pay.pw.s1h':'Tap “Pay with KHQR”','pay.pw.s1b':'The PayWay checkout will open. Have a promo code? Apply it before you pay.','pay.pw.s2h':'Scan or open your banking app','pay.pw.s2b':'Pay with ABA PAY, or scan the KHQR with any KHQR-supported banking app.','pay.pw.s3h':'Read instantly','pay.pw.s3b':'Payment is verified automatically — no receipt upload, no waiting for approval.',
@@ -1322,7 +1372,7 @@ const I18N = {
     'pay.acc':'Account Name','pay.num':'Account Number','pay.s1h':'Scan QR and pay','pay.s1b':'Open ABA Mobile and scan the QR or transfer directly to the account.','pay.s2h':'Then upload the receipt','pay.s2b':'Take a screenshot of your payment and upload in the box below.','pay.s3h':'Wait for approval','pay.s3b':'Our team verifies within 1-2 hours. You can read immediately after.','pay.upload':'Upload receipt','pay.uploadSub':'JPG · PNG · PDF · max 8MB','pay.submit':'Submit payment','pay.success':'Submitted! Waiting for admin approval.',
     'reader.loading':'Loading PDF…','reader.failed':'Failed to load PDF','reader.licensed':'Licensed to','reader.tracked':'Screenshots and recordings are tracked',
     'badge.pending':'Pending','badge.approved':'Approved','badge.rejected':'Rejected','badge.continue':'Continue','badge.page':'Page',
-    'err.bookNotFound':'Book not found','err.loginFirst':'Please login first','err.noAccess':'Please purchase this book to read','err.uploadFailed':'Upload failed','err.fileTooLarge':'File larger than 8MB','err.invalidFile':'Invalid file type',
+    'err.bookNotFound':'Book not found','err.loginFirst':'Please login first','err.noAccess':'You need a reading pass to read this book','err.generic':'Something went wrong. Please try again.','err.uploadFailed':'Upload failed','err.fileTooLarge':'File larger than 8MB','err.invalidFile':'Invalid file type',
     'ss.title':'Content Protection Active','ss.body':'Screenshots, video recording, or redistribution are not permitted without written permission from KhozyReads.','ss.dismiss':'I understand','pwa.install':'Install App'
   }
 };
@@ -1407,12 +1457,28 @@ async function loadAuth(){
   const { data:{session} } = await sb.auth.getSession();
   state.user = session?.user || null;
   state.profile = null;
+  state.sub = null;
   if(state.user){
     const { data } = await sb.from('users_profile').select('*').eq('auth_user_id',state.user.id).maybeSingle();
     state.profile = data;
+    await loadSubscription();
   }
   renderAuthNav();
 }
+// Reading pass (subscription) status for the signed-in user
+async function loadSubscription(){
+  state.sub = null;
+  if(!state.profile) return null;
+  try{
+    const { data } = await sb.rpc('my_subscription');
+    const row = Array.isArray(data) ? data[0] : data;
+    if(row && row.ends_at){ state.sub = { plan: row.plan_code, starts: row.starts_at, ends: row.ends_at, active: !!row.is_active && new Date(row.ends_at) > new Date() }; }
+  }catch(e){ console.warn('loadSubscription failed', e); }
+  return state.sub;
+}
+function hasActiveSub(){ return !!(state.sub && state.sub.active && new Date(state.sub.ends) > new Date()); }
+function fmtDateTime(iso){ try{ return new Date(iso).toLocaleString(state.lang==='kh'?'km-KH':'en-GB', { dateStyle:'medium', timeStyle:'short' }); }catch(_){ return String(iso||''); } }
+function fmtPlanPrice(p){ return p.currency==='KHR' ? `${Number(p.price).toLocaleString('en-US')} ៛` : `$${Number(p.price).toFixed(2)}`; }
 // Friendly display name for a profile.
 // Priority: Telegram @handle → display_name (real name, may be Khmer) → system username.
 // The system `username` stays the unique handle used for watermark/audit.
@@ -1568,7 +1634,7 @@ function route(){
   _spinnerTimer = setTimeout(()=>{ if(!isStale()) $('#route-outlet').innerHTML=`<div class="center" style="padding:80px"><span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span></div>`; }, 150);
   // Reset meta tags first; per-route handlers (e.g. book detail) override as needed
   resetPageMeta();
-  const handlers = {'':renderHome, 'home':renderHome, 'book':renderBookDetail, 'library':renderLibrary, 'login':renderLogin, 'register':renderRegister, 'payment':renderPayment, 'payway-return':renderPaywayReturn, 'read':renderReader};
+  const handlers = {'':renderHome, 'home':renderHome, 'book':renderBookDetail, 'library':renderLibrary, 'login':renderLogin, 'register':renderRegister, 'payment':renderPayment, 'payway-return':renderPaywayReturn, 'subscribe':renderSubscribe, 'read':renderReader};
   const h = handlers[r.name] || renderHome;
   Promise.resolve(h(r.id, isStale)).catch(err=>{ if(isStale()) return; console.error(err); $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(err.message||String(err))}</div>`; }).finally(()=>{ if(_spinnerTimer){clearTimeout(_spinnerTimer);_spinnerTimer=null;} updateTelegramBubble(); updateFacebookBubble(); updateApplyCreatorLinks(); window.scrollTo(0,0); });
 }
@@ -1671,7 +1737,7 @@ async function renderHome(){
           <h3 class="book-title">${esc(b.title)}</h3>
           <p class="book-author">${esc(b.creator||'-')}</p>
           ${genreTags?`<div class="book-genre-tags">${genreTags}</div>`:''}
-          <span class="book-price">${b.is_coming_soon ? t('badge.comingSoon') : (b.is_free ? (state.lang==='kh'?'ឥតគិតថ្លៃ':'Free') : fmtMoney(b.price,b.currency))}</span>
+          <span class="book-price">${b.is_coming_soon ? t('badge.comingSoon') : (b.is_free ? (state.lang==='kh'?'ឥតគិតថ្លៃ':'Free') : `🎫 ${t('detail.passPrice')}`)}</span>
         </div>
       </a>`;
     }).join('');
@@ -1706,26 +1772,29 @@ async function renderBookDetail(id){
   let action='guest', orderId=null;
   if(state.user&&state.profile){
     const { data:lib } = await sb.from('user_library').select('id').eq('user_id',state.profile.id).eq('book_id',id).eq('access_status','active').maybeSingle();
-    if(lib) action='read';
+    if(lib) action='read';                              // bought before → lifetime access
     else if(book.is_free){ action='claim_free'; }
+    else if(hasActiveSub()){ action='read'; }           // reading pass active → read
     else {
-      const { data:orders } = await sb.from('orders').select('id,status').eq('user_id',state.profile.id).eq('book_id',id).order('created_at',{ascending:false}).limit(1);
-      const last = orders?.[0];
-      if(last?.status==='pending'){ action='pending'; orderId=last.id; }
-      else if(last?.status==='rejected') action='buyAgain';
-      else action='buy';
+      // Paid book without a pass → subscribe (per-book purchase retired)
+      action = (state.sub && !state.sub.active) ? 'renew' : 'subscribe';
     }
   } else if(book.is_free) {
     action = 'login_to_read'; // guest sees a free book
+  } else {
+    action = 'guest_subscribe';
   }
-  if(!book.is_buy_enabled && (action==='buy'||action==='buyAgain')) action='disabled';
+  if(!book.is_buy_enabled && (action==='subscribe'||action==='renew')) action='disabled';
   // Coming soon: tidak bisa dibeli/diklaim oleh siapa pun (yang sudah punya akses tetap bisa baca)
   if(book.is_coming_soon && action!=='read') action='coming_soon';
   showTemplate('tpl-detail');
   const scope = $('#route-outlet');
   bindData(scope,'title',book.title);
   bindData(scope,'creator',book.creator||'-');
-  bindData(scope,'price',fmtMoney(book.price,book.currency));
+  // Price area: free → "Free"; paid → "Reading pass" (per-book purchase retired)
+  const priceNoteEl = scope.querySelector('.price-note');
+  if(book.is_free){ bindData(scope,'price', state.lang==='kh'?'ឥតគិតថ្លៃ':'Free'); if(priceNoteEl) priceNoteEl.textContent = t('detail.freeNote'); }
+  else { bindData(scope,'price', t('detail.passPrice')); if(priceNoteEl) priceNoteEl.textContent = t('detail.passNote'); }
   bindData(scope,'synopsis',book.synopsis||'');
   // Render genre tags in detail page (if any)
   const genreSlot = scope.querySelector('[data-bind="genreTags"]');
@@ -1742,6 +1811,9 @@ async function renderBookDetail(id){
   const ctaWrap = $('#detail-cta');
   const ctaMap = {
     guest: `<a class="btn btn-primary btn-lg" href="#/login">${t('cta.loginToBuy')}</a>`,
+    guest_subscribe: `<a class="btn btn-primary btn-lg" href="#/login">${t('cta.loginToSubscribe')}</a><div class="pending-note muted" style="margin-top:10px;font-size:13px;text-align:center">${t('cta.subscribeNote')}</div>`,
+    subscribe: `<a class="btn btn-primary btn-lg" href="#/subscribe">🎫 ${t('cta.subscribe')}</a><div class="pending-note muted" style="margin-top:10px;font-size:13px;text-align:center">${t('cta.subscribeNote')}</div>`,
+    renew: `<a class="btn btn-primary btn-lg" href="#/subscribe">🔁 ${t('cta.renew')}</a><div class="pending-note muted" style="margin-top:10px;font-size:13px;text-align:center">${t('cta.renewNote')}</div>`,
     login_to_read: `<a class="btn btn-gold btn-lg" href="#/login">${t('cta.loginToRead')}</a>`,
     buy: `<button class="btn btn-primary btn-lg" id="buy-btn">${t('cta.buy')} · ${fmtMoney(book.price,book.currency)}</button>`,
     buyAgain: `<button class="btn btn-primary btn-lg" id="buy-btn">${t('cta.buyAgain')}</button>`,
@@ -1771,38 +1843,111 @@ async function renderBookDetail(id){
   };
 }
 
+/* ========== Reading pass (subscription) ========== */
+function subBannerHtml(opts){
+  // opts: { showManage }
+  const isKh = state.lang === 'kh';
+  if(!state.sub){
+    return `<div class="sub-banner-inner none"><div class="sub-ic">🎫</div><div class="sub-text"><strong>${t('sub.none')}</strong></div><a class="btn btn-primary" href="#/subscribe">${t('sub.getBtn')}</a></div>`;
+  }
+  if(hasActiveSub()){
+    return `<div class="sub-banner-inner active"><div class="sub-ic">✅</div><div class="sub-text"><strong>${t('sub.activeUntil')} ${esc(fmtDateTime(state.sub.ends))}</strong><small>${esc(String(state.sub.plan||'').toUpperCase())} · ${t('sub.extendNote')}</small></div>${opts?.showManage!==false?`<a class="btn btn-ghost" href="#/subscribe">${t('sub.manage')}</a>`:''}</div>`;
+  }
+  return `<div class="sub-banner-inner expired"><div class="sub-ic">⏳</div><div class="sub-text"><strong>${t('sub.expiredOn')} ${esc(fmtDateTime(state.sub.ends))}</strong><small>${t('cta.renewNote')}</small></div><a class="btn btn-primary" href="#/subscribe">${t('sub.renewBtn')}</a></div>`;
+}
+
+async function renderSubscribe(){
+  showTemplate('tpl-subscribe');
+  await loadSubscription();
+  const cur = $('#sub-current');
+  if(state.profile && state.sub){ cur.innerHTML = subBannerHtml({ showManage:false }); cur.style.display = 'block'; }
+  const grid = $('#plan-grid');
+  const { data:plans, error } = await sb.from('subscription_plans').select('*').eq('is_active', true).order('sort_order');
+  if(error || !plans?.length){ grid.innerHTML = alertBox(t('err.generic')); return; }
+  const best = plans.reduce((a,b)=> (Number(a.price)/a.duration_days) <= (Number(b.price)/b.duration_days) ? a : b);
+  const popular = plans.find(p=>p.code==='monthly') || plans[Math.min(2, plans.length-1)];
+  grid.innerHTML = plans.map(p=>{
+    const perDay = Number(p.price)/p.duration_days;
+    const perDayStr = p.currency==='KHR' ? `${Math.round(perDay).toLocaleString('en-US')}៛` : `$${perDay.toFixed(2)}`;
+    const name = state.lang==='kh' ? p.name_kh : p.name_en;
+    const tag = p.code===best.code ? `<span class="plan-tag best">${t('sub.bestValue')}</span>` : (p.code===popular.code ? `<span class="plan-tag pop">${t('sub.popular')}</span>` : '');
+    return `<div class="plan-card ${p.code===popular.code?'is-popular':''}" data-plan="${esc(p.code)}">
+      ${tag}
+      <div class="plan-name">${esc(name)}</div>
+      <div class="plan-price">${esc(fmtPlanPrice(p))}</div>
+      <div class="plan-sub muted">${p.duration_days} ${t('sub.days')} · ${perDayStr}/${t('sub.perDay')}</div>
+      <button class="btn ${p.code===popular.code?'btn-primary':'btn-ghost'} plan-btn" type="button" data-plan="${esc(p.code)}">${t('sub.choose')}</button>
+    </div>`;
+  }).join('');
+  grid.querySelectorAll('.plan-btn').forEach(btn=>{
+    btn.onclick = async ()=>{
+      if(!state.user || !state.profile){ location.hash = '#/login'; return; }
+      const code = btn.dataset.plan;
+      const plan = plans.find(p=>p.code===code); if(!plan) return;
+      grid.querySelectorAll('.plan-btn').forEach(b=>b.disabled=true);
+      $('#sub-msg').innerHTML = `<div class="alert alert-info">${t('pay.pw.preparing')}</div>`;
+      try{
+        // Reuse a pending subscription order for the same plan if one exists (avoid duplicates)
+        const { data:existing } = await sb.from('orders').select('id').eq('user_id',state.profile.id).eq('kind','subscription').eq('plan_code',code).eq('status','pending').order('created_at',{ascending:false}).limit(1);
+        let orderId = existing?.[0]?.id;
+        if(!orderId){
+          const { data:order, error:oErr } = await sb.from('orders').insert({
+            user_id: state.profile.id, kind:'subscription', plan_code: code, book_id: null,
+            amount: Number(plan.price), currency: plan.currency, payment_method: 'ABA PayWay via Shopify (KHQR)', status:'pending'
+          }).select('id').single();
+          if(oErr) throw oErr;
+          orderId = order.id;
+          sb.from('activity_logs').insert({ action:'order.create', actor_user_id:state.profile.id, actor_username:state.profile.username, target_type:'order', target_id:orderId, details:{ kind:'subscription', plan:code } }).then(()=>{}).catch(()=>{});
+        }
+        location.hash = `#/payment/${orderId}`;
+      }catch(err){
+        console.error('[subscribe] order create failed:', err);
+        $('#sub-msg').innerHTML = alertBox(err.message || t('err.generic'));
+        grid.querySelectorAll('.plan-btn').forEach(b=>b.disabled=false);
+      }
+    };
+  });
+}
+
 async function renderLibrary(){
   if(!state.user){ location.hash='#/login'; return; }
+  await loadSubscription();
   const [{ data:lib }, { data:orders }, { data:favs }] = await Promise.all([
     // user_library table — includes new last_page + last_read_at columns from migration 014
     sb.from('user_library')
       .select('id,access_status,book_id,last_page,last_read_at,books(id,title,creator,cover_url,total_pages)')
       .eq('user_id',state.profile.id)
       .order('last_read_at',{ascending:false,nullsFirst:false}),
-    sb.from('orders').select('id,status,book_id,reject_reason,books(id,title,cover_url)').eq('user_id',state.profile.id).in('status',['pending','rejected']).order('created_at',{ascending:false}),
+    sb.from('orders').select('id,status,book_id,kind,plan_code,reject_reason,books(id,title,cover_url)').eq('user_id',state.profile.id).eq('kind','book').in('status',['pending','rejected']).order('created_at',{ascending:false}),
     sb.from('book_favorites').select('book_id,created_at,books(id,title,creator,cover_url,price,currency,is_free)').eq('user_id',state.profile.id).order('created_at',{ascending:false})
   ]);
   showTemplate('tpl-library');
+  const subBanner = $('#sub-banner');
+  if(subBanner){ subBanner.innerHTML = subBannerHtml({ showManage:true }); subBanner.style.display = 'block'; }
   const grid = $('#library-grid');
 
   // Build "My Books" items — skip rows where the related book is missing
   // (e.g. book was archived → RLS hides it from non-admins → r.books is null)
   const ownedItems = [];
-  (lib||[]).filter(r=>r.access_status==='active' && r.books).forEach(r=>{
+  // Owned (lifetime) rows + "pass bookmarks" (locked rows created while reading with a pass)
+  const subActive = hasActiveSub();
+  (lib||[]).filter(r=>r.books && (r.access_status==='active' || (r.access_status==='locked' && (r.last_page||0) > 0))).forEach(r=>{
     const b = r.books;
+    const isPassRow = r.access_status !== 'active';
     const lastPage = r.last_page || 1;
     const totalPages = b.total_pages || 0;
     const hasProgress = lastPage > 1 && totalPages > 0;
     const progressPct = hasProgress ? Math.min(100, Math.round(lastPage / totalPages * 100)) : 0;
-    // Badge: show "Continue · p.42/114" if in-progress, else "Approved"
-    const pillContent = hasProgress
-      ? `<span class="dot"></span>${t('badge.continue')} · ${t('badge.page')} ${lastPage}/${totalPages}`
-      : `<span class="dot"></span>${t('badge.approved')}`;
-    // Optional thin progress bar at bottom of cover when there's progress
+    // Badge: Continue · p.x/y → else Approved / Pass / Expired
+    let pillContent;
+    if(isPassRow && !subActive) pillContent = `<span class="dot" style="background:#E63946"></span>${t('badge.passExpired')}`;
+    else if(hasProgress) pillContent = `<span class="dot"></span>${t('badge.continue')} · ${t('badge.page')} ${lastPage}/${totalPages}`;
+    else pillContent = `<span class="dot"></span>${isPassRow ? t('badge.pass') : t('badge.approved')}`;
     const progressBar = hasProgress
       ? `<div class="read-progress"><div class="read-progress-fill" style="width:${progressPct}%"></div></div>`
       : '';
-    ownedItems.push(`<a class="book-card" href="#/read/${b.id}"><div class="book-cover" style="background:${b.cover_url?'var(--bg-deep)':pickColor(b.id)}">${b.cover_url?`<img src="${esc(b.cover_url)}"/>`:`<svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}<span class="progress-pill">${pillContent}</span>${progressBar}</div><div class="book-meta"><h3 class="book-title">${esc(b.title)}</h3><p class="book-author">${esc(b.creator||'-')}</p></div></a>`);
+    const href = (isPassRow && !subActive) ? '#/subscribe' : `#/read/${b.id}`;
+    ownedItems.push(`<a class="book-card" href="${href}"><div class="book-cover" style="background:${b.cover_url?'var(--bg-deep)':pickColor(b.id)}">${b.cover_url?`<img src="${esc(b.cover_url)}"/>`:`<svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}<span class="progress-pill">${pillContent}</span>${progressBar}</div><div class="book-meta"><h3 class="book-title">${esc(b.title)}</h3><p class="book-author">${esc(b.creator||'-')}</p></div></a>`);
   });
   (orders||[]).forEach(o=>{
     const isP = o.status==='pending';
@@ -2211,9 +2356,14 @@ async function renderPayment(orderId){
   if(order.user_id !== state.profile.id){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.noAccess'))}</div>`; return; }
   showTemplate('tpl-payment');
   const scope = $('#route-outlet');
-  bindData(scope,'bookTitle',order.books?.title||'');
+  const isSubOrder = order.kind === 'subscription';
+  let planRow = null;
+  if(isSubOrder){ const { data:pl } = await sb.from('subscription_plans').select('*').eq('code', order.plan_code).maybeSingle(); planRow = pl; }
+  const payTitle = isSubOrder ? `${t('sub.payTitle')} · ${planRow ? (state.lang==='kh'?planRow.name_kh:planRow.name_en) : String(order.plan_code||'').toUpperCase()}` : (order.books?.title||'');
+  bindData(scope,'bookTitle',payTitle);
   bindData(scope,'amount',fmtMoney(order.amount,order.currency));
-  scope.querySelectorAll('[data-bind="bookLink"]').forEach(a=>a.href=`#/book/${order.books?.id||''}`);
+  scope.querySelectorAll('[data-bind="bookLink"]').forEach(a=>a.href= isSubOrder ? '#/subscribe' : `#/book/${order.books?.id||''}`);
+  if(isSubOrder){ const pp = scope.querySelector('.promo-panel'); if(pp) pp.style.display = 'none'; }
   const noticeKey = state.lang==='kh'?'payment_notice_kh':'payment_notice_en';
   const notice = state.settings[noticeKey]||state.settings.payment_notice_en;
   if(notice){ const el=$('#payment-notice'); el.textContent=notice; el.style.display='block'; }
@@ -2227,7 +2377,7 @@ async function renderPayment(orderId){
 
   // Order summary panel — keeps subtotal/discount/total in sync
   function refreshSummary(){
-    $('#sum-book').textContent = order.books?.title || '';
+    $('#sum-book').textContent = payTitle;
     const base = order.original_amount && order.original_amount > 0 ? order.original_amount : order.amount;
     const disc = order.discount_amount || 0;
     $('#sum-subtotal').textContent = fmtMoney(base, order.currency);
@@ -2667,7 +2817,15 @@ async function renderReader(bookId){
   if(!state.user||!state.profile){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.loginFirst'))}</div>`; return; }
   if(!bookId){ location.hash='#/library'; return; }
   const { data:lib } = await sb.from('user_library').select('id').eq('user_id',state.profile.id).eq('book_id',bookId).eq('access_status','active').maybeSingle();
-  if(!lib){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.noAccess'))}</div>`; return; }
+  if(!lib){
+    // No lifetime access → allow if the reader has an active pass
+    await loadSubscription();
+    if(!hasActiveSub()){
+      const expired = state.sub && !state.sub.active;
+      $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0;max-width:640px"><div class="sub-banner" style="display:block">${subBannerHtml({showManage:false})}</div><p class="muted" style="margin-top:14px;text-align:center">${expired ? t('cta.renewNote') : t('cta.subscribeNote')}</p></div>`;
+      return;
+    }
+  }
   const { data:book } = await sb.from('books').select('id,title,pdf_path,pages_status,total_pages,r2_prefix,bg_audio_path,voice_audio_path').eq('id',bookId).maybeSingle();
   if(!book){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.bookNotFound'))}</div>`; return; }
 
