@@ -288,7 +288,7 @@ details.row-details .detail-body{margin-top:8px;padding:12px;background:var(--bg
   <div class="page-head"><div><div class="eyebrow">Catalogue</div><h1>Books</h1></div><div class="right"><button class="btn btn-primary" id="new-book-btn">+ New book</button></div></div>
   <div class="panel">
     <div class="panel-head"><div><h2>All titles</h2><div class="meta" id="books-meta">—</div></div></div>
-    <div class="panel-body"><table class="table"><thead><tr><th>Cover</th><th>Title</th><th>Creator</th><th>Price</th><th>Buy</th><th>Status</th><th></th></tr></thead><tbody id="books-body"></tbody></table></div>
+    <div class="panel-body"><table class="table"><thead><tr><th>Cover</th><th>Title</th><th>Creator</th><th>Access</th><th>Status</th><th></th></tr></thead><tbody id="books-body"></tbody></table></div>
   </div>
 </section>
 </template>
@@ -760,7 +760,7 @@ async function renderBooks(){
   $('#books-meta').textContent = `${active} active · ${archived} archived`;
   $('#books-body').innerHTML = (books||[]).map(b=>{
     const genreTags = (b.genre||[]).slice(0,4).map(g=>`<span class="tag" style="background:rgba(212,163,115,.18);color:var(--accent-deep);padding:2px 8px;border-radius:10px;font-size:11px;margin-right:4px">${esc(g)}</span>`).join('');
-    return `<tr><td><div class="thumb">${b.cover_url?`<img src="${esc(b.cover_url)}"/>`:''}</div></td><td><div class="cell-title">${esc(b.title)} ${b.is_free?`<span class="badge b-info" style="margin-left:6px">🎁 FREE</span>`:''}${b.is_coming_soon?`<span class="badge b-pending" style="margin-left:6px">🔜 SOON</span>`:''}</div><div style="font-size:12px;color:var(--muted);margin-top:4px">${b.pdf_path?`<span class="tag">📄 PDF uploaded</span>`:`<span class="tag" style="color:var(--danger)">⚠ No PDF</span>`}</div>${genreTags?`<div style="margin-top:6px">${genreTags}</div>`:''}</td><td>${esc(b.creator||'-')}</td><td>${b.is_free?'<span style="color:var(--accent-deep);font-weight:600">FREE</span>':fmtMoney(b.price,b.currency)}</td><td>${b.is_buy_enabled?'<span style="color:var(--success)">✓ Enabled</span>':'<span class="muted">— Disabled</span>'}</td><td><span class="badge b-${b.status==='active'?'active':'archived'}"><span class="dot"></span>${esc(b.status)}</span></td><td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" data-edit="${b.id}">Edit</button><button class="btn btn-ghost btn-sm" data-archive="${b.id}">${b.status==='active'?'Archive':'Restore'}</button></div></td></tr>`;
+    return `<tr><td><div class="thumb">${b.cover_url?`<img src="${esc(b.cover_url)}"/>`:''}</div></td><td><div class="cell-title">${esc(b.title)} ${b.is_free?`<span class="badge b-info" style="margin-left:6px">🎁 FREE</span>`:''}${b.is_coming_soon?`<span class="badge b-pending" style="margin-left:6px">🔜 SOON</span>`:''}</div><div style="font-size:12px;color:var(--muted);margin-top:4px">${b.pdf_path?`<span class="tag">📄 PDF uploaded</span>`:`<span class="tag" style="color:var(--danger)">⚠ No PDF</span>`}</div>${genreTags?`<div style="margin-top:6px">${genreTags}</div>`:''}</td><td>${esc(b.creator||'-')}</td><td>${b.is_free?'<span class="badge b-info"><span class="dot"></span>🎁 Free</span>':'<span class="badge b-active"><span class="dot"></span>🎫 KhozyReads Pass</span>'}</td><td><span class="badge b-${b.status==='active'?'active':'archived'}"><span class="dot"></span>${esc(b.status)}</span></td><td><div style="display:flex;gap:6px"><button class="btn btn-ghost btn-sm" data-edit="${b.id}">Edit</button><button class="btn btn-ghost btn-sm" data-archive="${b.id}">${b.status==='active'?'Archive':'Restore'}</button></div></td></tr>`;
   }).join('') || `<tr><td colspan="7" class="empty">No books yet</td></tr>`;
   $('#new-book-btn').onclick = ()=>openBookForm(null);
   $$('[data-edit]').forEach(b=>b.onclick=()=>openBookForm(b.dataset.edit));
@@ -783,18 +783,18 @@ async function openBookForm(id){
       <div class="field"><label>Creator</label><input class="input" name="creator" value="${esc(book.creator||'')}"/></div>
       <div class="field"><label>Synopsis</label><textarea class="input" name="synopsis">${esc(book.synopsis||'')}</textarea></div>
       <div class="field"><label>Genre (comma-separated)</label><input class="input" name="genre" value="${esc((book.genre||[]).join(', '))}" placeholder="Romance, Drama, Historical"/><div class="hint muted" style="font-size:12px;margin-top:4px">Separate multiple genres with commas. Example: <em>Romance, Historical, Drama</em></div></div>
-      <div class="form-grid">
-        <div class="field"><label>Price *</label><input class="input" name="price" type="number" step="0.01" min="0" value="${book.price||0}" required/></div>
-        <div class="field"><label>Currency</label><select class="input" name="currency"><option ${book.currency==='USD'?'selected':''}>USD</option><option ${book.currency==='KHR'?'selected':''}>KHR</option></select></div>
+      <div class="field"><label>Access *</label>
+        <select class="input" name="access">
+          <option value="pass" ${!book.is_free?'selected':''}>🎫 KhozyReads Pass — readers need an active reading pass</option>
+          <option value="free" ${book.is_free?'selected':''}>🎁 Free — anyone signed in can read</option>
+        </select>
+        <div class="hint muted" style="font-size:12px;margin-top:4px">Pass prices are managed in the <a href="#/plans">Reading Pass</a> page, not per book.</div>
       </div>
       <div class="field"><label>Cover (jpg/png/webp)</label>${book.cover_url?`<img src="${esc(book.cover_url)}" style="max-width:100px;margin-bottom:8px;border-radius:4px"/>`:''}<input type="file" name="cover" accept="image/jpeg,image/png,image/webp"/></div>
       <div class="field"><label>PDF ${id?'(leave empty to keep)':'*'}</label>${book.pdf_path?`<div class="hint muted">Current: ${esc(book.pdf_filename||book.pdf_path)}</div>`:''}<input type="file" name="pdf" accept="application/pdf" ${id?'':'required'}/></div>
       <div class="field"><label>Background audio (mp3/m4a/ogg, max 50MB) — plays automatically while reading</label>${book.bg_audio_path?`<div class="hint muted">Current: ${esc(book.bg_audio_path)} <label style="font-size:12px;margin-left:8px"><input type="checkbox" name="remove_bg_audio" style="width:auto"/> Remove</label></div>`:''}<input type="file" name="bg_audio" accept="audio/mpeg,audio/mp4,audio/aac,audio/ogg,audio/wav,.mp3,.m4a,.ogg,.aac,.wav"/></div>
       <div class="field"><label>Voice narration (mp3/m4a/ogg, max 50MB) — optional, one full audiobook file</label>${book.voice_audio_path?`<div class="hint muted">Current: ${esc(book.voice_audio_path)} <label style="font-size:12px;margin-left:8px"><input type="checkbox" name="remove_voice_audio" style="width:auto"/> Remove</label></div>`:''}<input type="file" name="voice_audio" accept="audio/mpeg,audio/mp4,audio/aac,audio/ogg,audio/wav,.mp3,.m4a,.ogg,.aac,.wav"/></div>
-      <div class="field"><label><input type="checkbox" name="buy_enabled" ${book.is_buy_enabled?'checked':''} style="width:auto;margin-right:8px"/>Buy enabled</label></div>
-      <div class="field" style="background:rgba(120,90,200,.08);border:1px solid var(--border-strong);padding:14px;border-radius:8px"><label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer"><input type="checkbox" name="is_coming_soon" ${book.is_coming_soon?'checked':''} style="width:auto;margin-top:4px"/><div><div style="font-weight:600">🔜 Coming Soon</div><div style="font-size:13px;color:var(--muted);font-family:var(--font-serif)">Book appears on the homepage with a "Coming Soon" badge but cannot be purchased or claimed yet. Great for building anticipation before release.</div></div></label></div>
-      <div class="field" style="background:rgba(212,165,116,.1);border:1px solid var(--accent);padding:14px;border-radius:8px"><label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer"><input type="checkbox" name="is_free" ${book.is_free?'checked':''} style="width:auto;margin-top:4px"/><div><div style="font-weight:600;color:var(--accent-deep)">🎁 Free book</div><div style="font-size:13px;color:var(--muted);font-family:var(--font-serif)">Readers can claim and read without paying. Useful for samples, promo, or community gifts.</div></div></label></div>
-      <div class="field"><label>Disabled remark</label><input class="input" name="remark" value="${esc(book.buy_disabled_remark||'')}"/></div>
+      <div class="field" style="background:rgba(120,90,200,.08);border:1px solid var(--border-strong);padding:14px;border-radius:8px"><label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer"><input type="checkbox" name="is_coming_soon" ${book.is_coming_soon?'checked':''} style="width:auto;margin-top:4px"/><div><div style="font-weight:600">🔜 Coming Soon</div><div style="font-size:13px;color:var(--muted);font-family:var(--font-serif)">Book appears on the homepage with a "Coming Soon" badge but cannot be read yet. Great for building anticipation before release.</div></div></label></div>
       <div id="bf-msg"></div>
       <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:18px">
         <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
@@ -816,7 +816,7 @@ async function openBookForm(id){
         const k = g.toLowerCase();
         if(!genreSet.has(k)){ genreSet.add(k); genreArr.push(g); }
       });
-      const payload = { title:fd.get('title').trim(), creator:fd.get('creator').trim()||null, synopsis:fd.get('synopsis').trim()||null, genre:genreArr, price:Number(fd.get('price')), currency:fd.get('currency'), is_buy_enabled:!!fd.get('buy_enabled'), is_free:!!fd.get('is_free'), is_coming_soon:!!fd.get('is_coming_soon'), buy_disabled_remark:fd.get('remark').trim()||null, status:book.status||'active' };
+      const payload = { title:fd.get('title').trim(), creator:fd.get('creator').trim()||null, synopsis:fd.get('synopsis').trim()||null, genre:genreArr, price:Number(book.price||0), currency:book.currency||'USD', is_buy_enabled:true, is_free:fd.get('access')==='free', is_coming_soon:!!fd.get('is_coming_soon'), buy_disabled_remark:null, status:book.status||'active' };
       let bookId = id;
       if(!bookId){ const {data,error} = await sb.from('books').insert(payload).select('id').single(); if(error) throw error; bookId = data.id; }
       else { const {error} = await sb.from('books').update(payload).eq('id',bookId); if(error) throw error; }
