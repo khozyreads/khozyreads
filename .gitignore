@@ -36,3 +36,4 @@ secrets.txt
 *.keystore
 *.jks
 signing-key-info.txt
+.paused/
