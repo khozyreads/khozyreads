@@ -2235,6 +2235,7 @@ function parseHash(){
   return { name: parts[0]||'', id: parts[1]||null };
 }
 function route(){
+  if(_homeDom && document.contains(_homeDom)) _homeScroll = window.scrollY;
   const token = ++_routeToken;
   const isStale = ()=>token!==_routeToken;
   cleanupReader();
@@ -2258,7 +2259,7 @@ function route(){
   const tabName = (r.name==='' || r.name==='home') ? 'home' : (r.name==='book' ? 'home' : (r.name==='payment' || r.name==='payway-return') ? 'subscribe' : r.name);
   document.querySelectorAll('#tabbar .tab').forEach(a=>a.classList.toggle('active', a.dataset.tab===tabName));
   $('#tabbar').style.display = showChrome ? '' : 'none';
-  Promise.resolve(h(r.id, isStale)).catch(err=>{ if(isStale()) return; console.error(err); $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(err.message||String(err))}</div>`; }).finally(()=>{ if(_spinnerTimer){clearTimeout(_spinnerTimer);_spinnerTimer=null;} updateTelegramBubble(); updateFacebookBubble(); updateApplyCreatorLinks(); window.scrollTo(0,0); });
+  Promise.resolve(h(r.id, isStale)).catch(err=>{ if(isStale()) return; console.error(err); $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(err.message||String(err))}</div>`; }).finally(()=>{ if(_spinnerTimer){clearTimeout(_spinnerTimer);_spinnerTimer=null;} updateTelegramBubble(); updateFacebookBubble(); updateApplyCreatorLinks(); if(!(_homeDom && document.contains(_homeDom) && _homeScroll)) window.scrollTo(0,0); });
 }
 window.addEventListener('hashchange', route);
 
@@ -2313,7 +2314,7 @@ function wireFavButtons(scope){
       btn.classList.remove('busy');
       if(error){ console.error(error); return; }
       btn.classList.toggle('is-fav', !!data?.favorited);
-      if(_favCache){ if(data?.favorited) _favCache.add(btn.dataset.fav); else _favCache.delete(btn.dataset.fav); }
+      if(_favCache){ if(data?.favorited) _favCache.add(btn.dataset.fav); else _favCache.delete(btn.dataset.fav); if(_homeDom && document.contains(_homeDom)) _homeSig = homeSignature(); }
     };
   });
 }
@@ -2327,7 +2328,7 @@ const BOOK_LIST_COLS = 'id,title,creator,synopsis,price,currency,cover_url,is_bu
 function cacheFresh(at){ return at && (Date.now() - at) < CACHE_TTL; }
 function invalidateCache(what){
   if(!what || what==='books'){ _cache.books=null; _cache.booksAt=0; }
-  if(!what || what==='lib'){ _cache.lib=null; _cache.libAt=0; }
+  if(!what || what==='lib'){ _cache.lib=null; _cache.libAt=0; if(typeof invalidateLibraryPage==='function') invalidateLibraryPage(); }
   if(!what || what==='plans'){ _cache.plans=null; _cache.plansAt=0; }
 }
 async function fetchBooks(force){
@@ -2465,9 +2466,24 @@ async function renderContinueStrip(){
       </a>`; }).join('')}</div>
   </section>`;
 }
-function invalidateContinue(){ _contCache = null; }
+function invalidateContinue(){ _contCache = null; _contKey++; }
 
+let _homeDom = null, _homeSig = '', _homeScroll = 0;
+function homeSignature(){
+  // Content-based (not timestamp-based) so quiet background refreshes with identical data don't force a rebuild
+  const books = (_cache.books||[]).map(b=>b.id+b.price+b.is_coming_soon+b.is_free+b.cover_url+b.title).join(',');
+  const fav = _favCache ? [..._favCache].sort().join(',') : '';
+  return [state.lang, state.profile?.id||'', state.sub?.ends||'', books, JSON.stringify(_ratingCache||{}), fav, JSON.stringify(_popCache||{}), _contKey, state.settings?.apply_creator_link||''].join('|');
+}
+let _contKey = 0;
 async function renderHome(){
+  // Fast path: same data + same user + same language → put the previous DOM back (no rebuild, no image re-decode)
+  if(_homeDom && _homeSig === homeSignature() && getBooksCached()){
+    const outlet = $('#route-outlet'); outlet.replaceChildren(_homeDom);
+    requestAnimationFrame(()=>window.scrollTo(0, _homeScroll));
+    fetchBooks(true).then(fresh=>{ if(_homeSig !== homeSignature() && location.hash.replace(/^#\/?/,'').split('/')[0]==='') route(); }).catch(()=>{});
+    return;
+  }
   let books = getBooksCached();
   let favIds;
   const [ratingStats, popularity] = await Promise.all([fetchRatingStats(), fetchPopularity()]);
@@ -2555,6 +2571,8 @@ async function renderHome(){
   // Only show chips if there are any genres set
   if(allGenres.length) renderChips();
   renderGrid();
+  // Keep this DOM for instant re-entry; the signature decides whether it is still valid
+  _homeDom = $('#route-outlet').firstElementChild; _homeSig = homeSignature();
 }
 
 /* ========== Share card (canvas → PNG, 1080×1350 story format) ========== */
@@ -2929,18 +2947,30 @@ async function renderSubscribe(){
   });
 }
 
+let _libPageCache = null, _libPageAt = 0;
+function invalidateLibraryPage(){ _libPageCache = null; }
 async function renderLibrary(){
   if(!state.user){ location.hash='#/login'; return; }
-  await loadSubscription();
-  const [{ data:lib }, { data:orders }, { data:favs }] = await Promise.all([
+  const fetchLibraryData = () => Promise.all([
     // user_library table — includes new last_page + last_read_at columns from migration 014
     sb.from('user_library')
       .select('id,access_status,book_id,last_page,last_read_at,books(id,title,creator,cover_url,total_pages)')
       .eq('user_id',state.profile.id)
       .order('last_read_at',{ascending:false,nullsFirst:false}),
     sb.from('orders').select('id,status,book_id,kind,plan_code,reject_reason,books(id,title,cover_url)').eq('user_id',state.profile.id).eq('kind','book').in('status',['pending','rejected']).order('created_at',{ascending:false}),
-    sb.from('book_favorites').select('book_id,created_at,books(id,title,creator,cover_url,price,currency,is_free)').eq('user_id',state.profile.id).order('created_at',{ascending:false})
+    sb.from('book_favorites').select('book_id,created_at,books(id,title,creator,cover_url,price,currency,is_free)').eq('user_id',state.profile.id).order('created_at',{ascending:false}),
+    loadSubscription()
   ]);
+  let res = (_libPageCache && (Date.now()-_libPageAt) < 45_000 && _libPageCache.uid === state.profile.id) ? _libPageCache.res : null;
+  if(res){
+    // stale-while-revalidate: paint from cache now, refresh quietly, re-render only if still on this page
+    fetchLibraryData().then(r=>{ _libPageCache = { uid: state.profile.id, res: r }; _libPageAt = Date.now();
+      if(location.hash.startsWith('#/library') && JSON.stringify(r.slice(0,3).map(x=>x.data)) !== JSON.stringify(res.slice(0,3).map(x=>x.data))) route(); }).catch(()=>{});
+  } else {
+    res = await fetchLibraryData();
+    _libPageCache = { uid: state.profile.id, res }; _libPageAt = Date.now();
+  }
+  const [{ data:lib }, { data:orders }, { data:favs }] = res;
   showTemplate('tpl-library');
   const subBanner = $('#sub-banner');
   if(subBanner){ subBanner.innerHTML = subBannerHtml({ showManage:true }); subBanner.style.display = 'block'; }
@@ -3847,17 +3877,22 @@ function setupReaderAudio(bookId, bgUrl, voiceUrl){
 async function renderReader(bookId){
   if(!state.user||!state.profile){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.loginFirst'))}</div>`; return; }
   if(!bookId){ location.hash='#/library'; return; }
-  const { data:lib } = await sb.from('user_library').select('id').eq('user_id',state.profile.id).eq('book_id',bookId).eq('access_status','active').maybeSingle();
+  // Everything the reader needs, fetched in ONE parallel round-trip (pages/progress come back empty if no access)
+  const [{ data:lib }, { data:book }, { data:pages, error:pgErr }, { data:libRow }] = await Promise.all([
+    sb.from('user_library').select('id').eq('user_id',state.profile.id).eq('book_id',bookId).eq('access_status','active').maybeSingle(),
+    sb.from('books').select('id,title,pdf_path,pages_status,total_pages,r2_prefix,bg_audio_path,voice_audio_path').eq('id',bookId).maybeSingle(),
+    sb.from('book_pages').select('page_num,object_key,width,height').eq('book_id', bookId).order('page_num',{ascending:true}),
+    sb.from('user_library').select('last_page').eq('user_id', state.profile.id).eq('book_id', bookId).maybeSingle()
+  ]);
   if(!lib){
-    // No lifetime access → allow if the reader has an active pass
-    await loadSubscription();
+    // No lifetime access → allow if the reader has an active pass (re-check server only if the cached one says no)
+    if(!hasActiveSub()) await loadSubscription();
     if(!hasActiveSub()){
       const expired = state.sub && !state.sub.active;
       $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0;max-width:640px"><div class="sub-banner" style="display:block">${subBannerHtml({showManage:false})}</div><p class="muted" style="margin-top:14px;text-align:center">${expired ? t('cta.renewNote') : t('cta.subscribeNote')}</p></div>`;
       return;
     }
   }
-  const { data:book } = await sb.from('books').select('id,title,pdf_path,pages_status,total_pages,r2_prefix,bg_audio_path,voice_audio_path').eq('id',bookId).maybeSingle();
   if(!book){ $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(t('err.bookNotFound'))}</div>`; return; }
 
   // Decision: modern image reader vs legacy PDF.js fallback
@@ -3866,21 +3901,10 @@ async function renderReader(bookId){
   sb.from('activity_logs').insert({ action:'book.read', actor_user_id:state.profile.id, actor_username:state.profile.username, target_type:'book', target_id:book.id }).then(()=>{}).catch(()=>{});
 
   if(useImageReader){
-    // Fetch pages list (RLS-protected — only owners + admins see this)
-    const { data:pages, error:pgErr } = await sb.from('book_pages')
-      .select('page_num,object_key,width,height')
-      .eq('book_id', bookId)
-      .order('page_num',{ascending:true});
     if(pgErr || !pages || !pages.length){
       console.warn('Image reader pages query failed, falling back to PDF.js', pgErr);
       // Graceful fallback to PDF.js
     } else {
-      // Fetch reading progress (last_page) for Continue Reading
-      const { data:libRow } = await sb.from('user_library')
-        .select('last_page')
-        .eq('user_id', state.profile.id)
-        .eq('book_id', bookId)
-        .maybeSingle();
       const startPage = Math.max(1, Math.min(pages.length, libRow?.last_page || 1));
       showTemplate('tpl-reader-pages');
       const scope = $('#route-outlet');
@@ -3981,27 +4005,24 @@ async function initImageReader(book, pages, startPage){
     if(slider) slider.value = num;
     if(prefs.mode === 'scroll'){ scrollToPage(num); saveProgress(num); showUiTransiently(); return; }
     resetZoom(false);
-    img.classList.add('loading');
-    loading.classList.add('show');
     const newSrc = pageUrl(num);
-    img.onload = () => {
-      img.classList.remove('loading');
-      loading.classList.remove('show');
-      positionOverlay();
-      refreshWatermark(num);
-      // Save progress (debounced 1.5s after last page change)
+    const token = ++renderToken;
+    // Show the spinner only if the page takes >180ms (cached pages swap instantly, no flicker)
+    const slowT = setTimeout(()=>{ if(token === renderToken){ img.classList.add('loading'); loading.classList.add('show'); } }, 180);
+    const pre = new Image(); pre.decoding = 'async'; pre.src = newSrc;
+    const ready = (pre.decode ? pre.decode() : new Promise(r=>{ pre.onload = r; pre.onerror = r; })).catch(()=>{});
+    ready.then(() => {
+      if(token !== renderToken) return;           // user already moved on
+      clearTimeout(slowT);
+      img.src = newSrc;                            // decoded → paints immediately
+      img.classList.remove('loading'); loading.classList.remove('show');
+      requestAnimationFrame(()=>{ positionOverlay(); refreshWatermark(num); });
       saveProgress(num);
-      // Preload next & previous pages for smooth nav
       preload(num+1); preload(num+2); preload(num-1);
-    };
-    img.onerror = () => {
-      img.classList.remove('loading');
-      loading.classList.remove('show');
-      console.error('Failed to load page', num, newSrc);
-    };
-    img.src = newSrc;
+    });
     showUiTransiently();
   }
+  let renderToken = 0;
 
   function showUiTransiently(){
     topbar.classList.remove('hidden');
@@ -4384,7 +4405,7 @@ async function initImageReader(book, pages, startPage){
     try{ wakeLock?.release?.(); }catch(_){}
     if(document.fullscreenElement || document.webkitFullscreenElement){ try{ (document.exitFullscreen || document.webkitExitFullscreen).call(document); }catch(_){} }
     if(io) io.disconnect();
-    invalidateContinue();   // home "Continue reading" strip should reflect the new position
+    invalidateContinue(); invalidateLibraryPage();   // home strip + library should reflect the new position
     // Flush any pending progress save immediately so leaving doesn't lose data
     if(saveProgressT){
       clearTimeout(saveProgressT);
