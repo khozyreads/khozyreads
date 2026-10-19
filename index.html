@@ -1109,6 +1109,7 @@ html[lang="km"] .btn-share{font-family:var(--font-khmer)}
 .share-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
 .share-actions .btn{flex:1;min-height:46px;padding:10px 12px;font-size:14px;white-space:nowrap}
 .share-actions .btn-primary{flex-basis:100%}
+.share-hint{margin:10px 0 0;font-size:12px;text-align:center}
 .share-close{position:absolute;top:-14px;right:-14px;width:36px;height:36px;border-radius:50%;background:#fff;color:var(--fg);box-shadow:0 6px 16px rgba(0,0,0,.25);font-size:16px}
 @media (max-width:720px){.btn-share{padding:8px 12px;font-size:13px}.share-box{width:min(100%,360px)}.share-actions .btn{min-height:44px}}
 
@@ -1336,10 +1337,11 @@ html[lang="km"] .continue-meta strong{font-family:var(--font-khmer);font-size:14
   <div class="share-box">
     <div class="share-preview"><img id="share-img" alt=""/><div class="share-spinner" id="share-spinner"><span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span></div></div>
     <div class="share-actions">
-      <button type="button" class="btn btn-primary" id="share-native">📤 <span data-i18n="share.btn">ចែករំលែក</span></button>
+      <button type="button" class="btn btn-primary" id="share-native">🖼️ <span data-i18n="share.image">ចែករំលែករូប</span></button>
+      <button type="button" class="btn btn-ghost" id="share-copy">🔗 <span data-i18n="share.link">ចែករំលែកតំណ</span></button>
       <a class="btn btn-ghost" id="share-download" download="khozyreads.png">⬇️ <span data-i18n="share.download">រក្សាទុករូប</span></a>
-      <button type="button" class="btn btn-ghost" id="share-copy">🔗 <span data-i18n="share.copy">ចម្លងតំណ</span></button>
     </div>
+    <p class="share-hint muted" data-i18n="share.hint">រូបភាព + តំណសៀវភៅ នឹងត្រូវបានភ្ជាប់ជាមួយ</p>
     <button type="button" class="share-close" id="share-close" aria-label="Close">✕</button>
   </div>
 </div>
@@ -1912,7 +1914,7 @@ const I18N = {
     'auth.user':'ឈ្មោះអ្នកប្រើ','auth.email':'អ៊ីមែល','auth.pass':'ពាក្យសម្ងាត់',
     'pay.eyebrow':'ការទូទាត់សុវត្ថិភាព · ABA / KHQR','pay.title':'បញ្ចប់ការទិញរបស់អ្នក','pay.crumb':'បង់ប្រាក់','pay.step1':'ជំហានទី ១ · ស្កេន QR','pay.scan':'ស្កេនកូដខាងក្រោម','pay.amount':'ចំនួន',
     'pay.acc':'ឈ្មោះគណនី','pay.num':'លេខគណនី','pay.s1h':'ស្កេន QR និងបង់ប្រាក់','pay.s1b':'បើកកម្មវិធី ABA Mobile ហើយស្កេនកូដខាងស្តាំ ឬផ្ទេរប្រាក់ដោយផ្ទាល់ទៅគណនី។','pay.s2h':'បន្ទាប់​មក​បង្ហោះ​វិក្កយបត្រ','pay.s2b':'ថត​អេក្រង់​នៃ​ការបង់ប្រាក់ និង​បង្ហោះ​នៅ​ក្នុង​ប្រអប់​ខាង​ក្រោម។','pay.s3h':'រង់​ចាំ​ការ​អនុម័ត','pay.s3b':'ក្រុមការងារ​នឹង​ផ្ទៀង​ផ្ទាត់​ក្នុង​រយៈពេល ១ ទៅ ២ ម៉ោង។','pay.upload':'បង្ហោះវិក្កយបត្រ','pay.uploadSub':'JPG · PNG · PDF · អតិបរមា 8MB','pay.submit':'បញ្ជូនការបង់ប្រាក់','pay.success':'ដាក់ស្នើដោយជោគជ័យ! រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។',
-    'home.continue':'បន្តអាន','home.continueSub':'អានបន្តពីកន្លែងដែលអ្នកឈប់','shelf.new':'ទើបចេញថ្មី','shelf.hot':'ពេញនិយមឥឡូវនេះ','shelf.top':'វាយតម្លៃខ្ពស់បំផុត','shelf.soon':'ឆាប់ៗនេះ','home.seeAll':'មើលទាំងអស់','badge.new':'ថ្មី','badge.hot':'ពេញនិយម','home.page':'ទំព័រ','share.btn':'ចែករំលែក','share.download':'រក្សាទុករូប','share.copy':'ចម្លងតំណ','share.copied':'បានចម្លងតំណរួចរាល់','share.reading':'ខ្ញុំកំពុងអាននៅ KhozyReads','share.text':'អាន “{title}” នៅ KhozyReads','share.failed':'មិនអាចបង្កើតកាតបានទេ សូមព្យាយាមម្ដងទៀត','tab.home':'ទំព័រដើម','tab.search':'ស្វែងរក','tab.pass':'កាតអាន','tab.library':'បណ្ណាល័យ','tab.account':'គណនី','tab.cs':'ជំនួយ','cs.close':'បិទ',
+    'home.continue':'បន្តអាន','home.continueSub':'អានបន្តពីកន្លែងដែលអ្នកឈប់','shelf.new':'ទើបចេញថ្មី','shelf.hot':'ពេញនិយមឥឡូវនេះ','shelf.top':'វាយតម្លៃខ្ពស់បំផុត','shelf.soon':'ឆាប់ៗនេះ','home.seeAll':'មើលទាំងអស់','badge.new':'ថ្មី','badge.hot':'ពេញនិយម','home.page':'ទំព័រ','share.btn':'ចែករំលែក','share.image':'ចែករំលែករូប','share.link':'ចែករំលែកតំណ','share.hint':'រូបភាពនឹងភ្ជាប់ជាមួយតំណសៀវភៅដោយស្វ័យប្រវត្តិ','share.download':'រក្សាទុករូប','share.copy':'ចម្លងតំណ','share.copied':'បានចម្លងតំណរួចរាល់','share.reading':'ខ្ញុំកំពុងអាននៅ KhozyReads','share.text':'អាន “{title}” នៅ KhozyReads','share.failed':'មិនអាចបង្កើតកាតបានទេ សូមព្យាយាមម្ដងទៀត','tab.home':'ទំព័រដើម','tab.search':'ស្វែងរក','tab.pass':'កាតអាន','tab.library':'បណ្ណាល័យ','tab.account':'គណនី','tab.cs':'ជំនួយ','cs.close':'បិទ',
     'acct.eyebrow':'គណនីរបស់ខ្ញុំ','acct.language':'ភាសា','acct.telegram':'ទាក់ទងតាម Telegram','acct.facebook':'ទាក់ទងតាម Facebook','acct.guest':'ចូល ឬចុះឈ្មោះ ដើម្បីអានសៀវភៅ និងរក្សាទុកបណ្ណាល័យរបស់អ្នក។','acct.member':'សមាជិក',
     'ir.mode':'របៀបអាន','ir.flip':'បើកទំព័រ','ir.scroll':'រំកិលចុះ','ir.theme':'ពណ៌','ir.light':'ភ្លឺ','ir.sepia':'សេពីយ៉ា','ir.dark':'ងងឹត','ir.brightness':'ពន្លឺ','ir.zoomReset':'កំណត់ពង្រីកឡើងវិញ','ir.fullscreen':'ពេញអេក្រង់','ir.exitFullscreen':'ចាកចេញពេញអេក្រង់','ir.zoomHint':'ចុចពីរដងដើម្បីពង្រីក',
     'reader.loading':'កំពុងផ្ទុក PDF…','reader.failed':'មិនអាចផ្ទុក PDF បានទេ','reader.licensed':'ផ្តល់សិទ្ធិឱ្យ','reader.tracked':'ការថត និងការថតវីដេអូត្រូវបានតាមដាន',
@@ -1938,7 +1940,7 @@ const I18N = {
     'auth.user':'Username','auth.email':'Email','auth.pass':'Password',
     'pay.eyebrow':'Secure payment · ABA / KHQR','pay.title':'Complete your purchase','pay.crumb':'Payment','pay.step1':'Step 1 · Scan QR','pay.scan':'Scan the code below','pay.amount':'Amount',
     'pay.acc':'Account Name','pay.num':'Account Number','pay.s1h':'Scan QR and pay','pay.s1b':'Open ABA Mobile and scan the QR or transfer directly to the account.','pay.s2h':'Then upload the receipt','pay.s2b':'Take a screenshot of your payment and upload in the box below.','pay.s3h':'Wait for approval','pay.s3b':'Our team verifies within 1-2 hours. You can read immediately after.','pay.upload':'Upload receipt','pay.uploadSub':'JPG · PNG · PDF · max 8MB','pay.submit':'Submit payment','pay.success':'Submitted! Waiting for admin approval.',
-    'home.continue':'Continue reading','home.continueSub':'Pick up where you left off','shelf.new':'New releases','shelf.hot':'Popular now','shelf.top':'Top rated','shelf.soon':'Coming soon','home.seeAll':'See all','badge.new':'NEW','badge.hot':'HOT','home.page':'Page','share.btn':'Share','share.download':'Save image','share.copy':'Copy link','share.copied':'Link copied','share.reading':'I’m reading on KhozyReads','share.text':'Read “{title}” on KhozyReads','share.failed':'Could not create the card, please try again','tab.home':'Home','tab.search':'Search','tab.pass':'Pass','tab.library':'Library','tab.account':'Account','tab.cs':'Support','cs.close':'Close',
+    'home.continue':'Continue reading','home.continueSub':'Pick up where you left off','shelf.new':'New releases','shelf.hot':'Popular now','shelf.top':'Top rated','shelf.soon':'Coming soon','home.seeAll':'See all','badge.new':'NEW','badge.hot':'HOT','home.page':'Page','share.btn':'Share','share.image':'Share image','share.link':'Share link','share.hint':'The book link is attached automatically','share.download':'Save image','share.copy':'Copy link','share.copied':'Link copied','share.reading':'I’m reading on KhozyReads','share.text':'Read “{title}” on KhozyReads','share.failed':'Could not create the card, please try again','tab.home':'Home','tab.search':'Search','tab.pass':'Pass','tab.library':'Library','tab.account':'Account','tab.cs':'Support','cs.close':'Close',
     'acct.eyebrow':'My account','acct.language':'Language','acct.telegram':'Chat on Telegram','acct.facebook':'Chat on Facebook','acct.guest':'Log in or register to read books and keep your library.','acct.member':'Member',
     'ir.mode':'Reading mode','ir.flip':'Flip','ir.scroll':'Scroll','ir.theme':'Theme','ir.light':'Light','ir.sepia':'Sepia','ir.dark':'Dark','ir.brightness':'Brightness','ir.zoomReset':'Reset zoom','ir.fullscreen':'Fullscreen','ir.exitFullscreen':'Exit fullscreen','ir.zoomHint':'Double-tap to zoom',
     'reader.loading':'Loading PDF…','reader.failed':'Failed to load PDF','reader.licensed':'Licensed to','reader.tracked':'Screenshots and recordings are tracked',
@@ -2610,9 +2612,16 @@ async function buildShareCard(book, rating){
     const g = ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,'#5C1F1A'); g.addColorStop(1,'#1E2A3A'); ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
   }
   const veil = ctx.createLinearGradient(0,0,0,H); veil.addColorStop(0,'rgba(10,8,7,.15)'); veil.addColorStop(1,'rgba(10,8,7,.75)'); ctx.fillStyle = veil; ctx.fillRect(0,0,W,H);
-  // Brand chip
-  ctx.fillStyle = 'rgba(250,245,233,.92)'; roundRect(ctx, 80, 80, 330, 72, 36); ctx.fill();
-  ctx.fillStyle = '#7B2D26'; ctx.font = '600 38px "Cormorant Garamond", serif'; ctx.textBaseline = 'middle'; ctx.fillText('KhozyReads', 118, 117);
+  // Brand chip: real logo + wordmark
+  let logo = null; try{ logo = await loadImg('KhozyReads%20Logo.webp?v=2'); }catch(_){ logo = null; }
+  ctx.textBaseline = 'middle';
+  ctx.font = '600 38px "Cormorant Garamond", serif';
+  const wordW = ctx.measureText('KhozyReads').width;
+  const chipW = (logo ? 76 : 36) + wordW + 36;
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 6;
+  ctx.fillStyle = 'rgba(250,245,233,.95)'; roundRect(ctx, 80, 76, chipW, 84, 42); ctx.fill(); ctx.restore();
+  if(logo){ ctx.drawImage(logo, 98, 86, 64, 64); }
+  ctx.fillStyle = '#7B2D26'; ctx.fillText('KhozyReads', logo ? 172 : 116, 119);
   // Cover with stacked-page shadow
   const cw = 480, ch = 640, cx = (W-cw)/2, cy = 190;
   ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 60; ctx.shadowOffsetY = 30;
@@ -2660,14 +2669,24 @@ async function openShareCard(book, rating){
   }catch(e){ console.error('share card failed', e); spin.style.display = 'none'; toast(t('share.failed')); }
   const file = _shareBlob ? new File([_shareBlob], 'khozyreads.png', { type:'image/png' }) : null;
   const canFiles = file && navigator.canShare && navigator.canShare({ files:[file] });
+  const caption = `${text}\n${link}`;
+  // Image share: caption + url go along (Telegram/WhatsApp/Messenger keep the caption; some apps drop it,
+  // so the link is also copied to the clipboard as a safety net)
   $('#share-native').onclick = async () => {
+    try{ await navigator.clipboard.writeText(caption); }catch(_){}
     try{
-      if(canFiles) await navigator.share({ files:[file], title: book.title, text: `${text}\n${link}` });
+      if(canFiles) await navigator.share({ files:[file], title: book.title, text: caption, url: link });
       else if(navigator.share) await navigator.share({ title: book.title, text, url: link });
-      else { await navigator.clipboard.writeText(`${text}\n${link}`); toast(t('share.copied')); }
+      else { $('#share-download').click(); toast(t('share.copied')); }
     }catch(_){}
   };
-  $('#share-copy').onclick = async () => { try{ await navigator.clipboard.writeText(`${text}\n${link}`); toast(t('share.copied')); }catch(_){} };
+  // Link share: always text + url (rich preview in Telegram/FB), clipboard fallback on desktop
+  $('#share-copy').onclick = async () => {
+    try{
+      if(navigator.share) await navigator.share({ title: book.title, text, url: link });
+      else { await navigator.clipboard.writeText(caption); toast(t('share.copied')); }
+    }catch(_){}
+  };
   const close = () => { modal.style.display = 'none'; };
   $('#share-close').onclick = close;
   modal.onclick = e => { if(e.target === modal) close(); };
