@@ -623,6 +623,8 @@ html[lang="km"] .cs-panel-title,html[lang="km"] .cs-panel-sub,html[lang="km"] .c
 .cs-opt-text{display:flex;flex-direction:column;flex:1;line-height:1.25}
 .cs-opt-text strong{font-size:14px}.cs-opt-text small{font-size:11.5px;color:var(--muted);margin-top:2px}
 .cs-arrow{color:var(--muted);font-size:20px;line-height:1}
+.cs-close{display:none;width:100%;margin-top:12px;padding:12px;border-radius:12px;background:var(--bg-deep);color:var(--fg-soft);font-size:14px;font-family:inherit}
+.cs-close:active{transform:scale(.98)}
 
 #ss-warning{display:none;position:fixed;inset:0;z-index:200;background:rgba(20,15,12,.94);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:24px;text-align:center}
 #ss-warning.show{display:flex}
@@ -1041,7 +1043,17 @@ a.user-chip:hover{border-color:var(--accent-deep);box-shadow:var(--shadow-sm);co
   /* Floating widgets sit above the tab bar; CS bubble replaced by the Support tab */
   #cs-widget{bottom:calc(var(--tabbar-h) + 10px + env(safe-area-inset-bottom));right:12px}
   #cs-bubble{display:none}
-  #cs-panel{transform-origin:bottom center}
+  /* Support tab → bottom-sheet popup with backdrop */
+  #cs-widget.cs-open{left:0;right:0;top:0;bottom:0;padding:0 12px calc(var(--tabbar-h) + 12px + env(safe-area-inset-bottom));z-index:96;
+    align-items:center;justify-content:flex-end;background:rgba(20,15,12,.45);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);animation:fadein .2s ease}
+  #cs-widget.cs-open #cs-panel{width:min(100%,440px);padding:18px 16px 14px;border-radius:20px;transform-origin:bottom center;animation:csUp .3s cubic-bezier(.2,.8,.2,1);
+    background:rgba(255,253,247,.96);box-shadow:0 24px 60px rgba(30,20,10,.35)}
+  #cs-widget.cs-open .cs-panel-head{margin-bottom:14px}
+  #cs-widget.cs-open .cs-mini-avatar{width:54px;height:54px;flex-basis:54px}
+  #cs-widget.cs-open .cs-panel-title{font-size:16px}
+  #cs-widget.cs-open .cs-option{padding:13px 14px}
+  #cs-widget.cs-open .cs-close{display:block}
+  @keyframes csUp{from{opacity:0;transform:translateY(24px) scale(.97)}to{opacity:1;transform:none}}
   .guest-chip{display:inline-flex}
   .reader-audio{bottom:96px}
   .site-footer{padding:36px 20px 28px}
@@ -1228,6 +1240,7 @@ a.user-chip:hover{border-color:var(--accent-deep);box-shadow:var(--shadow-sm);co
       <span class="cs-opt-text"><strong>Facebook</strong><small data-i18n="cs.fbSub">Messenger · ទំព័រហ្វេសប៊ុក</small></span>
       <span class="cs-arrow">›</span>
     </a>
+    <button type="button" id="cs-close" class="cs-close"><span data-i18n="cs.close">បិទ</span></button>
   </div>
   <button id="cs-bubble" type="button" aria-label="Customer service" aria-expanded="false">
     <span class="cs-badge"><span data-i18n="cs.badge">ជំនួយ</span></span>
@@ -1769,7 +1782,7 @@ const I18N = {
     'auth.user':'ឈ្មោះអ្នកប្រើ','auth.email':'អ៊ីមែល','auth.pass':'ពាក្យសម្ងាត់',
     'pay.eyebrow':'ការទូទាត់សុវត្ថិភាព · ABA / KHQR','pay.title':'បញ្ចប់ការទិញរបស់អ្នក','pay.crumb':'បង់ប្រាក់','pay.step1':'ជំហានទី ១ · ស្កេន QR','pay.scan':'ស្កេនកូដខាងក្រោម','pay.amount':'ចំនួន',
     'pay.acc':'ឈ្មោះគណនី','pay.num':'លេខគណនី','pay.s1h':'ស្កេន QR និងបង់ប្រាក់','pay.s1b':'បើកកម្មវិធី ABA Mobile ហើយស្កេនកូដខាងស្តាំ ឬផ្ទេរប្រាក់ដោយផ្ទាល់ទៅគណនី។','pay.s2h':'បន្ទាប់​មក​បង្ហោះ​វិក្កយបត្រ','pay.s2b':'ថត​អេក្រង់​នៃ​ការបង់ប្រាក់ និង​បង្ហោះ​នៅ​ក្នុង​ប្រអប់​ខាង​ក្រោម។','pay.s3h':'រង់​ចាំ​ការ​អនុម័ត','pay.s3b':'ក្រុមការងារ​នឹង​ផ្ទៀង​ផ្ទាត់​ក្នុង​រយៈពេល ១ ទៅ ២ ម៉ោង។','pay.upload':'បង្ហោះវិក្កយបត្រ','pay.uploadSub':'JPG · PNG · PDF · អតិបរមា 8MB','pay.submit':'បញ្ជូនការបង់ប្រាក់','pay.success':'ដាក់ស្នើដោយជោគជ័យ! រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។',
-    'tab.home':'ទំព័រដើម','tab.search':'ស្វែងរក','tab.pass':'កាតអាន','tab.library':'បណ្ណាល័យ','tab.account':'គណនី','tab.cs':'ជំនួយ',
+    'tab.home':'ទំព័រដើម','tab.search':'ស្វែងរក','tab.pass':'កាតអាន','tab.library':'បណ្ណាល័យ','tab.account':'គណនី','tab.cs':'ជំនួយ','cs.close':'បិទ',
     'acct.eyebrow':'គណនីរបស់ខ្ញុំ','acct.language':'ភាសា','acct.telegram':'ទាក់ទងតាម Telegram','acct.facebook':'ទាក់ទងតាម Facebook','acct.guest':'ចូល ឬចុះឈ្មោះ ដើម្បីអានសៀវភៅ និងរក្សាទុកបណ្ណាល័យរបស់អ្នក។','acct.member':'សមាជិក',
     'ir.mode':'របៀបអាន','ir.flip':'បើកទំព័រ','ir.scroll':'រំកិលចុះ','ir.theme':'ពណ៌','ir.light':'ភ្លឺ','ir.sepia':'សេពីយ៉ា','ir.dark':'ងងឹត','ir.brightness':'ពន្លឺ','ir.zoomReset':'កំណត់ពង្រីកឡើងវិញ','ir.fullscreen':'ពេញអេក្រង់','ir.exitFullscreen':'ចាកចេញពេញអេក្រង់','ir.zoomHint':'ចុចពីរដងដើម្បីពង្រីក',
     'reader.loading':'កំពុងផ្ទុក PDF…','reader.failed':'មិនអាចផ្ទុក PDF បានទេ','reader.licensed':'ផ្តល់សិទ្ធិឱ្យ','reader.tracked':'ការថត និងការថតវីដេអូត្រូវបានតាមដាន',
@@ -1795,7 +1808,7 @@ const I18N = {
     'auth.user':'Username','auth.email':'Email','auth.pass':'Password',
     'pay.eyebrow':'Secure payment · ABA / KHQR','pay.title':'Complete your purchase','pay.crumb':'Payment','pay.step1':'Step 1 · Scan QR','pay.scan':'Scan the code below','pay.amount':'Amount',
     'pay.acc':'Account Name','pay.num':'Account Number','pay.s1h':'Scan QR and pay','pay.s1b':'Open ABA Mobile and scan the QR or transfer directly to the account.','pay.s2h':'Then upload the receipt','pay.s2b':'Take a screenshot of your payment and upload in the box below.','pay.s3h':'Wait for approval','pay.s3b':'Our team verifies within 1-2 hours. You can read immediately after.','pay.upload':'Upload receipt','pay.uploadSub':'JPG · PNG · PDF · max 8MB','pay.submit':'Submit payment','pay.success':'Submitted! Waiting for admin approval.',
-    'tab.home':'Home','tab.search':'Search','tab.pass':'Pass','tab.library':'Library','tab.account':'Account','tab.cs':'Support',
+    'tab.home':'Home','tab.search':'Search','tab.pass':'Pass','tab.library':'Library','tab.account':'Account','tab.cs':'Support','cs.close':'Close',
     'acct.eyebrow':'My account','acct.language':'Language','acct.telegram':'Chat on Telegram','acct.facebook':'Chat on Facebook','acct.guest':'Log in or register to read books and keep your library.','acct.member':'Member',
     'ir.mode':'Reading mode','ir.flip':'Flip','ir.scroll':'Scroll','ir.theme':'Theme','ir.light':'Light','ir.sepia':'Sepia','ir.dark':'Dark','ir.brightness':'Brightness','ir.zoomReset':'Reset zoom','ir.fullscreen':'Fullscreen','ir.exitFullscreen':'Exit fullscreen','ir.zoomHint':'Double-tap to zoom',
     'reader.loading':'Loading PDF…','reader.failed':'Failed to load PDF','reader.licensed':'Licensed to','reader.tracked':'Screenshots and recordings are tracked',
@@ -2005,13 +2018,17 @@ function updateCsWidget(){
   if(!_csWired){
     _csWired = true;
     const btn = $('#cs-bubble'), panel = $('#cs-panel');
-    const close = ()=>{ panel.classList.remove('open'); btn.setAttribute('aria-expanded','false'); };
+    const close = ()=>{ panel.classList.remove('open'); widget.classList.remove('cs-open'); btn.setAttribute('aria-expanded','false'); };
     btn.onclick = (e)=>{
       e.stopPropagation();
       const open = !panel.classList.contains('open');
       panel.classList.toggle('open', open);
+      widget.classList.toggle('cs-open', open);
       btn.setAttribute('aria-expanded', String(open));
     };
+    // Mobile: widget becomes a full-screen backdrop → tap outside the sheet closes it
+    widget.addEventListener('click', (e)=>{ if(e.target === widget) close(); });
+    $('#cs-close')?.addEventListener('click', close);
     document.addEventListener('click', (e)=>{ if(!widget.contains(e.target)) close(); });
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') close(); });
     [tgEl, fbEl].forEach(a=>{ if(a) a.addEventListener('click', close); });
@@ -2094,7 +2111,7 @@ window.addEventListener('hashchange', route);
 
 // Mobile "Support" tab → opens the CS panel (Telegram / Facebook); falls back to Account page
 document.getElementById('tab-cs').addEventListener('click', e => {
-  e.preventDefault();
+  e.preventDefault(); e.stopPropagation();
   const widget = $('#cs-widget'), btn = $('#cs-bubble');
   if(widget && widget.classList.contains('show') && btn){ btn.click(); }
   else location.hash = '#/account';
