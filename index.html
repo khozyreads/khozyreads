@@ -2594,6 +2594,14 @@ function wrapText(ctx, text, maxW){
   if(cur) lines.push(cur);
   return lines;
 }
+// Center by the glyphs' real ink box (Khmer subscripts/vowels make advance-width centering drift sideways)
+function centerText(ctx, text, cx, y){
+  const m = ctx.measureText(text);
+  const left = m.actualBoundingBoxLeft || 0, right = m.actualBoundingBoxRight || m.width;
+  const prev = ctx.textAlign; ctx.textAlign = 'left';
+  ctx.fillText(text, cx - (left + right)/2 + left, y);
+  ctx.textAlign = prev;
+}
 function roundRect(ctx, x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 async function buildShareCard(book, rating){
   const W = 1080, H = 1350;
@@ -2636,22 +2644,22 @@ async function buildShareCard(book, rating){
   // Title + author
   ctx.textAlign = 'center'; ctx.fillStyle = '#FAF5E9';
   ctx.font = '600 58px "Noto Serif Khmer", "Cormorant Garamond", serif';
-  const titleLines = wrapText(ctx, book.title || '', W - 200).slice(0, 2);
+  const titleLines = wrapText(ctx, String(book.title || '').trim(), W - 200).slice(0, 2);
   let y = cy + ch + 86;
-  titleLines.forEach(l => { ctx.fillText(l, W/2, y); y += 76; });
+  titleLines.forEach(l => { centerText(ctx, l.trim(), W/2, y); y += 76; });
   ctx.font = 'italic 400 34px "Crimson Pro", "Noto Serif Khmer", serif'; ctx.fillStyle = 'rgba(250,245,233,.8)';
-  if(book.creator){ ctx.fillText(book.creator, W/2, y + 6); y += 56; }
+  if(book.creator){ centerText(ctx, String(book.creator).trim(), W/2, y + 6); y += 56; }
   // Rating
   if(rating && rating.avg_rating){
     ctx.font = '600 34px "Crimson Pro", serif'; ctx.fillStyle = '#F3D27A';
     const stars = '★'.repeat(Math.round(rating.avg_rating)) + '☆'.repeat(5 - Math.round(rating.avg_rating));
-    ctx.fillText(`${stars}  ${rating.avg_rating}`, W/2, y + 10); y += 56;
+    centerText(ctx, `${stars}  ${rating.avg_rating}`, W/2, y + 10); y += 56;
   }
   // Footer line
   ctx.font = '500 30px "Noto Serif Khmer", "Crimson Pro", serif'; ctx.fillStyle = 'rgba(250,245,233,.75)';
-  ctx.fillText(t('share.reading'), W/2, H - 118);
+  centerText(ctx, t('share.reading'), W/2, H - 118);
   ctx.font = '600 30px "Cormorant Garamond", serif'; ctx.fillStyle = '#D4A574';
-  ctx.fillText('khozyreads.com', W/2, H - 66);
+  centerText(ctx, 'khozyreads.com', W/2, H - 66);
   return new Promise(res => c.toBlob(b => res(b), 'image/png'));
 }
 async function openShareCard(book, rating){
