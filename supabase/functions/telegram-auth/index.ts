@@ -159,7 +159,7 @@ Deno.serve(async (req) => {
       // Keep display name + @handle fresh on every login (user may have set/changed them)
       const { error: refreshErr } = await supabase
         .from("users_profile")
-        .update({ telegram_username: username || null, display_name: displayName })
+        .update({ telegram_username: username || null, display_name: displayName, ...(photo_url ? { avatar_url: photo_url } : {}) })
         .eq("auth_user_id", authUserId);
       if (refreshErr) console.warn("profile refresh failed:", refreshErr);
     }
@@ -176,7 +176,7 @@ Deno.serve(async (req) => {
         // Repair: set telegram_id on profile so next time lookup (1) works
         const { error: repairErr } = await supabase
           .from("users_profile")
-          .update({ telegram_id: tgId, telegram_username: username || null, display_name: displayName })
+          .update({ telegram_id: tgId, telegram_username: username || null, display_name: displayName, ...(photo_url ? { avatar_url: photo_url } : {}) })
           .eq("auth_user_id", authUserId);
         if (repairErr) console.warn("profile repair failed:", repairErr);
       }
@@ -211,6 +211,7 @@ Deno.serve(async (req) => {
         telegram_id: tgId,
         telegram_username: username || null,
         display_name: displayName,
+        ...(photo_url ? { avatar_url: photo_url } : {}),
       };
       const { error: upErr } = await supabase
         .from("users_profile")

@@ -589,6 +589,9 @@ html[lang="km"] .reviews-title{font-family:var(--font-khmer);font-size:18px;font
 .review.mine{border-color:var(--accent)}
 .review-head{display:flex;align-items:center;gap:10px}
 .review-avatar{width:34px;height:34px;border-radius:50%;background:var(--primary);color:#FAF5E9;display:flex;align-items:center;justify-content:center;font-weight:700;flex:0 0 34px}
+.avatar.has-img,.review-avatar.has-img{position:relative;overflow:hidden;background:var(--bg-deep)}
+.has-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+.has-img .av-fallback{opacity:0}
 .review-name{font-weight:600;font-size:14px}
 .review-date{font-size:12px}
 .review-stars{margin-left:auto}
@@ -1063,6 +1066,69 @@ a.user-chip:hover{border-color:var(--accent-deep);box-shadow:var(--shadow-sm);co
 @media (max-width:380px){
   .book-grid{grid-template-columns:repeat(2,1fr);gap:18px 14px}
 }
+
+/* ══════════════════════════════════════════════════════════
+   HOME: continue-reading strip, shelves, cover pills, skeleton
+   ══════════════════════════════════════════════════════════ */
+.shelf-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:0 0 12px}
+.shelf-head h3{margin:0;font-family:var(--font-display);font-size:24px;font-weight:600;color:var(--fg)}
+html[lang="km"] .shelf-head h3{font-family:var(--font-khmer);font-size:19px}
+.shelf-head .small{font-size:13px}
+.shelf-more{font-size:13px;color:var(--primary);border:0;white-space:nowrap}
+.shelf{margin:34px 0 0}
+.shelf-row,.continue-row{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 4px 14px;margin:0 -4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.shelf-row::-webkit-scrollbar,.continue-row::-webkit-scrollbar{display:none}
+.shelf-row>.book-card{flex:0 0 164px;scroll-snap-align:start;animation:none}
+.shelf-row .book-title{font-size:16px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+html[lang="km"] .shelf-row .book-title{font-size:14px}
+.shelf-row .book-author{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.shelf-row .book-genre-tags{display:none}
+.shelf-row .book-price{font-size:13px}
+.shelf-row .card-rating{font-size:12px}
+/* Cover pills (NEW / HOT / ★) */
+.cover-pills{position:absolute;left:8px;top:8px;z-index:5;display:flex;flex-direction:column;gap:4px;align-items:flex-start;pointer-events:none}
+.pill{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.35);box-shadow:0 3px 10px rgba(0,0,0,.18);font-family:var(--font-serif)}
+html[lang="km"] .pill{font-family:var(--font-khmer);letter-spacing:0;text-transform:none;font-size:11px}
+.pill-new{background:linear-gradient(135deg,rgba(45,106,79,.92),rgba(61,91,73,.92))}
+.pill-hot{background:linear-gradient(135deg,rgba(214,69,45,.92),rgba(123,45,38,.92))}
+.pill-star{background:rgba(30,42,58,.72);color:#F3D27A}
+/* Continue reading strip */
+.continue{margin:6px 0 10px;padding:16px 18px 6px;border-radius:18px;border:1px solid rgba(201,185,142,.5);
+  background:linear-gradient(135deg,rgba(255,253,247,.85),rgba(242,233,210,.65));-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:var(--shadow-sm)}
+.continue .shelf-head{margin-bottom:8px}
+.continue-row{gap:12px;padding:4px 0 12px;margin:0}
+.continue-card{flex:0 0 min(300px,82vw);scroll-snap-align:start;display:flex;align-items:center;gap:12px;padding:10px;border-radius:14px;background:var(--bg-elevated);border:1px solid var(--border);color:var(--fg);text-decoration:none;transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+.continue-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);color:var(--fg);border-color:var(--border-strong)}
+.continue-cover{flex:0 0 52px;width:52px;aspect-ratio:3/4;border-radius:2px 5px 5px 2px;overflow:hidden;box-shadow:2px 2px 0 -1px #FBF7EC,3px 3px 0 -1px #E2D8C2,4px 6px 12px rgba(30,20,10,.25)}
+.continue-cover img{width:100%;height:100%;object-fit:cover;display:block}
+.continue-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.continue-meta strong{font-family:var(--font-display);font-size:16px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+html[lang="km"] .continue-meta strong{font-family:var(--font-khmer);font-size:14px}
+.continue-meta small{font-size:12px;color:var(--muted)}
+.continue-bar{height:5px;border-radius:3px;background:rgba(30,42,58,.1);overflow:hidden;margin-top:2px}
+.continue-bar span{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent),var(--primary));transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.continue-play{flex:0 0 36px;width:36px;height:36px;border-radius:50%;background:var(--primary);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;padding-left:2px;box-shadow:0 6px 14px -6px rgba(123,45,38,.7)}
+/* Skeleton loader (route spinner replacement) */
+.skel{background:linear-gradient(100deg,var(--bg-deep) 25%,#FBF6EA 45%,var(--bg-deep) 65%);background-size:220% 100%;animation:skel 1.3s linear infinite;border-radius:8px}
+.skel-page{padding:36px 0}
+.skel-hero{height:26px;width:46%;margin:0 auto 14px}
+.skel-hero2{height:14px;width:60%;margin:0 auto 34px}
+.skel-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:40px 36px}
+.skel-card .skel-cover{aspect-ratio:3/4;border-radius:2px 8px 8px 2px;margin-bottom:12px}
+.skel-card .skel-l1{height:16px;width:80%;margin-bottom:8px}
+.skel-card .skel-l2{height:12px;width:50%}
+@media (max-width:960px){.skel-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:720px){
+  .shelf{margin-top:24px}
+  .shelf-row{gap:12px}
+  .shelf-row>.book-card{flex-basis:128px}
+  .shelf-row .book-title{font-size:13.5px}
+  .shelf-row .book-price{font-size:12px}
+  .continue{padding:12px 14px 2px;border-radius:16px}
+  .skel-grid{grid-template-columns:repeat(3,1fr);gap:18px 10px}
+  .skel-page{padding:20px 0}
+}
 </style>
 </head>
 <body>
@@ -1326,6 +1392,8 @@ a.user-chip:hover{border-color:var(--accent-deep);box-shadow:var(--shadow-sm);co
         <span class="hero-trust-item"><span class="hero-trust-ic">📚</span><span data-i18n="trust.instant">Instant access</span></span>
       </div>
     </div>
+    <div id="continue-strip"></div>
+    <div id="shelves"></div>
     <div class="section-head">
       <div class="left">
         <span class="eyebrow" data-i18n="home.all.eyebrow">បណ្តុំសៀវភៅទាំងអស់</span>
@@ -1782,7 +1850,7 @@ const I18N = {
     'auth.user':'ឈ្មោះអ្នកប្រើ','auth.email':'អ៊ីមែល','auth.pass':'ពាក្យសម្ងាត់',
     'pay.eyebrow':'ការទូទាត់សុវត្ថិភាព · ABA / KHQR','pay.title':'បញ្ចប់ការទិញរបស់អ្នក','pay.crumb':'បង់ប្រាក់','pay.step1':'ជំហានទី ១ · ស្កេន QR','pay.scan':'ស្កេនកូដខាងក្រោម','pay.amount':'ចំនួន',
     'pay.acc':'ឈ្មោះគណនី','pay.num':'លេខគណនី','pay.s1h':'ស្កេន QR និងបង់ប្រាក់','pay.s1b':'បើកកម្មវិធី ABA Mobile ហើយស្កេនកូដខាងស្តាំ ឬផ្ទេរប្រាក់ដោយផ្ទាល់ទៅគណនី។','pay.s2h':'បន្ទាប់​មក​បង្ហោះ​វិក្កយបត្រ','pay.s2b':'ថត​អេក្រង់​នៃ​ការបង់ប្រាក់ និង​បង្ហោះ​នៅ​ក្នុង​ប្រអប់​ខាង​ក្រោម។','pay.s3h':'រង់​ចាំ​ការ​អនុម័ត','pay.s3b':'ក្រុមការងារ​នឹង​ផ្ទៀង​ផ្ទាត់​ក្នុង​រយៈពេល ១ ទៅ ២ ម៉ោង។','pay.upload':'បង្ហោះវិក្កយបត្រ','pay.uploadSub':'JPG · PNG · PDF · អតិបរមា 8MB','pay.submit':'បញ្ជូនការបង់ប្រាក់','pay.success':'ដាក់ស្នើដោយជោគជ័យ! រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។',
-    'tab.home':'ទំព័រដើម','tab.search':'ស្វែងរក','tab.pass':'កាតអាន','tab.library':'បណ្ណាល័យ','tab.account':'គណនី','tab.cs':'ជំនួយ','cs.close':'បិទ',
+    'home.continue':'បន្តអាន','home.continueSub':'អានបន្តពីកន្លែងដែលអ្នកឈប់','shelf.new':'ទើបចេញថ្មី','shelf.hot':'ពេញនិយមឥឡូវនេះ','shelf.top':'វាយតម្លៃខ្ពស់បំផុត','shelf.soon':'ឆាប់ៗនេះ','home.seeAll':'មើលទាំងអស់','badge.new':'ថ្មី','badge.hot':'ពេញនិយម','home.page':'ទំព័រ','tab.home':'ទំព័រដើម','tab.search':'ស្វែងរក','tab.pass':'កាតអាន','tab.library':'បណ្ណាល័យ','tab.account':'គណនី','tab.cs':'ជំនួយ','cs.close':'បិទ',
     'acct.eyebrow':'គណនីរបស់ខ្ញុំ','acct.language':'ភាសា','acct.telegram':'ទាក់ទងតាម Telegram','acct.facebook':'ទាក់ទងតាម Facebook','acct.guest':'ចូល ឬចុះឈ្មោះ ដើម្បីអានសៀវភៅ និងរក្សាទុកបណ្ណាល័យរបស់អ្នក។','acct.member':'សមាជិក',
     'ir.mode':'របៀបអាន','ir.flip':'បើកទំព័រ','ir.scroll':'រំកិលចុះ','ir.theme':'ពណ៌','ir.light':'ភ្លឺ','ir.sepia':'សេពីយ៉ា','ir.dark':'ងងឹត','ir.brightness':'ពន្លឺ','ir.zoomReset':'កំណត់ពង្រីកឡើងវិញ','ir.fullscreen':'ពេញអេក្រង់','ir.exitFullscreen':'ចាកចេញពេញអេក្រង់','ir.zoomHint':'ចុចពីរដងដើម្បីពង្រីក',
     'reader.loading':'កំពុងផ្ទុក PDF…','reader.failed':'មិនអាចផ្ទុក PDF បានទេ','reader.licensed':'ផ្តល់សិទ្ធិឱ្យ','reader.tracked':'ការថត និងការថតវីដេអូត្រូវបានតាមដាន',
@@ -1808,7 +1876,7 @@ const I18N = {
     'auth.user':'Username','auth.email':'Email','auth.pass':'Password',
     'pay.eyebrow':'Secure payment · ABA / KHQR','pay.title':'Complete your purchase','pay.crumb':'Payment','pay.step1':'Step 1 · Scan QR','pay.scan':'Scan the code below','pay.amount':'Amount',
     'pay.acc':'Account Name','pay.num':'Account Number','pay.s1h':'Scan QR and pay','pay.s1b':'Open ABA Mobile and scan the QR or transfer directly to the account.','pay.s2h':'Then upload the receipt','pay.s2b':'Take a screenshot of your payment and upload in the box below.','pay.s3h':'Wait for approval','pay.s3b':'Our team verifies within 1-2 hours. You can read immediately after.','pay.upload':'Upload receipt','pay.uploadSub':'JPG · PNG · PDF · max 8MB','pay.submit':'Submit payment','pay.success':'Submitted! Waiting for admin approval.',
-    'tab.home':'Home','tab.search':'Search','tab.pass':'Pass','tab.library':'Library','tab.account':'Account','tab.cs':'Support','cs.close':'Close',
+    'home.continue':'Continue reading','home.continueSub':'Pick up where you left off','shelf.new':'New releases','shelf.hot':'Popular now','shelf.top':'Top rated','shelf.soon':'Coming soon','home.seeAll':'See all','badge.new':'NEW','badge.hot':'HOT','home.page':'Page','tab.home':'Home','tab.search':'Search','tab.pass':'Pass','tab.library':'Library','tab.account':'Account','tab.cs':'Support','cs.close':'Close',
     'acct.eyebrow':'My account','acct.language':'Language','acct.telegram':'Chat on Telegram','acct.facebook':'Chat on Facebook','acct.guest':'Log in or register to read books and keep your library.','acct.member':'Member',
     'ir.mode':'Reading mode','ir.flip':'Flip','ir.scroll':'Scroll','ir.theme':'Theme','ir.light':'Light','ir.sepia':'Sepia','ir.dark':'Dark','ir.brightness':'Brightness','ir.zoomReset':'Reset zoom','ir.fullscreen':'Fullscreen','ir.exitFullscreen':'Exit fullscreen','ir.zoomHint':'Double-tap to zoom',
     'reader.loading':'Loading PDF…','reader.failed':'Failed to load PDF','reader.licensed':'Licensed to','reader.tracked':'Screenshots and recordings are tracked',
@@ -1903,8 +1971,21 @@ async function loadAuth(){
     const { data } = await sb.from('users_profile').select('*').eq('auth_user_id',state.user.id).maybeSingle();
     state.profile = data;
     await loadSubscription();
+    // Profile photo: Telegram sets it server-side; for Google logins copy the OAuth picture once
+    if(state.profile && !state.profile.avatar_url && !sessionStorage.getItem('kr_avatar_synced')){
+      sessionStorage.setItem('kr_avatar_synced','1');
+      sb.rpc('sync_my_avatar').then(({data:url})=>{ if(url){ state.profile.avatar_url = url; renderAuthNav(); } }).catch(()=>{});
+    }
   }
   renderAuthNav();
+}
+// Avatar markup: real photo when we have one (Telegram / Google), otherwise the initial
+function avatarHtml(name, url, cls){
+  const initial = String(name||'U').replace(/^@/, '').charAt(0).toUpperCase() || 'U';
+  if(url && /^https:\/\//.test(url)){
+    return `<span class="${cls||'avatar'} has-img"><img src="${esc(url)}" alt="" referrerpolicy="no-referrer" loading="lazy" onerror="this.parentNode.classList.remove('has-img');this.remove()"/><span class="av-fallback">${esc(initial)}</span></span>`;
+  }
+  return `<span class="${cls||'avatar'}">${esc(initial)}</span>`;
 }
 // Reading pass (subscription) status for the signed-in user
 async function loadSubscription(){
@@ -1952,7 +2033,7 @@ function renderAuthNav(){
     const passChip = hasActiveSub()
       ? `<a class="pass-chip active" href="#/subscribe" title="${esc(fmtDateTime(state.sub.ends))}">🎫 ${esc(passTimeLeft(state.sub.ends))}</a>`
       : (state.sub ? `<a class="pass-chip expired" href="#/subscribe">⏳ ${t('pass.expired')}</a>` : '');
-    el.innerHTML = `${passChip}<a class="user-chip" href="#/account" title="${esc(name)}"><span class="avatar">${esc(initial)}</span><span>${esc(name)}</span></a> <a href="#" id="logout-link" class="nav-link" data-i18n="nav.logout">ចេញ</a>`;
+    el.innerHTML = `${passChip}<a class="user-chip" href="#/account" title="${esc(name)}">${avatarHtml(name, state.profile.avatar_url)}<span>${esc(name)}</span></a> <a href="#" id="logout-link" class="nav-link" data-i18n="nav.logout">ចេញ</a>`;
     applyI18n(el);
     $('#logout-link').onclick = e=>{ e.preventDefault(); doLogout(); };
   } else {
@@ -2094,7 +2175,7 @@ function route(){
   $('#site-header').style.display = showChrome?'':'none';
   $('#site-footer').style.display = showChrome?'':'none';
   if(_spinnerTimer) clearTimeout(_spinnerTimer);
-  _spinnerTimer = setTimeout(()=>{ if(!isStale()) $('#route-outlet').innerHTML=`<div class="center" style="padding:80px"><span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span></div>`; }, 150);
+  _spinnerTimer = setTimeout(()=>{ if(!isStale()) $('#route-outlet').innerHTML = skeletonHtml(r.name); }, 150);
   // Reset meta tags first; per-route handlers (e.g. book detail) override as needed
   resetPageMeta();
   const handlers = {'':renderHome, 'home':renderHome, 'book':renderBookDetail, 'library':renderLibrary, 'login':renderLogin, 'register':renderRegister, 'payment':renderPayment, 'payway-return':renderPaywayReturn, 'subscribe':renderSubscribe, 'read':renderReader, 'search':renderSearch, 'account':renderAccount};
@@ -2108,6 +2189,16 @@ function route(){
   Promise.resolve(h(r.id, isStale)).catch(err=>{ if(isStale()) return; console.error(err); $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(err.message||String(err))}</div>`; }).finally(()=>{ if(_spinnerTimer){clearTimeout(_spinnerTimer);_spinnerTimer=null;} updateTelegramBubble(); updateFacebookBubble(); updateApplyCreatorLinks(); window.scrollTo(0,0); });
 }
 window.addEventListener('hashchange', route);
+
+// Skeleton placeholder while a route loads (feels faster than a spinner)
+function skeletonHtml(name){
+  const cards = n => Array(n).fill('<div class="skel-card"><div class="skel skel-cover"></div><div class="skel skel-l1"></div><div class="skel skel-l2"></div></div>').join('');
+  if(name==='' || name==='home' || name==='search' || name==='library')
+    return `<div class="container skel-page"><div class="skel skel-hero"></div><div class="skel skel-hero2"></div><div class="skel-grid">${cards(8)}</div></div>`;
+  if(name==='book')
+    return `<div class="container skel-page"><div class="book-detail"><div class="detail-cover"><div class="skel" style="aspect-ratio:3/4;border-radius:3px 10px 10px 3px"></div></div><div><div class="skel" style="height:34px;width:70%;margin-bottom:14px"></div><div class="skel" style="height:16px;width:40%;margin-bottom:26px"></div><div class="skel" style="height:14px;width:100%;margin-bottom:8px"></div><div class="skel" style="height:14px;width:95%;margin-bottom:8px"></div><div class="skel" style="height:14px;width:80%;margin-bottom:28px"></div><div class="skel" style="height:50px;width:220px;border-radius:10px"></div></div></div></div>`;
+  return `<div class="center" style="padding:80px"><span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span></div>`;
+}
 
 // Mobile "Support" tab → opens the CS panel (Telegram / Facebook); falls back to Account page
 document.getElementById('tab-cs').addEventListener('click', e => {
@@ -2206,10 +2297,110 @@ function warmCaches(){
   fetchRatingStats().catch(()=>{});
 }
 
+// Reads per book in the last 30 days (public view `book_popularity`; empty if not created yet)
+let _popCache = null, _popAt = 0;
+async function fetchPopularity(force){
+  if(!force && _popCache && (Date.now()-_popAt) < 120_000) return _popCache;
+  try{
+    const { data, error } = await sb.from('book_popularity').select('book_id,reads_30d');
+    _popCache = {}; if(!error) (data||[]).forEach(r=>{ _popCache[r.book_id] = r.reads_30d; });
+  }catch(_){ _popCache = {}; }
+  _popAt = Date.now();
+  return _popCache;
+}
+const NEW_DAYS = 14;
+function isNewBook(b){ return b.created_at && (Date.now() - new Date(b.created_at).getTime()) < NEW_DAYS*864e5; }
+
+// One card markup for grid + shelves
+function bookCardHtml(b, i, favIds, ratingStats, popularity){
+  const imgAttrs = i < 3 ? `loading="eager" fetchpriority="high"` : `loading="lazy" decoding="async"`;
+  const genreTags = (b.genre||[]).slice(0,3).map(g=>`<span>${esc(g)}</span>`).join('');
+  const rs = ratingStats && ratingStats[b.id];
+  const hot = popularity && popularity.__hot && popularity.__hot.has(b.id);
+  const pills = [];
+  if(!b.is_coming_soon && isNewBook(b)) pills.push(`<span class="pill pill-new">${t('badge.new')}</span>`);
+  if(!b.is_coming_soon && hot) pills.push(`<span class="pill pill-hot">🔥 ${t('badge.hot')}</span>`);
+  if(rs && rs.avg_rating >= 4) pills.push(`<span class="pill pill-star">★ ${rs.avg_rating}</span>`);
+  return `
+  <a class="book-card" href="#/book/${b.id}">
+    ${state.profile ? favBtnHtml(b.id, favIds && favIds.has(b.id)) : ''}
+    <div class="book-cover" style="background:${b.cover_url?'var(--bg-deep)':pickColor(b.id)}">
+      ${b.cover_url ? `<img src="${esc(b.cover_url)}" alt="${esc(b.title)}" width="242" height="322" ${imgAttrs}/>` : `<div class="placeholder">COVER</div><svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}
+      ${pills.length ? `<div class="cover-pills">${pills.slice(0,2).join('')}</div>` : ''}
+      ${b.is_coming_soon ? `<span class="coming-soon-badge">✨ ${t('badge.comingSoon')}</span><div class="coming-soon-veil"></div>` : (b.is_free ? `<span class="free-badge">${state.lang==='kh'?'🎁 ឥតគិតថ្លៃ':'🎁 FREE'}</span>` : '')}
+    </div>
+    <div class="book-meta">
+      <h3 class="book-title">${esc(b.title)}</h3>
+      <p class="book-author">${esc(b.creator||'-')}</p>
+      ${genreTags?`<div class="book-genre-tags">${genreTags}</div>`:''}
+      ${rs ? `<div class="card-rating">${starsHtml(rs.avg_rating,'sm')} <span class="muted">${rs.avg_rating} (${rs.review_count})</span></div>` : ''}
+      <span class="book-price">${b.is_coming_soon ? t('badge.comingSoon') : (b.is_free ? (state.lang==='kh'?'ឥតគិតថ្លៃ':'Free') : (hasActiveSub() ? `✅ ${t('pass.badge')} · ${esc(passTimeLeft(state.sub.ends))}` : `🎫 ${t('detail.passPrice')}`))}</span>
+    </div>
+  </a>`;
+}
+
+function shelfHtml(key, title, items, favIds, ratingStats, popularity, seeAllHref){
+  if(!items.length) return '';
+  return `<section class="shelf" data-shelf="${key}">
+    <div class="shelf-head"><h3>${title}</h3>${seeAllHref ? `<a href="${seeAllHref}" class="shelf-more">${t('home.seeAll')} ›</a>` : ''}</div>
+    <div class="shelf-row">${items.map((b,i)=>bookCardHtml(b, i+3, favIds, ratingStats, popularity)).join('')}</div>
+  </section>`;
+}
+
+function renderShelves(books, favIds, ratingStats, popularity){
+  const el = $('#shelves'); if(!el) return;
+  const live = books.filter(b=>!b.is_coming_soon);
+  const newest = live.filter(isNewBook).slice(0, 10);
+  const hot = live.filter(b=>popularity[b.id] > 0).sort((a,b)=>(popularity[b.id]||0)-(popularity[a.id]||0)).slice(0, 10);
+  const top = live.filter(b=>ratingStats[b.id] && ratingStats[b.id].review_count >= 1 && ratingStats[b.id].avg_rating >= 4)
+                  .sort((a,b)=>(ratingStats[b.id].avg_rating - ratingStats[a.id].avg_rating) || (ratingStats[b.id].review_count - ratingStats[a.id].review_count)).slice(0, 10);
+  const soon = books.filter(b=>b.is_coming_soon).slice(0, 10);
+  // Need at least 2 shelves with content to be worth showing; otherwise the grid alone is cleaner
+  const parts = [
+    shelfHtml('new', `✨ ${t('shelf.new')}`, newest, favIds, ratingStats, popularity),
+    shelfHtml('hot', `🔥 ${t('shelf.hot')}`, hot, favIds, ratingStats, popularity),
+    shelfHtml('top', `⭐ ${t('shelf.top')}`, top, favIds, ratingStats, popularity),
+    shelfHtml('soon', `🔜 ${t('shelf.soon')}`, soon, favIds, ratingStats, popularity),
+  ].filter(Boolean);
+  el.innerHTML = parts.length >= 2 ? parts.join('') : '';
+  wireFavButtons(el);
+}
+
+let _contCache = null, _contAt = 0;
+async function renderContinueStrip(){
+  const el = $('#continue-strip'); if(!el || !state.profile) return;
+  let rows = (_contCache && (Date.now()-_contAt) < 60_000) ? _contCache : null;
+  if(!rows){
+    const { data } = await sb.from('user_library')
+      .select('book_id,last_page,last_read_at,books(id,title,cover_url,total_pages,status)')
+      .eq('user_id', state.profile.id).gt('last_page', 1).order('last_read_at', { ascending:false }).limit(10);
+    rows = (data||[]).filter(r=>r.books && r.books.status==='active' && (r.books.total_pages||0) > 0 && r.last_page < (r.books.total_pages||0));
+    _contCache = rows; _contAt = Date.now();
+  }
+  if(!rows.length){ el.innerHTML = ''; return; }
+  el.innerHTML = `<section class="continue">
+    <div class="shelf-head"><h3>📖 ${t('home.continue')}</h3><span class="muted small">${t('home.continueSub')}</span></div>
+    <div class="continue-row">${rows.map(r=>{
+      const b = r.books, pct = Math.min(100, Math.round(r.last_page / b.total_pages * 100));
+      return `<a class="continue-card" href="#/read/${b.id}">
+        <div class="continue-cover" style="background:${b.cover_url?'var(--bg-deep)':pickColor(b.id)}">${b.cover_url?`<img src="${esc(b.cover_url)}" alt="" loading="lazy" decoding="async"/>`:''}</div>
+        <div class="continue-meta">
+          <strong>${esc(b.title)}</strong>
+          <small>${t('home.page')} ${r.last_page} / ${b.total_pages} · ${pct}%</small>
+          <div class="continue-bar"><span style="width:${pct}%"></span></div>
+        </div>
+        <span class="continue-play">▶</span>
+      </a>`; }).join('')}</div>
+  </section>`;
+}
+function invalidateContinue(){ _contCache = null; }
+
 async function renderHome(){
   let books = getBooksCached();
   let favIds;
-  const ratingStats = await fetchRatingStats();
+  const [ratingStats, popularity] = await Promise.all([fetchRatingStats(), fetchPopularity()]);
+  // Mark the top-3 most-read books as HOT (needs ≥3 reads to count)
+  popularity.__hot = new Set(Object.entries(popularity).filter(([k,v])=>k!=='__hot' && v >= 3).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k])=>k));
   if(books){
     favIds = await loadFavoriteIds();          // cheap; books already in memory → near-instant
     fetchBooks(true).then(fresh=>{             // quiet refresh; re-render only if the list changed
@@ -2269,28 +2460,17 @@ async function renderHome(){
       return;
     }
 
-    grid.innerHTML = filtered.map((b, i)=>{
-      const isAboveFold = i < 3;
-      const imgAttrs = isAboveFold ? `loading="eager" fetchpriority="high"` : `loading="lazy" decoding="async"`;
-      const genreTags = (b.genre||[]).slice(0,3).map(g=>`<span>${esc(g)}</span>`).join('');
-      return `
-      <a class="book-card" href="#/book/${b.id}">
-        ${state.profile ? favBtnHtml(b.id, favIds.has(b.id)) : ''}
-        <div class="book-cover" style="background:${b.cover_url?'var(--bg-deep)':pickColor(b.id)}">
-          ${b.cover_url ? `<img src="${esc(b.cover_url)}" alt="${esc(b.title)}" width="242" height="322" ${imgAttrs}/>` : `<div class="placeholder">COVER</div><svg class="corner-orn tl"><use href="#orn-corner"/></svg><svg class="corner-orn br"><use href="#orn-corner"/></svg>`}
-          ${b.is_coming_soon ? `<span class="coming-soon-badge">✨ ${t('badge.comingSoon')}</span><div class="coming-soon-veil"></div>` : (b.is_free ? `<span class="free-badge">${state.lang==='kh'?'🎁 ឥតគិតថ្លៃ':'🎁 FREE'}</span>` : '')}
-        </div>
-        <div class="book-meta">
-          <h3 class="book-title">${esc(b.title)}</h3>
-          <p class="book-author">${esc(b.creator||'-')}</p>
-          ${genreTags?`<div class="book-genre-tags">${genreTags}</div>`:''}
-          ${ratingStats[b.id] ? `<div class="card-rating">${starsHtml(ratingStats[b.id].avg_rating,'sm')} <span class="muted">${ratingStats[b.id].avg_rating} (${ratingStats[b.id].review_count})</span></div>` : ''}
-          <span class="book-price">${b.is_coming_soon ? t('badge.comingSoon') : (b.is_free ? (state.lang==='kh'?'ឥតគិតថ្លៃ':'Free') : (hasActiveSub() ? `✅ ${t('pass.badge')} · ${esc(passTimeLeft(state.sub.ends))}` : `🎫 ${t('detail.passPrice')}`))}</span>
-        </div>
-      </a>`;
-    }).join('');
+    grid.innerHTML = filtered.map((b, i)=>bookCardHtml(b, i, favIds, ratingStats, popularity)).join('');
     wireFavButtons(grid);
+    // Shelves only make sense on the unfiltered view
+    const shelvesEl = $('#shelves');
+    if(shelvesEl) shelvesEl.style.display = (q || activeGenre) ? 'none' : '';
   }
+
+  // ── Shelves: New · Popular · Top rated · Coming soon (horizontal rows) ──
+  renderShelves(books, favIds, ratingStats, popularity);
+  // ── Continue reading strip (signed-in readers with progress) ──
+  if(state.profile) renderContinueStrip().catch(()=>{});
 
   // Debounce search (gak ngeguya rerender tiap keystroke)
   let searchT = null;
@@ -2406,7 +2586,7 @@ async function renderReviews(book){
   const listEl = $('#review-list'), formWrap = $('#review-form-wrap'), sumEl = $('#rating-summary'), countEl = $('#rev-count');
   if(!listEl) return;
   const [{ data:reviews }, canRes] = await Promise.all([
-    sb.from('book_reviews').select('id,user_id,rating,comment,reviewer_name,created_at,updated_at').eq('book_id', book.id).order('created_at',{ascending:false}).limit(100),
+    sb.from('book_reviews').select('id,user_id,rating,comment,reviewer_name,reviewer_avatar,created_at,updated_at').eq('book_id', book.id).order('created_at',{ascending:false}).limit(100),
     state.profile ? sb.rpc('can_review_book', { p_book_id: book.id }) : Promise.resolve({ data:false })
   ]);
   if(!$('#review-list')) return; // navigated away
@@ -2460,7 +2640,7 @@ async function renderReviews(book){
   }
 
   listEl.innerHTML = rows.length ? rows.map(r=>`<div class="review ${state.profile && r.user_id===state.profile.id ? 'mine' : ''}">
-      <div class="review-head"><span class="review-avatar">${esc((r.reviewer_name||'?').replace(/^@/,'').charAt(0).toUpperCase())}</span><div><div class="review-name">${esc(r.reviewer_name||'Reader')}</div><div class="review-date muted">${esc(fmtDateTime(r.created_at))}</div></div><div class="review-stars">${starsHtml(r.rating,'sm')}</div></div>
+      <div class="review-head">${avatarHtml(r.reviewer_name||'?', r.reviewer_avatar, 'review-avatar')}<div><div class="review-name">${esc(r.reviewer_name||'Reader')}</div><div class="review-date muted">${esc(fmtDateTime(r.created_at))}</div></div><div class="review-stars">${starsHtml(r.rating,'sm')}</div></div>
       ${r.comment ? `<p class="review-text">${esc(r.comment)}</p>` : ''}
     </div>`).join('') : `<div class="muted" style="padding:10px 0">${t('rev.beFirst')}</div>`;
 }
@@ -2496,7 +2676,7 @@ async function renderAccount(){
   if(state.user && state.profile){
     const name = profileDisplay(state.profile);
     const initial = name.replace(/^@/, '').charAt(0).toUpperCase() || 'U';
-    prof.innerHTML = `<div class="acct-profile"><span class="avatar">${esc(initial)}</span><div><strong>${esc(name)}</strong><small>${t('acct.member')} · ${esc(fmtDateTime(state.profile.created_at||'').split(',')[0]||'')}</small></div></div>`;
+    prof.innerHTML = `<div class="acct-profile">${avatarHtml(name, state.profile.avatar_url)}<div><strong>${esc(name)}</strong><small>${t('acct.member')} · ${esc(fmtDateTime(state.profile.created_at||'').split(',')[0]||'')}</small></div></div>`;
     pass.innerHTML = subBannerHtml({ showManage:true });
     actions.innerHTML = `<button class="btn btn-ghost" id="acct-logout" style="width:100%">${t('nav.logout')}</button>`;
     $('#acct-logout').onclick = doLogout;
@@ -4031,6 +4211,7 @@ async function initImageReader(book, pages, startPage){
     try{ wakeLock?.release?.(); }catch(_){}
     if(document.fullscreenElement || document.webkitFullscreenElement){ try{ (document.exitFullscreen || document.webkitExitFullscreen).call(document); }catch(_){} }
     if(io) io.disconnect();
+    invalidateContinue();   // home "Continue reading" strip should reflect the new position
     // Flush any pending progress save immediately so leaving doesn't lose data
     if(saveProgressT){
       clearTimeout(saveProgressT);
