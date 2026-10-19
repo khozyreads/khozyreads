@@ -927,6 +927,120 @@ html[lang="km"] .ir-set-label,html[lang="km"] .ir-seg button{font-family:var(--f
 .ir-zoom-hint.show{opacity:1}
 .ir-btn.on{background:rgba(212,165,116,.25);color:var(--accent)}
 #ir-frame:fullscreen{width:100vw;height:100vh}
+
+/* ══════════════════════════════════════════════════════════
+   MOBILE APP SHELL (≤720px): bottom tab bar, compact header,
+   3-col grid, sticky detail CTA, account page
+   ══════════════════════════════════════════════════════════ */
+:root{--tabbar-h:64px}
+.tabbar{display:none}
+/* Account page (used on all sizes, reachable from the tab bar) */
+.account-page{max-width:640px;padding-bottom:24px}
+.acct-card{background:rgba(255,253,247,.75);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:16px;padding:16px 18px;margin:0 0 12px;box-shadow:var(--shadow-sm)}
+.acct-profile{display:flex;align-items:center;gap:14px}
+.acct-profile .avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--accent-deep));color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-serif);font-size:20px;font-weight:600;flex-shrink:0}
+.acct-profile strong{display:block;font-size:17px}
+.acct-profile small{color:var(--muted);font-size:13px}
+.acct-row{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.acct-label{font-size:14px;color:var(--fg-soft)}
+.acct-seg{background:var(--bg-deep);max-width:240px}
+.acct-seg button{color:var(--fg-soft)}
+.acct-seg button.active{background:var(--primary);color:#fff}
+.acct-links{padding:4px 0}
+.acct-links a{display:flex;align-items:center;gap:10px;padding:13px 18px;border:0;color:var(--fg);font-size:15px;border-bottom:1px solid var(--border)}
+.acct-links a:last-child{border-bottom:0}
+.acct-links a span{flex:1}
+.acct-links a i{font-style:normal;color:var(--muted);font-size:18px}
+.acct-links a:hover{background:rgba(123,45,38,.04)}
+#acct-pass{margin:0 0 12px}
+#acct-pass .sub-banner-inner{border-radius:16px}
+
+@media (max-width:720px){
+  /* Bottom tab bar */
+  body{padding-bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom))}
+  .tabbar{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:95;height:calc(var(--tabbar-h) + env(safe-area-inset-bottom));padding:0 4px env(safe-area-inset-bottom);
+    background:rgba(250,245,233,.86);-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4);
+    border-top:1px solid rgba(201,185,142,.45);box-shadow:0 -10px 30px -16px rgba(30,20,10,.3)}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);text-decoration:none;border:0;font-size:11px;letter-spacing:.01em;padding:6px 0 4px;position:relative;-webkit-tap-highlight-color:transparent;transition:color .2s}
+  html[lang="km"] .tab{font-family:var(--font-khmer);font-size:11.5px}
+  .tab svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+  .tab.active{color:var(--primary)}
+  .tab.active svg{transform:translateY(-1px) scale(1.08)}
+  .tab.active::before{content:"";position:absolute;top:0;width:28px;height:3px;border-radius:0 0 3px 3px;background:linear-gradient(90deg,var(--accent),var(--primary))}
+  .tab:hover{color:var(--primary);border:0}
+  /* Center "Pass" button — raised, maroon, the money action */
+  .tab-pass{overflow:visible}
+  .tab-pass .tab-pass-btn{width:54px;height:54px;border-radius:50%;margin-top:-26px;display:flex;align-items:center;justify-content:center;color:#fff;
+    background:linear-gradient(145deg,#9A3E35,var(--primary) 55%,var(--primary-deep));box-shadow:0 8px 20px -6px rgba(123,45,38,.65),0 0 0 5px var(--bg);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+  .tab-pass .tab-pass-btn svg{width:26px;height:26px;stroke:#fff}
+  .tab-pass.active .tab-pass-btn{transform:translateY(-3px) scale(1.06)}
+  .tab-pass.active::before{display:none}
+  .tab-pass:active .tab-pass-btn{transform:scale(.94)}
+  /* Compact app header: logo + pass chip + user only */
+  .header-top{padding:10px 14px;gap:10px}
+  .brand-tag{display:none}
+  .brand-mark{width:34px;height:34px}
+  .brand-name{font-size:22px}
+  .site-header.is-scrolled .brand-name{font-size:22px}
+  .site-header.is-scrolled .header-top{padding-top:8px;padding-bottom:8px}
+  .header-top{flex-wrap:nowrap}
+  .brand{min-width:0;flex:1 1 auto}
+  .brand>div{min-width:0}
+  .brand-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .header-nav{gap:6px;flex-wrap:nowrap;flex-shrink:0;margin-left:auto;width:auto;order:0;border-top:0;padding-top:0;margin-top:0;justify-content:flex-end}
+  #auth-nav{flex-wrap:nowrap}
+  .header-nav>.nav-link,.header-nav>.nav-pass,#lang-switcher,#pwa-install{display:none!important}
+  #auth-nav{display:flex;align-items:center;gap:6px}
+  #auth-nav .nav-link{display:none}          /* logout lives in the Account tab */
+  #auth-nav .btn{padding:8px 14px;min-height:36px;font-size:14px}
+  .pass-chip{display:inline-flex;margin-right:0;padding:5px 10px;font-size:12px}
+  .user-chip{padding:4px;gap:0}
+  .user-chip>span:not(.avatar){display:none}  /* avatar only */
+  .user-chip .avatar{width:32px;height:32px}
+  /* Compact hero + 3-column cover grid */
+  .hero{padding:28px 0 18px}
+  .hero-orn-top{display:none}
+  .hero .eyebrow{font-size:11px}
+  .display-1{font-size:30px!important}
+  .hero .lede{font-size:15px;margin-top:6px}
+  .hero-trust-row{margin-top:14px;gap:6px}
+  .hero-trust-item{padding:4px 9px;font-size:11px}
+  .hero-meta{display:none}
+  .section-head{margin:22px 0 16px;padding-bottom:10px}
+  .book-toolbar{margin:0 0 16px}
+  .genre-chips{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;margin:0 -16px;padding-left:16px;padding-right:16px;-webkit-overflow-scrolling:touch}
+  .genre-chips::-webkit-scrollbar{display:none}
+  .genre-chip{flex-shrink:0}
+  .book-grid{grid-template-columns:repeat(3,1fr);gap:18px 10px}
+  .book-cover{border-radius:2px 6px 6px 2px}
+  .book-card{gap:8px}
+  .book-title{font-size:14px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  html[lang="km"] .book-title{font-size:13px}
+  .book-author{font-size:12px;margin:0 0 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .book-price{font-size:13px}
+  .fav-btn{width:30px;height:30px;top:6px;right:6px}
+  .fav-btn svg{width:15px;height:15px}
+  .free-badge{padding:3px 8px;font-size:9px;top:6px;right:6px}
+  html[lang="km"] .free-badge{font-size:10px}
+  .book-genre-tags{display:none}
+  .featured{padding:20px 0}
+  /* Book detail: sticky CTA above the tab bar */
+  .book-detail{padding-bottom:84px}
+  .cta-row#detail-cta{position:fixed;left:0;right:0;bottom:calc(var(--tabbar-h) + env(safe-area-inset-bottom));z-index:85;margin:0;padding:10px 14px;display:flex;gap:10px;
+    background:rgba(250,245,233,.9);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid rgba(201,185,142,.45)}
+  .cta-row#detail-cta:empty{display:none}
+  .cta-row#detail-cta .btn{flex:1;min-height:50px}
+  .cta-row#detail-cta .btn-pending{flex:1}
+  /* Floating widgets sit above the tab bar */
+  #cs-widget{bottom:calc(var(--tabbar-h) + 14px + env(safe-area-inset-bottom))}
+  .reader-audio{bottom:96px}
+  .site-footer{padding:36px 20px 28px}
+  /* Login/Register buttons on account page */
+  .account-page .btn{min-height:48px}
+}
+@media (max-width:380px){
+  .book-grid{grid-template-columns:repeat(2,1fr);gap:18px 14px}
+}
 </style>
 </head>
 <body>
@@ -1058,6 +1172,30 @@ html[lang="km"] .ir-set-label,html[lang="km"] .ir-seg button{font-family:var(--f
     </p>
     <p class="muted">© 2026 · <span data-i18n="footer.note">បង្កើតដោយក្តីស្រឡាញ់ពីខ្មែរ</span></p>
   </footer>
+
+  <!-- Mobile app-style bottom tab bar (≤720px) -->
+  <nav class="tabbar" id="tabbar" aria-label="Main">
+    <a class="tab" href="#/" data-tab="home">
+      <svg viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+      <span data-i18n="tab.home">ទំព័រដើម</span>
+    </a>
+    <a class="tab" href="#/search" data-tab="search">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <span data-i18n="tab.search">ស្វែងរក</span>
+    </a>
+    <a class="tab tab-pass" href="#/subscribe" data-tab="subscribe">
+      <span class="tab-pass-btn"><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4z"/><path d="M9 6v12" stroke-dasharray="2 2"/></svg></span>
+      <span data-i18n="tab.pass">កាតអាន</span>
+    </a>
+    <a class="tab" href="#/library" data-tab="library">
+      <svg viewBox="0 0 24 24"><path d="M4 4h5v16H4zM10 4h5v16h-5zM16.5 5.2l4.3-1 3.7 15.6-4.3 1z"/></svg>
+      <span data-i18n="tab.library">បណ្ណាល័យ</span>
+    </a>
+    <a class="tab" href="#/account" data-tab="account">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+      <span data-i18n="tab.account">គណនី</span>
+    </a>
+  </nav>
 </div>
 
 <!-- Customer-service bubble: one cute CS avatar → choose Telegram / Facebook -->
@@ -1228,6 +1366,36 @@ html[lang="km"] .ir-set-label,html[lang="km"] .ir-seg button{font-family:var(--f
         </section>
       </div>
     </div>
+  </div>
+</section>
+</template>
+
+<template id="tpl-account">
+<section class="route">
+  <div class="container account-page">
+    <div class="hero" style="padding:28px 0 10px;text-align:left">
+      <div class="eyebrow" data-i18n="acct.eyebrow">គណនីរបស់ខ្ញុំ</div>
+      <h1 class="display display-3" data-i18n="tab.account">គណនី</h1>
+    </div>
+    <div class="acct-card" id="acct-profile"></div>
+    <div class="sub-banner" id="acct-pass" style="display:block;max-width:none"></div>
+    <div class="acct-card">
+      <div class="acct-row">
+        <span class="acct-label" data-i18n="acct.language">ភាសា</span>
+        <span class="ir-seg acct-seg" id="acct-lang">
+          <button type="button" data-lang="kh" class="km">ខ្មែរ</button>
+          <button type="button" data-lang="en">English</button>
+        </span>
+      </div>
+    </div>
+    <div class="acct-card acct-links" id="acct-links">
+      <a id="acct-tg" href="#" target="_blank" rel="noopener" style="display:none">✈️ <span data-i18n="acct.telegram">ទាក់ទងតាម Telegram</span><i>›</i></a>
+      <a id="acct-fb" href="#" target="_blank" rel="noopener" style="display:none">💬 <span data-i18n="acct.facebook">ទាក់ទងតាម Facebook</span><i>›</i></a>
+      <a id="acct-creator" href="#" target="_blank" rel="noopener" style="display:none">✍️ <span data-i18n="footer.applyCreator">Apply as Creator</span><i>›</i></a>
+      <a href="/privacy.html">🔒 <span data-i18n="footer.privacy">Privacy Policy</span><i>›</i></a>
+      <a href="/terms.html">📄 <span data-i18n="footer.terms">Terms of Service</span><i>›</i></a>
+    </div>
+    <div id="acct-actions" style="margin:18px 0 8px"></div>
   </div>
 </section>
 </template>
@@ -1591,6 +1759,8 @@ const I18N = {
     'auth.user':'ឈ្មោះអ្នកប្រើ','auth.email':'អ៊ីមែល','auth.pass':'ពាក្យសម្ងាត់',
     'pay.eyebrow':'ការទូទាត់សុវត្ថិភាព · ABA / KHQR','pay.title':'បញ្ចប់ការទិញរបស់អ្នក','pay.crumb':'បង់ប្រាក់','pay.step1':'ជំហានទី ១ · ស្កេន QR','pay.scan':'ស្កេនកូដខាងក្រោម','pay.amount':'ចំនួន',
     'pay.acc':'ឈ្មោះគណនី','pay.num':'លេខគណនី','pay.s1h':'ស្កេន QR និងបង់ប្រាក់','pay.s1b':'បើកកម្មវិធី ABA Mobile ហើយស្កេនកូដខាងស្តាំ ឬផ្ទេរប្រាក់ដោយផ្ទាល់ទៅគណនី។','pay.s2h':'បន្ទាប់​មក​បង្ហោះ​វិក្កយបត្រ','pay.s2b':'ថត​អេក្រង់​នៃ​ការបង់ប្រាក់ និង​បង្ហោះ​នៅ​ក្នុង​ប្រអប់​ខាង​ក្រោម។','pay.s3h':'រង់​ចាំ​ការ​អនុម័ត','pay.s3b':'ក្រុមការងារ​នឹង​ផ្ទៀង​ផ្ទាត់​ក្នុង​រយៈពេល ១ ទៅ ២ ម៉ោង។','pay.upload':'បង្ហោះវិក្កយបត្រ','pay.uploadSub':'JPG · PNG · PDF · អតិបរមា 8MB','pay.submit':'បញ្ជូនការបង់ប្រាក់','pay.success':'ដាក់ស្នើដោយជោគជ័យ! រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។',
+    'tab.home':'ទំព័រដើម','tab.search':'ស្វែងរក','tab.pass':'កាតអាន','tab.library':'បណ្ណាល័យ','tab.account':'គណនី',
+    'acct.eyebrow':'គណនីរបស់ខ្ញុំ','acct.language':'ភាសា','acct.telegram':'ទាក់ទងតាម Telegram','acct.facebook':'ទាក់ទងតាម Facebook','acct.guest':'ចូល ឬចុះឈ្មោះ ដើម្បីអានសៀវភៅ និងរក្សាទុកបណ្ណាល័យរបស់អ្នក។','acct.member':'សមាជិក',
     'ir.mode':'របៀបអាន','ir.flip':'បើកទំព័រ','ir.scroll':'រំកិលចុះ','ir.theme':'ពណ៌','ir.light':'ភ្លឺ','ir.sepia':'សេពីយ៉ា','ir.dark':'ងងឹត','ir.brightness':'ពន្លឺ','ir.zoomReset':'កំណត់ពង្រីកឡើងវិញ','ir.fullscreen':'ពេញអេក្រង់','ir.exitFullscreen':'ចាកចេញពេញអេក្រង់','ir.zoomHint':'ចុចពីរដងដើម្បីពង្រីក',
     'reader.loading':'កំពុងផ្ទុក PDF…','reader.failed':'មិនអាចផ្ទុក PDF បានទេ','reader.licensed':'ផ្តល់សិទ្ធិឱ្យ','reader.tracked':'ការថត និងការថតវីដេអូត្រូវបានតាមដាន',
     'badge.pending':'កំពុងរង់ចាំ','badge.approved':'យល់ព្រម','badge.rejected':'បដិសេធ','badge.continue':'បន្តអាន','badge.page':'ទំព័រ',
@@ -1615,6 +1785,8 @@ const I18N = {
     'auth.user':'Username','auth.email':'Email','auth.pass':'Password',
     'pay.eyebrow':'Secure payment · ABA / KHQR','pay.title':'Complete your purchase','pay.crumb':'Payment','pay.step1':'Step 1 · Scan QR','pay.scan':'Scan the code below','pay.amount':'Amount',
     'pay.acc':'Account Name','pay.num':'Account Number','pay.s1h':'Scan QR and pay','pay.s1b':'Open ABA Mobile and scan the QR or transfer directly to the account.','pay.s2h':'Then upload the receipt','pay.s2b':'Take a screenshot of your payment and upload in the box below.','pay.s3h':'Wait for approval','pay.s3b':'Our team verifies within 1-2 hours. You can read immediately after.','pay.upload':'Upload receipt','pay.uploadSub':'JPG · PNG · PDF · max 8MB','pay.submit':'Submit payment','pay.success':'Submitted! Waiting for admin approval.',
+    'tab.home':'Home','tab.search':'Search','tab.pass':'Pass','tab.library':'Library','tab.account':'Account',
+    'acct.eyebrow':'My account','acct.language':'Language','acct.telegram':'Chat on Telegram','acct.facebook':'Chat on Facebook','acct.guest':'Log in or register to read books and keep your library.','acct.member':'Member',
     'ir.mode':'Reading mode','ir.flip':'Flip','ir.scroll':'Scroll','ir.theme':'Theme','ir.light':'Light','ir.sepia':'Sepia','ir.dark':'Dark','ir.brightness':'Brightness','ir.zoomReset':'Reset zoom','ir.fullscreen':'Fullscreen','ir.exitFullscreen':'Exit fullscreen','ir.zoomHint':'Double-tap to zoom',
     'reader.loading':'Loading PDF…','reader.failed':'Failed to load PDF','reader.licensed':'Licensed to','reader.tracked':'Screenshots and recordings are tracked',
     'badge.pending':'Pending','badge.approved':'Approved','badge.rejected':'Rejected','badge.continue':'Continue','badge.page':'Page',
@@ -1898,11 +2070,14 @@ function route(){
   _spinnerTimer = setTimeout(()=>{ if(!isStale()) $('#route-outlet').innerHTML=`<div class="center" style="padding:80px"><span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span></div>`; }, 150);
   // Reset meta tags first; per-route handlers (e.g. book detail) override as needed
   resetPageMeta();
-  const handlers = {'':renderHome, 'home':renderHome, 'book':renderBookDetail, 'library':renderLibrary, 'login':renderLogin, 'register':renderRegister, 'payment':renderPayment, 'payway-return':renderPaywayReturn, 'subscribe':renderSubscribe, 'read':renderReader};
+  const handlers = {'':renderHome, 'home':renderHome, 'book':renderBookDetail, 'library':renderLibrary, 'login':renderLogin, 'register':renderRegister, 'payment':renderPayment, 'payway-return':renderPaywayReturn, 'subscribe':renderSubscribe, 'read':renderReader, 'search':renderSearch, 'account':renderAccount};
   const h = handlers[r.name] || renderHome;
-  // Highlight the active nav link (underline animation in CSS)
+  // Highlight the active nav link (underline animation in CSS) + mobile tab
   const activeHref = '#/' + (r.name==='home' ? '' : r.name);
   document.querySelectorAll('.header-nav .nav-link').forEach(a=>a.classList.toggle('active', a.getAttribute('href')===activeHref));
+  const tabName = (r.name==='' || r.name==='home') ? 'home' : (r.name==='book' ? 'home' : (r.name==='payment' || r.name==='payway-return') ? 'subscribe' : (r.name==='login' || r.name==='register') ? 'account' : r.name);
+  document.querySelectorAll('#tabbar .tab').forEach(a=>a.classList.toggle('active', a.dataset.tab===tabName));
+  $('#tabbar').style.display = showChrome ? '' : 'none';
   Promise.resolve(h(r.id, isStale)).catch(err=>{ if(isStale()) return; console.error(err); $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(err.message||String(err))}</div>`; }).finally(()=>{ if(_spinnerTimer){clearTimeout(_spinnerTimer);_spinnerTimer=null;} updateTelegramBubble(); updateFacebookBubble(); updateApplyCreatorLinks(); window.scrollTo(0,0); });
 }
 window.addEventListener('hashchange', route);
@@ -2266,6 +2441,46 @@ function subBannerHtml(opts){
     return `<div class="sub-banner-inner active"><div class="sub-ic">✅</div><div class="sub-text"><strong>⏱ ${esc(passTimeLeft(state.sub.ends))} · ${t('sub.activeUntil')} ${esc(fmtDateTime(state.sub.ends))}</strong><small>${esc(String(state.sub.plan||'').toUpperCase())} · ${t('sub.extendNote')}</small></div>${opts?.showManage!==false?`<a class="btn btn-ghost" href="#/subscribe">${t('sub.manage')}</a>`:''}</div>`;
   }
   return `<div class="sub-banner-inner expired"><div class="sub-ic">⏳</div><div class="sub-text"><strong>${t('sub.expiredOn')} ${esc(fmtDateTime(state.sub.ends))}</strong><small>${t('cta.renewNote')}</small></div><a class="btn btn-primary" href="#/subscribe">${t('sub.renewBtn')}</a></div>`;
+}
+
+// Mobile "Search" tab → home with the search box focused
+async function renderSearch(){
+  await renderHome();
+  const inp = $('#book-search');
+  if(inp){
+    const top = inp.getBoundingClientRect().top + window.scrollY - 90;
+    setTimeout(()=>{ window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' }); inp.focus({ preventScroll:true }); }, 60);
+  }
+}
+
+// Mobile "Account" tab: profile, pass status, language, support links, logout
+async function renderAccount(){
+  if(state.user && state.profile) await loadSubscription();
+  showTemplate('tpl-account');
+  const prof = $('#acct-profile'), pass = $('#acct-pass'), actions = $('#acct-actions');
+  if(state.user && state.profile){
+    const name = profileDisplay(state.profile);
+    const initial = name.replace(/^@/, '').charAt(0).toUpperCase() || 'U';
+    prof.innerHTML = `<div class="acct-profile"><span class="avatar">${esc(initial)}</span><div><strong>${esc(name)}</strong><small>${t('acct.member')} · ${esc(fmtDateTime(state.profile.created_at||'').split(',')[0]||'')}</small></div></div>`;
+    pass.innerHTML = subBannerHtml({ showManage:true });
+    actions.innerHTML = `<button class="btn btn-ghost" id="acct-logout" style="width:100%">${t('nav.logout')}</button>`;
+    $('#acct-logout').onclick = doLogout;
+  } else {
+    prof.innerHTML = `<p class="muted" style="margin:0">${t('acct.guest')}</p>`;
+    pass.style.display = 'none';
+    actions.innerHTML = `<div style="display:flex;gap:10px"><a class="btn btn-primary" href="#/login" style="flex:1">${t('nav.login')}</a><a class="btn btn-ghost" href="#/register" style="flex:1">${t('nav.register')}</a></div>`;
+  }
+  // Language
+  $('#acct-lang').querySelectorAll('button').forEach(b=>{
+    b.classList.toggle('active', b.dataset.lang===state.lang);
+    b.onclick = ()=>setLang(b.dataset.lang);   // setLang re-routes → re-renders this page
+  });
+  // Support / links from settings
+  const tg = state.settings?.telegram_group_link, fb = state.settings?.facebook_page_url, cr = state.settings?.apply_creator_link;
+  const ok = u => u && /^https?:\/\//.test(u);
+  if(ok(tg)){ $('#acct-tg').href = tg; $('#acct-tg').style.display = ''; }
+  if(ok(fb)){ $('#acct-fb').href = fb; $('#acct-fb').style.display = ''; }
+  if(ok(cr)){ $('#acct-creator').href = cr; $('#acct-creator').style.display = ''; }
 }
 
 async function renderSubscribe(){
