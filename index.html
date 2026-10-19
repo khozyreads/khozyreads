@@ -75,7 +75,8 @@
 <link rel="preconnect" href="https://nqvnqykukecexcxapwdc.supabase.co" crossorigin>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="dns-prefetch" href="https://nqvnqykukecexcxapwdc.supabase.co">
-<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Noto+Serif+Khmer:wght@400;500;600;700&family=Noto+Sans+Khmer:wght@400;500;600&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.0/dist/umd/supabase.min.js" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Lora:ital,wght@0,400;1,400&family=Noto+Serif+Khmer:wght@400;600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,400&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#FAF5E9; --bg-elevated:#FFFDF7; --bg-deep:#F2E9D2;
@@ -864,6 +865,34 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
 .site-footer{background:linear-gradient(180deg,var(--bg-deep),#EBE0C6)}
 
 /* Respect reduced motion / weak devices */
+/* Phones / touch devices: keep the look, drop the expensive continuous animations + most blurs */
+@media (max-width:720px), (hover:none){
+  /* No blur filters at all on phones — they are the #1 cause of jank while scrolling / switching tabs */
+  .hero::before,.hero::after{display:none}
+  .plan-card.is-popular::before,.apply-creator-banner::before{animation:none!important}
+  .site-header,.tabbar,#lang-switcher,.user-chip,.plan-card,.sub-banner-inner,.apply-creator-banner,.search-wrap input,.btn-ghost,.badge,.free-badge,.progress-pill,.pass-chip,.hero-trust-item,.acct-card,.continue,.pill,.cta-row#detail-cta,.fav-btn,.ir-btn,.ra-btn{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+  .site-header{background:rgba(250,245,233,.97)}
+  .tabbar{background:rgba(250,245,233,.98)}
+  .cta-row#detail-cta{background:rgba(250,245,233,.97)}
+  .book-cover::after{display:none}
+  .book-grid>.book-card{animation:none}
+  /* Cheaper page transition: opacity only (no transform → no re-layout of the whole tree) */
+  .route{animation:fadein-op .18s ease}
+  .hero .eyebrow,.hero h1,.hero .lede,.hero-trust-row,.hero-meta{animation:none}
+  /* Lighter cover shadows (5 stacked shadows × 30 cards is expensive to paint) */
+  .book-cover{box-shadow:2px 2px 0 -1px #E2D8C2,4px 5px 10px rgba(30,20,10,.22);transform:none;transition:none}
+  .book-card:hover .book-cover{transform:none}
+  .book-card{transition:none}
+  .header-top,.brand-name,.brand-mark{transition:none}
+  /* Skip rendering off-screen cards until scrolled into view */
+  .book-grid>.book-card{content-visibility:auto;contain-intrinsic-size:160px 260px}
+  .shelf-row>.book-card{content-visibility:auto;contain-intrinsic-size:128px 230px}
+  .skel{animation-duration:1.8s}
+}
+@keyframes fadein-op{from{opacity:0}to{opacity:1}}
+.kr-toast{position:fixed;left:50%;bottom:calc(var(--tabbar-h) + 18px + env(safe-area-inset-bottom));transform:translate(-50%,16px);z-index:180;padding:10px 16px;border-radius:999px;background:rgba(30,42,58,.95);color:#FAF5E9;font-size:14px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+.kr-toast.show{opacity:1;transform:translate(-50%,0)}
+@media (min-width:721px){.kr-toast{bottom:28px}}
 @media (prefers-reduced-motion: reduce){
   .hero::before,.hero::after,.plan-card.is-popular::before,.apply-creator-banner::before,.b-pending .dot{animation:none!important}
   .hero .eyebrow,.hero h1,.hero .lede,.hero-trust-row,.hero-meta,.book-grid>.book-card,.route{animation:none!important}
@@ -1066,6 +1095,22 @@ a.user-chip:hover{border-color:var(--accent-deep);box-shadow:var(--shadow-sm);co
 @media (max-width:380px){
   .book-grid{grid-template-columns:repeat(2,1fr);gap:18px 14px}
 }
+
+/* Share button + modal */
+.btn-share{display:inline-flex;align-items:center;gap:7px;margin-left:auto;padding:9px 14px;border-radius:999px;border:1px solid var(--border-strong);background:rgba(255,253,247,.7);color:var(--primary);font-family:var(--font-serif);font-size:14px;cursor:pointer;transition:transform .15s,background .2s,border-color .2s}
+html[lang="km"] .btn-share{font-family:var(--font-khmer)}
+.btn-share:hover{background:var(--bg-deep);border-color:var(--accent-deep)}
+.btn-share:active{transform:scale(.95)}
+.share-modal{position:fixed;inset:0;z-index:150;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(20,15,12,.7);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);animation:fadein .2s ease}
+.share-box{position:relative;width:min(100%,420px);background:var(--bg-elevated);border-radius:20px;padding:14px;box-shadow:0 30px 80px rgba(0,0,0,.5);animation:csUp .3s cubic-bezier(.2,.8,.2,1)}
+.share-preview{position:relative;aspect-ratio:4/5;border-radius:14px;overflow:hidden;background:#1E2A3A}
+.share-preview img{width:100%;height:100%;object-fit:cover;display:block}
+.share-spinner{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--accent)}
+.share-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.share-actions .btn{flex:1;min-height:46px;padding:10px 12px;font-size:14px;white-space:nowrap}
+.share-actions .btn-primary{flex-basis:100%}
+.share-close{position:absolute;top:-14px;right:-14px;width:36px;height:36px;border-radius:50%;background:#fff;color:var(--fg);box-shadow:0 6px 16px rgba(0,0,0,.25);font-size:16px}
+@media (max-width:720px){.btn-share{padding:8px 12px;font-size:13px}.share-box{width:min(100%,360px)}.share-actions .btn{min-height:44px}}
 
 /* ══════════════════════════════════════════════════════════
    HOME: continue-reading strip, shelves, cover pills, skeleton
@@ -1286,6 +1331,19 @@ html[lang="km"] .continue-meta strong{font-family:var(--font-khmer);font-size:14
   </nav>
 </div>
 
+<!-- Share card modal: generates a story-size image of the book -->
+<div id="share-modal" class="share-modal" style="display:none" role="dialog" aria-label="Share">
+  <div class="share-box">
+    <div class="share-preview"><img id="share-img" alt=""/><div class="share-spinner" id="share-spinner"><span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span></div></div>
+    <div class="share-actions">
+      <button type="button" class="btn btn-primary" id="share-native">📤 <span data-i18n="share.btn">ចែករំលែក</span></button>
+      <a class="btn btn-ghost" id="share-download" download="khozyreads.png">⬇️ <span data-i18n="share.download">រក្សាទុករូប</span></a>
+      <button type="button" class="btn btn-ghost" id="share-copy">🔗 <span data-i18n="share.copy">ចម្លងតំណ</span></button>
+    </div>
+    <button type="button" class="share-close" id="share-close" aria-label="Close">✕</button>
+  </div>
+</div>
+
 <!-- Customer-service bubble: one cute CS avatar → choose Telegram / Facebook -->
 <div id="cs-widget" aria-live="polite">
   <div id="cs-panel" role="dialog" aria-label="Contact us">
@@ -1446,6 +1504,10 @@ html[lang="km"] .continue-meta strong{font-family:var(--font-khmer);font-size:14
         <div class="price-row">
           <span class="price" data-bind="price"></span>
           <span class="price-note" data-i18n="detail.priceNote">តម្លៃតែម្តង · កាន់កាប់រហូត</span>
+          <button type="button" class="btn-share" id="btn-share" aria-label="Share">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>
+            <span data-i18n="share.btn">ចែករំលែក</span>
+          </button>
         </div>
         <div class="synopsis-head"><span class="eyebrow" data-i18n="detail.synopsis">ដំណើររឿងសង្ខេប</span></div>
         <div class="synopsis"><p data-bind="synopsis"></p></div>
@@ -1850,7 +1912,7 @@ const I18N = {
     'auth.user':'ឈ្មោះអ្នកប្រើ','auth.email':'អ៊ីមែល','auth.pass':'ពាក្យសម្ងាត់',
     'pay.eyebrow':'ការទូទាត់សុវត្ថិភាព · ABA / KHQR','pay.title':'បញ្ចប់ការទិញរបស់អ្នក','pay.crumb':'បង់ប្រាក់','pay.step1':'ជំហានទី ១ · ស្កេន QR','pay.scan':'ស្កេនកូដខាងក្រោម','pay.amount':'ចំនួន',
     'pay.acc':'ឈ្មោះគណនី','pay.num':'លេខគណនី','pay.s1h':'ស្កេន QR និងបង់ប្រាក់','pay.s1b':'បើកកម្មវិធី ABA Mobile ហើយស្កេនកូដខាងស្តាំ ឬផ្ទេរប្រាក់ដោយផ្ទាល់ទៅគណនី។','pay.s2h':'បន្ទាប់​មក​បង្ហោះ​វិក្កយបត្រ','pay.s2b':'ថត​អេក្រង់​នៃ​ការបង់ប្រាក់ និង​បង្ហោះ​នៅ​ក្នុង​ប្រអប់​ខាង​ក្រោម។','pay.s3h':'រង់​ចាំ​ការ​អនុម័ត','pay.s3b':'ក្រុមការងារ​នឹង​ផ្ទៀង​ផ្ទាត់​ក្នុង​រយៈពេល ១ ទៅ ២ ម៉ោង។','pay.upload':'បង្ហោះវិក្កយបត្រ','pay.uploadSub':'JPG · PNG · PDF · អតិបរមា 8MB','pay.submit':'បញ្ជូនការបង់ប្រាក់','pay.success':'ដាក់ស្នើដោយជោគជ័យ! រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។',
-    'home.continue':'បន្តអាន','home.continueSub':'អានបន្តពីកន្លែងដែលអ្នកឈប់','shelf.new':'ទើបចេញថ្មី','shelf.hot':'ពេញនិយមឥឡូវនេះ','shelf.top':'វាយតម្លៃខ្ពស់បំផុត','shelf.soon':'ឆាប់ៗនេះ','home.seeAll':'មើលទាំងអស់','badge.new':'ថ្មី','badge.hot':'ពេញនិយម','home.page':'ទំព័រ','tab.home':'ទំព័រដើម','tab.search':'ស្វែងរក','tab.pass':'កាតអាន','tab.library':'បណ្ណាល័យ','tab.account':'គណនី','tab.cs':'ជំនួយ','cs.close':'បិទ',
+    'home.continue':'បន្តអាន','home.continueSub':'អានបន្តពីកន្លែងដែលអ្នកឈប់','shelf.new':'ទើបចេញថ្មី','shelf.hot':'ពេញនិយមឥឡូវនេះ','shelf.top':'វាយតម្លៃខ្ពស់បំផុត','shelf.soon':'ឆាប់ៗនេះ','home.seeAll':'មើលទាំងអស់','badge.new':'ថ្មី','badge.hot':'ពេញនិយម','home.page':'ទំព័រ','share.btn':'ចែករំលែក','share.download':'រក្សាទុករូប','share.copy':'ចម្លងតំណ','share.copied':'បានចម្លងតំណរួចរាល់','share.reading':'ខ្ញុំកំពុងអាននៅ KhozyReads','share.text':'អាន “{title}” នៅ KhozyReads','share.failed':'មិនអាចបង្កើតកាតបានទេ សូមព្យាយាមម្ដងទៀត','tab.home':'ទំព័រដើម','tab.search':'ស្វែងរក','tab.pass':'កាតអាន','tab.library':'បណ្ណាល័យ','tab.account':'គណនី','tab.cs':'ជំនួយ','cs.close':'បិទ',
     'acct.eyebrow':'គណនីរបស់ខ្ញុំ','acct.language':'ភាសា','acct.telegram':'ទាក់ទងតាម Telegram','acct.facebook':'ទាក់ទងតាម Facebook','acct.guest':'ចូល ឬចុះឈ្មោះ ដើម្បីអានសៀវភៅ និងរក្សាទុកបណ្ណាល័យរបស់អ្នក។','acct.member':'សមាជិក',
     'ir.mode':'របៀបអាន','ir.flip':'បើកទំព័រ','ir.scroll':'រំកិលចុះ','ir.theme':'ពណ៌','ir.light':'ភ្លឺ','ir.sepia':'សេពីយ៉ា','ir.dark':'ងងឹត','ir.brightness':'ពន្លឺ','ir.zoomReset':'កំណត់ពង្រីកឡើងវិញ','ir.fullscreen':'ពេញអេក្រង់','ir.exitFullscreen':'ចាកចេញពេញអេក្រង់','ir.zoomHint':'ចុចពីរដងដើម្បីពង្រីក',
     'reader.loading':'កំពុងផ្ទុក PDF…','reader.failed':'មិនអាចផ្ទុក PDF បានទេ','reader.licensed':'ផ្តល់សិទ្ធិឱ្យ','reader.tracked':'ការថត និងការថតវីដេអូត្រូវបានតាមដាន',
@@ -1876,7 +1938,7 @@ const I18N = {
     'auth.user':'Username','auth.email':'Email','auth.pass':'Password',
     'pay.eyebrow':'Secure payment · ABA / KHQR','pay.title':'Complete your purchase','pay.crumb':'Payment','pay.step1':'Step 1 · Scan QR','pay.scan':'Scan the code below','pay.amount':'Amount',
     'pay.acc':'Account Name','pay.num':'Account Number','pay.s1h':'Scan QR and pay','pay.s1b':'Open ABA Mobile and scan the QR or transfer directly to the account.','pay.s2h':'Then upload the receipt','pay.s2b':'Take a screenshot of your payment and upload in the box below.','pay.s3h':'Wait for approval','pay.s3b':'Our team verifies within 1-2 hours. You can read immediately after.','pay.upload':'Upload receipt','pay.uploadSub':'JPG · PNG · PDF · max 8MB','pay.submit':'Submit payment','pay.success':'Submitted! Waiting for admin approval.',
-    'home.continue':'Continue reading','home.continueSub':'Pick up where you left off','shelf.new':'New releases','shelf.hot':'Popular now','shelf.top':'Top rated','shelf.soon':'Coming soon','home.seeAll':'See all','badge.new':'NEW','badge.hot':'HOT','home.page':'Page','tab.home':'Home','tab.search':'Search','tab.pass':'Pass','tab.library':'Library','tab.account':'Account','tab.cs':'Support','cs.close':'Close',
+    'home.continue':'Continue reading','home.continueSub':'Pick up where you left off','shelf.new':'New releases','shelf.hot':'Popular now','shelf.top':'Top rated','shelf.soon':'Coming soon','home.seeAll':'See all','badge.new':'NEW','badge.hot':'HOT','home.page':'Page','share.btn':'Share','share.download':'Save image','share.copy':'Copy link','share.copied':'Link copied','share.reading':'I’m reading on KhozyReads','share.text':'Read “{title}” on KhozyReads','share.failed':'Could not create the card, please try again','tab.home':'Home','tab.search':'Search','tab.pass':'Pass','tab.library':'Library','tab.account':'Account','tab.cs':'Support','cs.close':'Close',
     'acct.eyebrow':'My account','acct.language':'Language','acct.telegram':'Chat on Telegram','acct.facebook':'Chat on Facebook','acct.guest':'Log in or register to read books and keep your library.','acct.member':'Member',
     'ir.mode':'Reading mode','ir.flip':'Flip','ir.scroll':'Scroll','ir.theme':'Theme','ir.light':'Light','ir.sepia':'Sepia','ir.dark':'Dark','ir.brightness':'Brightness','ir.zoomReset':'Reset zoom','ir.fullscreen':'Fullscreen','ir.exitFullscreen':'Exit fullscreen','ir.zoomHint':'Double-tap to zoom',
     'reader.loading':'Loading PDF…','reader.failed':'Failed to load PDF','reader.licensed':'Licensed to','reader.tracked':'Screenshots and recordings are tracked',
@@ -1968,9 +2030,11 @@ async function loadAuth(){
   state.profile = null;
   state.sub = null;
   if(state.user){
-    const { data } = await sb.from('users_profile').select('*').eq('auth_user_id',state.user.id).maybeSingle();
+    const [{ data }] = await Promise.all([
+      sb.from('users_profile').select('*').eq('auth_user_id',state.user.id).maybeSingle(),
+      loadSubscription()
+    ]);
     state.profile = data;
-    await loadSubscription();
     // Profile photo: Telegram sets it server-side; for Google logins copy the OAuth picture once
     if(state.profile && !state.profile.avatar_url && !sessionStorage.getItem('kr_avatar_synced')){
       sessionStorage.setItem('kr_avatar_synced','1');
@@ -1978,6 +2042,14 @@ async function loadAuth(){
     }
   }
   renderAuthNav();
+}
+// Tiny toast (bottom, auto-hide)
+let _toastT = null;
+function toast(msg){
+  let el = document.getElementById('kr-toast');
+  if(!el){ el = document.createElement('div'); el.id = 'kr-toast'; el.className = 'kr-toast'; document.body.appendChild(el); }
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(_toastT); _toastT = setTimeout(()=>el.classList.remove('show'), 2200);
 }
 // Avatar markup: real photo when we have one (Telegram / Google), otherwise the initial
 function avatarHtml(name, url, cls){
@@ -1990,7 +2062,7 @@ function avatarHtml(name, url, cls){
 // Reading pass (subscription) status for the signed-in user
 async function loadSubscription(){
   state.sub = null;
-  if(!state.profile) return null;
+  if(!state.user) return null;          // RPC resolves the profile from auth.uid() server-side
   try{
     const { data } = await sb.rpc('my_subscription');
     const row = Array.isArray(data) ? data[0] : data;
@@ -2485,6 +2557,104 @@ async function renderHome(){
   renderGrid();
 }
 
+/* ========== Share card (canvas → PNG, 1080×1350 story format) ========== */
+let _shareBlob = null, _shareUrl = null;
+function loadImg(src){
+  return new Promise((res, rej)=>{ const i = new Image(); i.crossOrigin = 'anonymous'; i.decoding = 'async'; i.onload = ()=>res(i); i.onerror = rej; i.src = src; });
+}
+// Wrap text for canvas; Khmer has no spaces so fall back to per-character wrapping
+function wrapText(ctx, text, maxW){
+  const words = /\s/.test(text) ? text.split(/\s+/) : [...text];
+  const sep = /\s/.test(text) ? ' ' : '';
+  const lines = []; let cur = '';
+  for(const w of words){
+    const test = cur ? cur + sep + w : w;
+    if(ctx.measureText(test).width > maxW && cur){ lines.push(cur); cur = w; } else cur = test;
+  }
+  if(cur) lines.push(cur);
+  return lines;
+}
+function roundRect(ctx, x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+async function buildShareCard(book, rating){
+  const W = 1080, H = 1350;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const ctx = c.getContext('2d');
+  try{ await document.fonts.load('600 60px "Noto Serif Khmer"'); await document.fonts.load('600 60px "Cormorant Garamond"'); }catch(_){}
+  let cover = null;
+  if(book.cover_url){ try{ cover = await loadImg(book.cover_url); }catch(_){ cover = null; } }
+  // Background: blurred, darkened cover (or warm gradient)
+  if(cover){
+    ctx.save(); ctx.filter = 'blur(40px) brightness(.55) saturate(1.2)';
+    const s = Math.max(W/cover.width, H/cover.height)*1.15;
+    ctx.drawImage(cover, (W - cover.width*s)/2, (H - cover.height*s)/2, cover.width*s, cover.height*s);
+    ctx.restore();
+  } else {
+    const g = ctx.createLinearGradient(0,0,W,H); g.addColorStop(0,'#5C1F1A'); g.addColorStop(1,'#1E2A3A'); ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  }
+  const veil = ctx.createLinearGradient(0,0,0,H); veil.addColorStop(0,'rgba(10,8,7,.15)'); veil.addColorStop(1,'rgba(10,8,7,.75)'); ctx.fillStyle = veil; ctx.fillRect(0,0,W,H);
+  // Brand chip
+  ctx.fillStyle = 'rgba(250,245,233,.92)'; roundRect(ctx, 80, 80, 330, 72, 36); ctx.fill();
+  ctx.fillStyle = '#7B2D26'; ctx.font = '600 38px "Cormorant Garamond", serif'; ctx.textBaseline = 'middle'; ctx.fillText('KhozyReads', 118, 117);
+  // Cover with stacked-page shadow
+  const cw = 480, ch = 640, cx = (W-cw)/2, cy = 190;
+  ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.55)'; ctx.shadowBlur = 60; ctx.shadowOffsetY = 30;
+  ctx.fillStyle = '#F2E9D2'; roundRect(ctx, cx+10, cy+10, cw, ch, 10); ctx.fill(); ctx.restore();
+  ctx.save(); roundRect(ctx, cx, cy, cw, ch, 10); ctx.clip();
+  if(cover){ const s = Math.max(cw/cover.width, ch/cover.height); ctx.drawImage(cover, cx + (cw - cover.width*s)/2, cy + (ch - cover.height*s)/2, cover.width*s, cover.height*s); }
+  else { ctx.fillStyle = '#E8DCC0'; ctx.fillRect(cx,cy,cw,ch); ctx.fillStyle = '#8B7E66'; ctx.font = '500 40px "Cormorant Garamond", serif'; ctx.textAlign = 'center'; ctx.fillText('COVER', cx+cw/2, cy+ch/2); ctx.textAlign = 'left'; }
+  ctx.restore();
+  // Spine highlight
+  const spine = ctx.createLinearGradient(cx,0,cx+70,0); spine.addColorStop(0,'rgba(0,0,0,.28)'); spine.addColorStop(.3,'rgba(255,255,255,.14)'); spine.addColorStop(1,'rgba(0,0,0,0)');
+  ctx.save(); roundRect(ctx, cx, cy, cw, ch, 10); ctx.clip(); ctx.fillStyle = spine; ctx.fillRect(cx,cy,70,ch); ctx.restore();
+  // Title + author
+  ctx.textAlign = 'center'; ctx.fillStyle = '#FAF5E9';
+  ctx.font = '600 58px "Noto Serif Khmer", "Cormorant Garamond", serif';
+  const titleLines = wrapText(ctx, book.title || '', W - 200).slice(0, 2);
+  let y = cy + ch + 86;
+  titleLines.forEach(l => { ctx.fillText(l, W/2, y); y += 76; });
+  ctx.font = 'italic 400 34px "Crimson Pro", "Noto Serif Khmer", serif'; ctx.fillStyle = 'rgba(250,245,233,.8)';
+  if(book.creator){ ctx.fillText(book.creator, W/2, y + 6); y += 56; }
+  // Rating
+  if(rating && rating.avg_rating){
+    ctx.font = '600 34px "Crimson Pro", serif'; ctx.fillStyle = '#F3D27A';
+    const stars = '★'.repeat(Math.round(rating.avg_rating)) + '☆'.repeat(5 - Math.round(rating.avg_rating));
+    ctx.fillText(`${stars}  ${rating.avg_rating}`, W/2, y + 10); y += 56;
+  }
+  // Footer line
+  ctx.font = '500 30px "Noto Serif Khmer", "Crimson Pro", serif'; ctx.fillStyle = 'rgba(250,245,233,.75)';
+  ctx.fillText(t('share.reading'), W/2, H - 118);
+  ctx.font = '600 30px "Cormorant Garamond", serif'; ctx.fillStyle = '#D4A574';
+  ctx.fillText('khozyreads.com', W/2, H - 66);
+  return new Promise(res => c.toBlob(b => res(b), 'image/png'));
+}
+async function openShareCard(book, rating){
+  const modal = $('#share-modal'), img = $('#share-img'), spin = $('#share-spinner');
+  modal.style.display = 'flex'; img.removeAttribute('src'); spin.style.display = 'flex';
+  const link = `https://khozyreads.com/#/book/${book.id}`;
+  const text = t('share.text').replace('{title}', book.title || '');
+  if(_shareUrl){ URL.revokeObjectURL(_shareUrl); _shareUrl = null; }
+  try{
+    _shareBlob = await buildShareCard(book, rating);
+    _shareUrl = URL.createObjectURL(_shareBlob);
+    img.src = _shareUrl; spin.style.display = 'none';
+    $('#share-download').href = _shareUrl;
+    $('#share-download').download = `khozyreads-${(book.title||'book').replace(/[^\wក-៿]+/g,'-').slice(0,40)}.png`;
+  }catch(e){ console.error('share card failed', e); spin.style.display = 'none'; toast(t('share.failed')); }
+  const file = _shareBlob ? new File([_shareBlob], 'khozyreads.png', { type:'image/png' }) : null;
+  const canFiles = file && navigator.canShare && navigator.canShare({ files:[file] });
+  $('#share-native').onclick = async () => {
+    try{
+      if(canFiles) await navigator.share({ files:[file], title: book.title, text: `${text}\n${link}` });
+      else if(navigator.share) await navigator.share({ title: book.title, text, url: link });
+      else { await navigator.clipboard.writeText(`${text}\n${link}`); toast(t('share.copied')); }
+    }catch(_){}
+  };
+  $('#share-copy').onclick = async () => { try{ await navigator.clipboard.writeText(`${text}\n${link}`); toast(t('share.copied')); }catch(_){} };
+  const close = () => { modal.style.display = 'none'; };
+  $('#share-close').onclick = close;
+  modal.onclick = e => { if(e.target === modal) close(); };
+}
+
 async function renderBookDetail(id){
   if(!id){ location.hash='#/'; return; }
   // Book from cache when possible (list has every field the detail page needs)
@@ -2531,6 +2701,9 @@ async function renderBookDetail(id){
   if(book.is_free){ bindData(scope,'price', state.lang==='kh'?'ឥតគិតថ្លៃ':'Free'); if(priceNoteEl) priceNoteEl.textContent = t('detail.freeNote'); }
   else { bindData(scope,'price', t('detail.passPrice')); if(priceNoteEl) priceNoteEl.textContent = t('detail.passNote'); }
   bindData(scope,'synopsis',book.synopsis||'');
+  // Share card (story-size image) — covers come from public storage so canvas export works
+  const shareBtn = scope.querySelector('#btn-share');
+  if(shareBtn) shareBtn.onclick = () => openShareCard(book, (_ratingCache && _ratingCache[book.id]) || null);
   // Render genre tags in detail page (if any)
   const genreSlot = scope.querySelector('[data-bind="genreTags"]');
   if(genreSlot){
@@ -4613,6 +4786,8 @@ sb.auth.onAuthStateChange(async (event)=>{
 (async()=>{
   document.querySelectorAll('#lang-switcher button').forEach(b=>b.classList.toggle('active', b.dataset.lang===state.lang));
   document.documentElement.lang = state.lang==='kh'?'km':'en';
+  // Kick off catalog fetches NOW (they don't need auth) so the home page has data the moment auth+settings resolve
+  fetchBooks().catch(()=>{}); fetchRatingStats().catch(()=>{}); fetchPopularity().catch(()=>{});
   await Promise.all([loadAuth(), loadSettings()]);
   applyI18n();
   warmCaches();
