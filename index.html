@@ -869,6 +869,64 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
   .hero::after{width:240px;height:240px;filter:blur(50px)}
   .site-header.is-scrolled .brand-name{font-size:22px}
 }
+
+/* ══════════════════════════════════════════════════════════
+   READER UPGRADE — zoom, scroll mode, themes, settings sheet
+   ══════════════════════════════════════════════════════════ */
+.ir-stage{touch-action:none}
+.ir-zoom{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;transform-origin:0 0;will-change:transform}
+.ir-zoom.panning{transition:none}
+.ir-zoom.snap{transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+#ir-frame.zoomed .ir-tap-zone{pointer-events:none}
+.ir-tap-zone{pointer-events:none} /* taps handled via pointer events on stage */
+/* Dim layer (brightness) */
+#ir-dim{position:absolute;inset:0;background:#000;opacity:0;pointer-events:none;z-index:4;transition:opacity .2s}
+/* Themes — applied to page images */
+#ir-frame.theme-sepia{background:#1d1711}
+#ir-frame.theme-sepia #ir-image,#ir-frame.theme-sepia .ir-sp img{filter:sepia(.42) brightness(.95) contrast(.97)}
+#ir-frame.theme-dark #ir-image,#ir-frame.theme-dark .ir-sp img{filter:invert(.9) hue-rotate(180deg) brightness(.92) contrast(.95)}
+#ir-frame.theme-dark .ir-watermark::before,#ir-frame.theme-dark .ir-wm-corners{color:rgba(232,160,150,.28)}
+/* Scroll (webtoon) mode */
+#ir-scroll{display:none;position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scroll-behavior:smooth;touch-action:pan-y;z-index:2}
+#ir-frame.mode-scroll #ir-scroll{display:block}
+#ir-frame.mode-scroll .ir-zoom,#ir-frame.mode-scroll .ir-tap-zone{display:none}
+#ir-frame.mode-scroll .ir-stage{touch-action:pan-y}
+.ir-sp{position:relative;width:min(100%,900px);margin:0 auto;background:#111;}
+.ir-sp+.ir-sp{margin-top:6px}
+.ir-sp img{display:block;width:100%;height:auto;pointer-events:none;-webkit-user-drag:none;user-drag:none;opacity:0;transition:opacity .3s}
+.ir-sp img.ready{opacity:1}
+.ir-sp .ir-sp-num{position:absolute;right:10px;bottom:8px;font-size:11px;color:rgba(120,40,40,.45);font-family:'Crimson Pro',serif;letter-spacing:.06em}
+.ir-sp .ir-watermark{z-index:2}
+.ir-sp .ir-sp-wm{position:absolute;top:10px;left:10px;color:rgba(120,40,40,.42);font-family:'Cormorant Garamond','Crimson Pro',serif;font-size:12px;line-height:1.15;z-index:2;pointer-events:none}
+.ir-sp .ir-sp-wm b{display:block;font-size:13px}
+.ir-sp-skel{position:absolute;inset:0;background:linear-gradient(100deg,#141010 20%,#1e1816 40%,#141010 60%);background-size:200% 100%;animation:skel 1.4s linear infinite}
+.ir-sp img.ready+.ir-sp-skel{display:none}
+@keyframes skel{to{background-position:-200% 0}}
+/* Settings sheet */
+.ir-settings{position:absolute;left:50%;bottom:0;transform:translate(-50%,110%);width:min(100%,520px);z-index:7;padding:16px 18px calc(18px + env(safe-area-inset-bottom));
+  background:rgba(22,17,14,.82);-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3);
+  border:1px solid rgba(232,217,181,.14);border-bottom:0;border-radius:20px 20px 0 0;box-shadow:0 -14px 40px rgba(0,0,0,.45);color:#e8d9b5;
+  transition:transform .32s cubic-bezier(.2,.8,.2,1)}
+.ir-settings.open{transform:translate(-50%,0)}
+.ir-settings .grab{width:38px;height:4px;border-radius:2px;background:rgba(232,217,181,.3);margin:0 auto 14px}
+.ir-set-row{display:flex;align-items:center;gap:12px;margin:10px 0}
+.ir-set-label{flex:0 0 92px;font-size:13px;letter-spacing:.04em;color:rgba(232,217,181,.75)}
+html[lang="km"] .ir-set-label,html[lang="km"] .ir-seg button{font-family:var(--font-khmer)}
+.ir-seg{flex:1;display:flex;background:rgba(255,255,255,.06);border-radius:12px;padding:3px;gap:3px}
+.ir-seg button{flex:1;padding:9px 6px;border-radius:9px;font-size:13px;color:#e8d9b5;background:transparent;transition:background .2s,color .2s;display:inline-flex;align-items:center;justify-content:center;gap:6px;white-space:nowrap}
+.ir-seg button.active{background:var(--accent);color:#1a1008;font-weight:600}
+.ir-range{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:rgba(255,255,255,.18);outline:0}
+.ir-range::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--accent);box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.ir-range::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--accent);border:0}
+.ir-set-actions{display:flex;gap:8px;margin-top:14px}
+.ir-set-actions button{flex:1;padding:11px;border-radius:12px;background:rgba(255,255,255,.08);color:#e8d9b5;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.ir-set-actions button.active{background:rgba(212,165,116,.22);color:var(--accent)}
+.ir-set-backdrop{position:absolute;inset:0;z-index:6;display:none}
+.ir-set-backdrop.open{display:block}
+.ir-zoom-hint{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);padding:10px 16px;border-radius:999px;background:rgba(0,0,0,.6);color:#e8d9b5;font-size:13px;pointer-events:none;opacity:0;transition:opacity .25s;z-index:6;white-space:nowrap}
+.ir-zoom-hint.show{opacity:1}
+.ir-btn.on{background:rgba(212,165,116,.25);color:var(--accent)}
+#ir-frame:fullscreen{width:100vw;height:100vh}
 </style>
 </head>
 <body>
@@ -1408,30 +1466,70 @@ html[lang="km"] .badge{font-family:var(--font-khmer)}
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M15 6 L9 12 L15 18"/></svg>
     </a>
     <span class="ir-title" data-bind="title"></span>
-    <span class="ir-spacer"></span>
+    <button class="ir-btn" id="ir-fs-btn" type="button" aria-label="Fullscreen" style="display:none">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>
+    </button>
+    <button class="ir-btn" id="ir-settings-btn" type="button" aria-label="Reader settings">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h10M18 6h2M4 12h2M10 12h10M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="8" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>
+    </button>
   </div>
   <!-- Stage -->
   <div class="ir-stage" id="ir-stage">
-    <img id="ir-image" alt="" decoding="async"/>
+    <!-- Flip mode: zoomable wrapper (image + watermark move together) -->
+    <div class="ir-zoom" id="ir-zoom">
+      <img id="ir-image" alt="" decoding="async"/>
+      <!-- Watermark + corner stamps — wrapper sized dynamically to match IMAGE bounds (not full stage) -->
+      <div class="ir-image-overlay" id="ir-image-overlay" aria-hidden="true">
+        <div class="ir-watermark" id="ir-watermark"></div>
+        <div class="ir-wm-corners">
+          <div class="ir-wm-tl">
+            <div class="ir-wm-brand">KhozyReads</div>
+            <div class="ir-wm-user" id="ir-wm-user">@username</div>
+          </div>
+          <div class="ir-wm-br" id="ir-wm-ts">—</div>
+        </div>
+      </div>
+    </div>
+    <!-- Scroll mode: continuous vertical pages (filled by JS) -->
+    <div id="ir-scroll" aria-label="Pages"></div>
     <!-- Loading skeleton -->
     <div class="ir-loading" id="ir-loading">
       <span class="lotus-loader"><svg><use href="#orn-lotus"/></svg></span>
     </div>
-    <!-- Watermark + corner stamps — wrapper sized dynamically to match IMAGE bounds (not full stage) -->
-    <div class="ir-image-overlay" id="ir-image-overlay" aria-hidden="true">
-      <div class="ir-watermark" id="ir-watermark"></div>
-      <div class="ir-wm-corners">
-        <div class="ir-wm-tl">
-          <div class="ir-wm-brand">KhozyReads</div>
-          <div class="ir-wm-user" id="ir-wm-user">@username</div>
-        </div>
-        <div class="ir-wm-br" id="ir-wm-ts">—</div>
-      </div>
-    </div>
-    <!-- Tap zones for prev/next navigation -->
+    <div id="ir-dim" aria-hidden="true"></div>
+    <div class="ir-zoom-hint" id="ir-zoom-hint"></div>
+    <!-- Tap zones (kept for a11y; taps handled on stage) -->
     <button class="ir-tap-zone ir-tap-left" id="ir-tap-prev" aria-label="Previous page"></button>
     <button class="ir-tap-zone ir-tap-right" id="ir-tap-next" aria-label="Next page"></button>
     <button class="ir-tap-zone ir-tap-center" id="ir-tap-center" aria-label="Toggle controls"></button>
+  </div>
+  <!-- Settings sheet -->
+  <div class="ir-set-backdrop" id="ir-set-backdrop"></div>
+  <div class="ir-settings" id="ir-settings" role="dialog" aria-label="Reader settings">
+    <div class="grab"></div>
+    <div class="ir-set-row">
+      <span class="ir-set-label" data-i18n="ir.mode">របៀបអាន</span>
+      <div class="ir-seg" id="ir-seg-mode">
+        <button type="button" data-mode="flip">📖 <span data-i18n="ir.flip">បើកទំព័រ</span></button>
+        <button type="button" data-mode="scroll">📜 <span data-i18n="ir.scroll">រំកិលចុះ</span></button>
+      </div>
+    </div>
+    <div class="ir-set-row">
+      <span class="ir-set-label" data-i18n="ir.theme">ពណ៌</span>
+      <div class="ir-seg" id="ir-seg-theme">
+        <button type="button" data-theme="light">☀️ <span data-i18n="ir.light">ភ្លឺ</span></button>
+        <button type="button" data-theme="sepia">🍂 <span data-i18n="ir.sepia">សេពីយ៉ា</span></button>
+        <button type="button" data-theme="dark">🌙 <span data-i18n="ir.dark">ងងឹត</span></button>
+      </div>
+    </div>
+    <div class="ir-set-row">
+      <span class="ir-set-label" data-i18n="ir.brightness">ពន្លឺ</span>
+      <input class="ir-range" id="ir-dim-range" type="range" min="0" max="70" value="0" aria-label="Brightness"/>
+    </div>
+    <div class="ir-set-actions">
+      <button type="button" id="ir-zoom-reset">🔍 <span data-i18n="ir.zoomReset">កំណត់ពង្រីកឡើងវិញ</span></button>
+      <button type="button" id="ir-fs-btn2">⛶ <span data-i18n="ir.fullscreen">ពេញអេក្រង់</span></button>
+    </div>
   </div>
   <!-- Bottom bar -->
   <div class="ir-bottombar" id="ir-bottombar">
@@ -1493,6 +1591,7 @@ const I18N = {
     'auth.user':'ឈ្មោះអ្នកប្រើ','auth.email':'អ៊ីមែល','auth.pass':'ពាក្យសម្ងាត់',
     'pay.eyebrow':'ការទូទាត់សុវត្ថិភាព · ABA / KHQR','pay.title':'បញ្ចប់ការទិញរបស់អ្នក','pay.crumb':'បង់ប្រាក់','pay.step1':'ជំហានទី ១ · ស្កេន QR','pay.scan':'ស្កេនកូដខាងក្រោម','pay.amount':'ចំនួន',
     'pay.acc':'ឈ្មោះគណនី','pay.num':'លេខគណនី','pay.s1h':'ស្កេន QR និងបង់ប្រាក់','pay.s1b':'បើកកម្មវិធី ABA Mobile ហើយស្កេនកូដខាងស្តាំ ឬផ្ទេរប្រាក់ដោយផ្ទាល់ទៅគណនី។','pay.s2h':'បន្ទាប់​មក​បង្ហោះ​វិក្កយបត្រ','pay.s2b':'ថត​អេក្រង់​នៃ​ការបង់ប្រាក់ និង​បង្ហោះ​នៅ​ក្នុង​ប្រអប់​ខាង​ក្រោម។','pay.s3h':'រង់​ចាំ​ការ​អនុម័ត','pay.s3b':'ក្រុមការងារ​នឹង​ផ្ទៀង​ផ្ទាត់​ក្នុង​រយៈពេល ១ ទៅ ២ ម៉ោង។','pay.upload':'បង្ហោះវិក្កយបត្រ','pay.uploadSub':'JPG · PNG · PDF · អតិបរមា 8MB','pay.submit':'បញ្ជូនការបង់ប្រាក់','pay.success':'ដាក់ស្នើដោយជោគជ័យ! រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។',
+    'ir.mode':'របៀបអាន','ir.flip':'បើកទំព័រ','ir.scroll':'រំកិលចុះ','ir.theme':'ពណ៌','ir.light':'ភ្លឺ','ir.sepia':'សេពីយ៉ា','ir.dark':'ងងឹត','ir.brightness':'ពន្លឺ','ir.zoomReset':'កំណត់ពង្រីកឡើងវិញ','ir.fullscreen':'ពេញអេក្រង់','ir.exitFullscreen':'ចាកចេញពេញអេក្រង់','ir.zoomHint':'ចុចពីរដងដើម្បីពង្រីក',
     'reader.loading':'កំពុងផ្ទុក PDF…','reader.failed':'មិនអាចផ្ទុក PDF បានទេ','reader.licensed':'ផ្តល់សិទ្ធិឱ្យ','reader.tracked':'ការថត និងការថតវីដេអូត្រូវបានតាមដាន',
     'badge.pending':'កំពុងរង់ចាំ','badge.approved':'យល់ព្រម','badge.rejected':'បដិសេធ','badge.continue':'បន្តអាន','badge.page':'ទំព័រ',
     'err.bookNotFound':'រកសៀវភៅមិនឃើញ','err.loginFirst':'សូមចូលគណនីមុនសិន','err.noAccess':'អ្នកត្រូវការកាតអានដើម្បីអានសៀវភៅនេះ','err.generic':'មានអ្វីមួយខុស។ សូមព្យាយាមម្ដងទៀត។','err.uploadFailed':'បរាជ័យក្នុងការបង្ហោះ','err.fileTooLarge':'ឯកសារធំជាង 8MB','err.invalidFile':'ប្រភេទឯកសារមិនត្រឹមត្រូវ',
@@ -1516,6 +1615,7 @@ const I18N = {
     'auth.user':'Username','auth.email':'Email','auth.pass':'Password',
     'pay.eyebrow':'Secure payment · ABA / KHQR','pay.title':'Complete your purchase','pay.crumb':'Payment','pay.step1':'Step 1 · Scan QR','pay.scan':'Scan the code below','pay.amount':'Amount',
     'pay.acc':'Account Name','pay.num':'Account Number','pay.s1h':'Scan QR and pay','pay.s1b':'Open ABA Mobile and scan the QR or transfer directly to the account.','pay.s2h':'Then upload the receipt','pay.s2b':'Take a screenshot of your payment and upload in the box below.','pay.s3h':'Wait for approval','pay.s3b':'Our team verifies within 1-2 hours. You can read immediately after.','pay.upload':'Upload receipt','pay.uploadSub':'JPG · PNG · PDF · max 8MB','pay.submit':'Submit payment','pay.success':'Submitted! Waiting for admin approval.',
+    'ir.mode':'Reading mode','ir.flip':'Flip','ir.scroll':'Scroll','ir.theme':'Theme','ir.light':'Light','ir.sepia':'Sepia','ir.dark':'Dark','ir.brightness':'Brightness','ir.zoomReset':'Reset zoom','ir.fullscreen':'Fullscreen','ir.exitFullscreen':'Exit fullscreen','ir.zoomHint':'Double-tap to zoom',
     'reader.loading':'Loading PDF…','reader.failed':'Failed to load PDF','reader.licensed':'Licensed to','reader.tracked':'Screenshots and recordings are tracked',
     'badge.pending':'Pending','badge.approved':'Approved','badge.rejected':'Rejected','badge.continue':'Continue','badge.page':'Page',
     'err.bookNotFound':'Book not found','err.loginFirst':'Please login first','err.noAccess':'You need a reading pass to read this book','err.generic':'Something went wrong. Please try again.','err.uploadFailed':'Upload failed','err.fileTooLarge':'File larger than 8MB','err.invalidFile':'Invalid file type',
@@ -3228,17 +3328,17 @@ async function initImageReader(book, pages, startPage){
   const slider = $('#ir-page-slider');
   const overlay = $('#ir-image-overlay');
   const stage = $('#ir-stage');
+  const frame = $('#ir-frame');
 
   // Match overlay (watermark + corner stamps) to current image bounds inside stage.
   // Call after image load + on resize so watermark stays glued to the page area.
   function positionOverlay(){
     if(!img.complete || !img.naturalWidth) return;
-    const stageRect = stage.getBoundingClientRect();
-    const imgRect = img.getBoundingClientRect();
-    overlay.style.top = (imgRect.top - stageRect.top) + 'px';
-    overlay.style.left = (imgRect.left - stageRect.left) + 'px';
-    overlay.style.width = imgRect.width + 'px';
-    overlay.style.height = imgRect.height + 'px';
+    // Overlay lives inside the zoom wrapper (#ir-zoom), so use untransformed offsets
+    overlay.style.top = img.offsetTop + 'px';
+    overlay.style.left = img.offsetLeft + 'px';
+    overlay.style.width = img.offsetWidth + 'px';
+    overlay.style.height = img.offsetHeight + 'px';
   }
 
   function pageUrl(num){
@@ -3276,6 +3376,8 @@ async function initImageReader(book, pages, startPage){
     counter.textContent = `${num} / ${total}`;
     fill.style.width = (num/total*100) + '%';
     if(slider) slider.value = num;
+    if(prefs.mode === 'scroll'){ scrollToPage(num); saveProgress(num); showUiTransiently(); return; }
+    resetZoom(false);
     img.classList.add('loading');
     loading.classList.add('show');
     const newSrc = pageUrl(num);
@@ -3371,37 +3473,249 @@ async function initImageReader(book, pages, startPage){
   });
   jumpModal?.addEventListener('click', e => { if(e.target === jumpModal) closeJump(); });
 
-  // Tap zones
-  $('#ir-tap-prev').onclick = () => renderPage(current - 1, 'prev');
-  $('#ir-tap-next').onclick = () => renderPage(current + 1, 'next');
-  $('#ir-tap-center').onclick = () => toggleUi();
+  /* ───────────── Gestures (flip mode): tap zones, swipe, pinch-zoom, double-tap, pan ───────────── */
+  const zoomEl = $('#ir-zoom');
+  const zoomHint = $('#ir-zoom-hint');
+  let z = { s:1, tx:0, ty:0 };
+  const MAX_Z = 4;
+  function applyZoom(snap){
+    zoomEl.classList.toggle('snap', !!snap);
+    zoomEl.style.transform = `translate(${z.tx}px,${z.ty}px) scale(${z.s})`;
+    frame.classList.toggle('zoomed', z.s > 1.01);
+  }
+  function clampZoom(){
+    const W = stage.clientWidth, H = stage.clientHeight;
+    z.s = Math.max(1, Math.min(MAX_Z, z.s));
+    z.tx = Math.min(0, Math.max(W - W*z.s, z.tx));
+    z.ty = Math.min(0, Math.max(H - H*z.s, z.ty));
+  }
+  function resetZoom(snap){ z = { s:1, tx:0, ty:0 }; applyZoom(snap); }
+  function zoomAt(px, py, ns){
+    // keep the stage point (px,py) fixed while scaling to ns
+    const cx = (px - z.tx) / z.s, cy = (py - z.ty) / z.s;
+    z.s = ns; z.tx = px - cx*ns; z.ty = py - cy*ns;
+    clampZoom(); applyZoom(true);
+  }
+  const ptrs = new Map();
+  let gesture = null;          // {x0,y0,t0,moved,pan:{tx,ty}}
+  let pinch = null;            // {d0,s0,cx,cy}
+  let lastTap = { t:0, x:0, y:0 };
+  let tapTimer = null;
+  const stagePoint = e => { const r = stage.getBoundingClientRect(); return { x:e.clientX - r.left, y:e.clientY - r.top }; };
+  function handleTap(x, y){
+    const w = stage.clientWidth;
+    if(x < w*0.3)      renderPage(current - 1, 'prev');
+    else if(x > w*0.7) renderPage(current + 1, 'next');
+    else toggleUi();
+  }
+  stage.addEventListener('pointerdown', e => {
+    if(prefs.mode === 'scroll') return;
+    if(e.pointerType === 'mouse' && e.button !== 0) return;
+    stage.setPointerCapture?.(e.pointerId);
+    const p = stagePoint(e);
+    ptrs.set(e.pointerId, p);
+    if(ptrs.size === 1){
+      gesture = { x0:p.x, y0:p.y, t0:Date.now(), moved:false, tx0:z.tx, ty0:z.ty };
+      zoomEl.classList.add('panning');
+    } else if(ptrs.size === 2){
+      const [a,b] = [...ptrs.values()];
+      pinch = { d0:Math.hypot(a.x-b.x, a.y-b.y), s0:z.s, cx:(a.x+b.x)/2, cy:(a.y+b.y)/2 };
+      gesture = null; clearTimeout(tapTimer);
+    }
+  });
+  stage.addEventListener('pointermove', e => {
+    if(!ptrs.has(e.pointerId)) return;
+    const p = stagePoint(e);
+    ptrs.set(e.pointerId, p);
+    if(pinch && ptrs.size === 2){
+      const [a,b] = [...ptrs.values()];
+      const d = Math.hypot(a.x-b.x, a.y-b.y);
+      const ns = Math.max(1, Math.min(MAX_Z, pinch.s0 * d / Math.max(1, pinch.d0)));
+      const cx = (a.x+b.x)/2, cy = (a.y+b.y)/2;
+      const ox = (pinch.cx - z.tx) / z.s, oy = (pinch.cy - z.ty) / z.s;
+      z.s = ns; z.tx = cx - ox*ns; z.ty = cy - oy*ns; clampZoom(); applyZoom(false);
+      return;
+    }
+    if(!gesture) return;
+    const dx = p.x - gesture.x0, dy = p.y - gesture.y0;
+    if(!gesture.moved && Math.hypot(dx,dy) > 8) gesture.moved = true;
+    if(gesture.moved && z.s > 1.01){
+      z.tx = gesture.tx0 + dx; z.ty = gesture.ty0 + dy; clampZoom(); applyZoom(false);
+    }
+  });
+  const endPtr = e => {
+    if(!ptrs.has(e.pointerId)) return;
+    const p = ptrs.get(e.pointerId);
+    ptrs.delete(e.pointerId);
+    if(pinch){ if(ptrs.size < 2){ pinch = null; gesture = null; } return; }
+    if(!gesture) return;
+    const g = gesture; gesture = null;
+    zoomEl.classList.remove('panning');
+    const dx = p.x - g.x0, dy = p.y - g.y0;
+    if(g.moved){
+      // swipe → page turn (only when not zoomed)
+      if(z.s <= 1.01 && Math.abs(dx) >= 50 && Math.abs(dx) > Math.abs(dy)*1.5){
+        if(dx < 0) renderPage(current+1, 'next'); else renderPage(current-1, 'prev');
+      }
+      return;
+    }
+    // tap: wait briefly for a possible double-tap
+    const now = Date.now();
+    if(now - lastTap.t < 300 && Math.hypot(p.x-lastTap.x, p.y-lastTap.y) < 40){
+      clearTimeout(tapTimer); lastTap.t = 0;
+      if(z.s > 1.01) resetZoom(true); else zoomAt(p.x, p.y, 2.5);
+      return;
+    }
+    lastTap = { t:now, x:p.x, y:p.y };
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(()=>{ if(z.s > 1.01) toggleUi(); else handleTap(p.x, p.y); }, 260);
+  };
+  stage.addEventListener('pointerup', endPtr);
+  stage.addEventListener('pointercancel', endPtr);
+  stage.addEventListener('wheel', e => {
+    if(prefs.mode === 'scroll' || !(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    const p = stagePoint(e);
+    zoomAt(p.x, p.y, Math.max(1, Math.min(MAX_Z, z.s * (e.deltaY < 0 ? 1.15 : 0.87))));
+  }, { passive:false });
+  $('#ir-zoom-reset').onclick = () => { resetZoom(true); closeSettings(); };
 
-  // Swipe gesture
-  stage.addEventListener('touchstart', (e)=>{
-    if(e.touches.length !== 1) return;
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    touchLock = null;
-  }, {passive:true});
-  stage.addEventListener('touchmove', (e)=>{
-    if(touchLock || e.touches.length !== 1) return;
-    const dx = Math.abs(e.touches[0].clientX - touchStartX);
-    const dy = Math.abs(e.touches[0].clientY - touchStartY);
-    if(dx > 12 || dy > 12) touchLock = dx > dy ? 'h' : 'v';
-  }, {passive:true});
-  stage.addEventListener('touchend', (e)=>{
-    if(touchLock !== 'h') return;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - touchStartX;
-    const dy = t.clientY - touchStartY;
-    if(Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)*1.5) return;
-    if(dx < 0 && current < total) renderPage(current+1, 'next');
-    else if(dx > 0 && current > 1) renderPage(current-1, 'prev');
-  }, {passive:true});
+  /* ───────────── Scroll (webtoon) mode ───────────── */
+  const scrollEl = $('#ir-scroll');
+  let scrollBuilt = false, io = null, scrollT = null;
+  function buildScroll(){
+    if(scrollBuilt) return; scrollBuilt = true;
+    const who = profileDisplay(state.profile), idp = state.profile.id.slice(0,8);
+    const frag = document.createDocumentFragment();
+    pages.forEach(p => {
+      const d = document.createElement('div');
+      d.className = 'ir-sp'; d.dataset.page = p.page_num;
+      if(p.width && p.height) d.style.aspectRatio = `${p.width} / ${p.height}`; else d.style.minHeight = '60vh';
+      d.innerHTML = `<img alt="" decoding="async" data-src="${publicBase}/${p.object_key}"/><div class="ir-sp-skel"></div>
+        <div class="ir-watermark"></div>
+        <div class="ir-sp-wm"><b>KhozyReads</b>${who}</div>
+        <div class="ir-sp-num">${idp} · p${p.page_num}</div>`;
+      frag.appendChild(d);
+    });
+    scrollEl.innerHTML = ''; scrollEl.appendChild(frag);
+    io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if(!en.isIntersecting) return;
+        const im = en.target.querySelector('img');
+        if(im && !im.src){ im.onload = ()=>im.classList.add('ready'); im.src = im.dataset.src; }
+        const wm = en.target.querySelector('.ir-watermark');
+        if(wm && !wm.getAttribute('data-text')){
+          const line = `KhozyReads · ${who} · ${idp} · p${en.target.dataset.page} · ${new Date().toLocaleString()}`;
+          wm.setAttribute('data-text', Array(12).fill(line+' '+line).join('\n'));
+        }
+      });
+    }, { root: scrollEl, rootMargin: '150% 0px' });
+    scrollEl.querySelectorAll('.ir-sp').forEach(el => io.observe(el));
+    // Tap (no drag) anywhere in scroll mode toggles the toolbars
+    let sp = null;
+    scrollEl.addEventListener('pointerdown', e => { sp = { x:e.clientX, y:e.clientY, t:Date.now() }; }, { passive:true });
+    scrollEl.addEventListener('pointerup', e => {
+      if(!sp) return; const d = Math.hypot(e.clientX-sp.x, e.clientY-sp.y), dt = Date.now()-sp.t; sp = null;
+      if(d < 8 && dt < 400) toggleUi();
+    }, { passive:true });
+    scrollEl.addEventListener('scroll', () => {
+      if(scrollT) return;
+      scrollT = requestAnimationFrame(() => {
+        scrollT = null;
+        const mid = scrollEl.scrollTop + scrollEl.clientHeight * 0.45;
+        let best = current, bestD = Infinity;
+        for(const el of scrollEl.children){
+          const c = el.offsetTop + el.offsetHeight/2, dd = Math.abs(c - mid);
+          if(dd < bestD){ bestD = dd; best = +el.dataset.page; }
+        }
+        if(best !== current){
+          current = best; counter.textContent = `${best} / ${total}`; fill.style.width = (best/total*100)+'%';
+          if(slider) slider.value = best; saveProgress(best);
+        }
+      });
+    }, { passive:true });
+  }
+  function scrollToPage(num, instant){
+    const el = scrollEl.querySelector(`.ir-sp[data-page="${num}"]`);
+    if(!el) return;
+    if(instant) scrollEl.style.scrollBehavior = 'auto';
+    scrollEl.scrollTop = el.offsetTop;
+    if(instant) requestAnimationFrame(()=>{ scrollEl.style.scrollBehavior = ''; });
+  }
+
+  /* ───────────── Preferences: mode / theme / brightness ───────────── */
+  const PREF_KEY = 'kr_reader_prefs';
+  let prefs = { mode:'flip', theme:'light', dim:0 };
+  try{ Object.assign(prefs, JSON.parse(localStorage.getItem(PREF_KEY) || '{}')); }catch(_){}
+  const savePrefs = () => { try{ localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); }catch(_){} };
+  const dimEl = $('#ir-dim'), dimRange = $('#ir-dim-range');
+  function applyPrefs(initial){
+    frame.classList.toggle('mode-scroll', prefs.mode === 'scroll');
+    frame.classList.remove('theme-light','theme-sepia','theme-dark');
+    frame.classList.add('theme-' + (prefs.theme || 'light'));
+    dimEl.style.opacity = (prefs.dim || 0) / 100;
+    if(dimRange) dimRange.value = prefs.dim || 0;
+    $('#ir-seg-mode').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.mode === prefs.mode));
+    $('#ir-seg-theme').querySelectorAll('button').forEach(b => b.classList.toggle('active', b.dataset.theme === prefs.theme));
+    if(prefs.mode === 'scroll'){ buildScroll(); loading.classList.remove('show'); scrollToPage(current, true); }
+  }
+  $('#ir-seg-mode').addEventListener('click', e => {
+    const b = e.target.closest('button[data-mode]'); if(!b || b.dataset.mode === prefs.mode) return;
+    prefs.mode = b.dataset.mode; savePrefs(); applyPrefs();
+    if(prefs.mode === 'flip') renderPage(current); else scrollToPage(current, true);
+  });
+  $('#ir-seg-theme').addEventListener('click', e => {
+    const b = e.target.closest('button[data-theme]'); if(!b) return;
+    prefs.theme = b.dataset.theme; savePrefs(); applyPrefs();
+  });
+  dimRange?.addEventListener('input', e => { prefs.dim = +e.target.value; dimEl.style.opacity = prefs.dim/100; });
+  dimRange?.addEventListener('change', savePrefs);
+
+  /* ───────────── Settings sheet ───────────── */
+  const sheet = $('#ir-settings'), sheetBack = $('#ir-set-backdrop');
+  function openSettings(){ sheet.classList.add('open'); sheetBack.classList.add('open'); showUiTransiently(); clearTimeout(uiTimer); }
+  function closeSettings(){ sheet.classList.remove('open'); sheetBack.classList.remove('open'); showUiTransiently(); }
+  $('#ir-settings-btn').onclick = () => sheet.classList.contains('open') ? closeSettings() : openSettings();
+  sheetBack.onclick = closeSettings;
+
+  /* ───────────── Fullscreen + keep screen awake ───────────── */
+  const fsBtn = $('#ir-fs-btn'), fsBtn2 = $('#ir-fs-btn2');
+  const fsSupported = !!(frame.requestFullscreen || frame.webkitRequestFullscreen);
+  if(fsSupported) fsBtn.style.display = '';
+  else fsBtn2.style.display = 'none';
+  function toggleFs(){
+    if(document.fullscreenElement || document.webkitFullscreenElement){
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+    } else {
+      (frame.requestFullscreen || frame.webkitRequestFullscreen).call(frame).catch?.(()=>{});
+    }
+  }
+  const onFsChange = () => {
+    const on = !!(document.fullscreenElement || document.webkitFullscreenElement);
+    fsBtn.classList.toggle('on', on); fsBtn2.classList.toggle('active', on);
+    fsBtn2.querySelector('span').textContent = t(on ? 'ir.exitFullscreen' : 'ir.fullscreen');
+    setTimeout(positionOverlay, 120);
+  };
+  fsBtn.onclick = toggleFs; fsBtn2.onclick = () => { toggleFs(); closeSettings(); };
+  document.addEventListener('fullscreenchange', onFsChange);
+  document.addEventListener('webkitfullscreenchange', onFsChange);
+  let wakeLock = null;
+  const requestWake = async () => { try{ if('wakeLock' in navigator && !document.hidden) wakeLock = await navigator.wakeLock.request('screen'); }catch(_){} };
+  const onWakeVis = () => { if(!document.hidden) requestWake(); };
+  document.addEventListener('visibilitychange', onWakeVis);
+  requestWake();
+
+  // First-time hint
+  try{
+    if(!localStorage.getItem('kr_zoom_hint')){
+      zoomHint.textContent = t('ir.zoomHint'); zoomHint.classList.add('show');
+      setTimeout(()=>zoomHint.classList.remove('show'), 2600);
+      localStorage.setItem('kr_zoom_hint','1');
+    }
+  }catch(_){}
 
   // Anti-screenshot protection — full set, matches reader lama
   document.body.classList.add('reading');
-  const frame = $('#ir-frame');
   const isJumpOpen = () => jumpModal && jumpModal.style.display !== 'none';
 
   const isFormField = el => el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA');
@@ -3421,7 +3735,10 @@ async function initImageReader(book, pages, startPage){
     else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); renderPage(current - 1); }
     else if(e.key === 'Home'){ e.preventDefault(); renderPage(1); }
     else if(e.key === 'End'){ e.preventDefault(); renderPage(total); }
-    else if(e.key === 'Escape'){ if(isJumpOpen()) closeJump(); else location.hash = '#/library'; }
+    else if(e.key === 'Escape'){ if(isJumpOpen()) closeJump(); else if(sheet.classList.contains('open')) closeSettings(); else if(document.fullscreenElement) toggleFs(); else location.hash = '#/library'; }
+    else if(e.key === '+' || e.key === '='){ zoomAt(stage.clientWidth/2, stage.clientHeight/2, Math.min(MAX_Z, z.s*1.25)); }
+    else if(e.key === '-'){ zoomAt(stage.clientWidth/2, stage.clientHeight/2, Math.max(1, z.s/1.25)); }
+    else if(e.key === '0'){ resetZoom(true); }
   };
   const onVis = () => { if(document.hidden) frame.classList.add('blurred'); else frame.classList.remove('blurred'); };
   const onBlur = () => frame.classList.add('blurred');
@@ -3457,6 +3774,13 @@ async function initImageReader(book, pages, startPage){
     window.removeEventListener('orientationchange', onResize);
     clearTimeout(uiTimer);
     clearTimeout(resizeT);
+    clearTimeout(tapTimer);
+    document.removeEventListener('fullscreenchange', onFsChange);
+    document.removeEventListener('webkitfullscreenchange', onFsChange);
+    document.removeEventListener('visibilitychange', onWakeVis);
+    try{ wakeLock?.release?.(); }catch(_){}
+    if(document.fullscreenElement || document.webkitFullscreenElement){ try{ (document.exitFullscreen || document.webkitExitFullscreen).call(document); }catch(_){} }
+    if(io) io.disconnect();
     // Flush any pending progress save immediately so leaving doesn't lose data
     if(saveProgressT){
       clearTimeout(saveProgressT);
@@ -3467,7 +3791,8 @@ async function initImageReader(book, pages, startPage){
   };
   window.addEventListener('hashchange', cleanup, { once: true });
 
-  // Initial render — resume from saved progress
+  // Initial render — apply saved prefs (mode/theme/brightness), then resume from saved progress
+  applyPrefs(true);
   renderPage(current);
 }
 
