@@ -934,6 +934,9 @@ html[lang="km"] .ir-set-label,html[lang="km"] .ir-seg button{font-family:var(--f
    ══════════════════════════════════════════════════════════ */
 :root{--tabbar-h:64px}
 .tabbar{display:none}
+.guest-chip{display:none}
+a.user-chip{border-bottom:1px solid var(--border-strong);transition:transform .15s,box-shadow .2s}
+a.user-chip:hover{border-color:var(--accent-deep);box-shadow:var(--shadow-sm);color:var(--fg-soft)}
 /* Account page (used on all sizes, reachable from the tab bar) */
 .account-page{max-width:640px;padding-bottom:24px}
 .acct-card{background:rgba(255,253,247,.75);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid var(--border);border-radius:16px;padding:16px 18px;margin:0 0 12px;box-shadow:var(--shadow-sm)}
@@ -989,14 +992,18 @@ html[lang="km"] .ir-set-label,html[lang="km"] .ir-seg button{font-family:var(--f
   .brand-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .header-nav{gap:6px;flex-wrap:nowrap;flex-shrink:0;margin-left:auto;width:auto;order:0;border-top:0;padding-top:0;margin-top:0;justify-content:flex-end}
   #auth-nav{flex-wrap:nowrap}
-  .header-nav>.nav-link,.header-nav>.nav-pass,#lang-switcher,#pwa-install{display:none!important}
-  #auth-nav{display:flex;align-items:center;gap:6px}
-  #auth-nav .nav-link{display:none}          /* logout lives in the Account tab */
-  #auth-nav .btn{padding:8px 14px;min-height:36px;font-size:14px}
-  .pass-chip{display:inline-flex;margin-right:0;padding:5px 10px;font-size:12px}
-  .user-chip{padding:4px;gap:0}
-  .user-chip>span:not(.avatar){display:none}  /* avatar only */
-  .user-chip .avatar{width:32px;height:32px}
+  .header-nav>.nav-link,.header-nav>.nav-pass,#pwa-install{display:none!important}
+  /* Compact language toggle next to the profile avatar */
+  #lang-switcher{padding:2px;order:1}
+  #lang-switcher button{padding:4px 8px;font-size:11px;letter-spacing:.04em}
+  #auth-nav{display:flex;align-items:center;gap:6px;order:2}
+  #auth-nav .nav-link,#auth-nav .btn{display:none}   /* login/register/logout live in Account */
+  .pass-chip{display:inline-flex;margin-right:0;padding:5px 9px;font-size:11.5px}
+  .user-chip{padding:3px;gap:0;border-color:var(--border-strong)}
+  .user-chip>span:not(.avatar){display:none}  /* avatar only → tap = Account page */
+  .user-chip .avatar{width:32px;height:32px;font-size:14px}
+  .user-chip.guest-chip .avatar{background:var(--bg-deep);color:var(--primary)}
+  .user-chip:active{transform:scale(.94)}
   /* Compact hero + 3-column cover grid */
   .hero{padding:28px 0 18px}
   .hero-orn-top{display:none}
@@ -1031,8 +1038,11 @@ html[lang="km"] .ir-set-label,html[lang="km"] .ir-seg button{font-family:var(--f
   .cta-row#detail-cta:empty{display:none}
   .cta-row#detail-cta .btn{flex:1;min-height:50px}
   .cta-row#detail-cta .btn-pending{flex:1}
-  /* Floating widgets sit above the tab bar */
-  #cs-widget{bottom:calc(var(--tabbar-h) + 14px + env(safe-area-inset-bottom))}
+  /* Floating widgets sit above the tab bar; CS bubble replaced by the Support tab */
+  #cs-widget{bottom:calc(var(--tabbar-h) + 10px + env(safe-area-inset-bottom));right:12px}
+  #cs-bubble{display:none}
+  #cs-panel{transform-origin:bottom center}
+  .guest-chip{display:inline-flex}
   .reader-audio{bottom:96px}
   .site-footer{padding:36px 20px 28px}
   /* Login/Register buttons on account page */
@@ -1191,9 +1201,9 @@ html[lang="km"] .ir-set-label,html[lang="km"] .ir-seg button{font-family:var(--f
       <svg viewBox="0 0 24 24"><path d="M4 4h5v16H4zM10 4h5v16h-5zM16.5 5.2l4.3-1 3.7 15.6-4.3 1z"/></svg>
       <span data-i18n="tab.library">បណ្ណាល័យ</span>
     </a>
-    <a class="tab" href="#/account" data-tab="account">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
-      <span data-i18n="tab.account">គណនី</span>
+    <a class="tab" href="#cs" data-tab="cs" id="tab-cs">
+      <svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg>
+      <span data-i18n="tab.cs">ជំនួយ</span>
     </a>
   </nav>
 </div>
@@ -1759,7 +1769,7 @@ const I18N = {
     'auth.user':'ឈ្មោះអ្នកប្រើ','auth.email':'អ៊ីមែល','auth.pass':'ពាក្យសម្ងាត់',
     'pay.eyebrow':'ការទូទាត់សុវត្ថិភាព · ABA / KHQR','pay.title':'បញ្ចប់ការទិញរបស់អ្នក','pay.crumb':'បង់ប្រាក់','pay.step1':'ជំហានទី ១ · ស្កេន QR','pay.scan':'ស្កេនកូដខាងក្រោម','pay.amount':'ចំនួន',
     'pay.acc':'ឈ្មោះគណនី','pay.num':'លេខគណនី','pay.s1h':'ស្កេន QR និងបង់ប្រាក់','pay.s1b':'បើកកម្មវិធី ABA Mobile ហើយស្កេនកូដខាងស្តាំ ឬផ្ទេរប្រាក់ដោយផ្ទាល់ទៅគណនី។','pay.s2h':'បន្ទាប់​មក​បង្ហោះ​វិក្កយបត្រ','pay.s2b':'ថត​អេក្រង់​នៃ​ការបង់ប្រាក់ និង​បង្ហោះ​នៅ​ក្នុង​ប្រអប់​ខាង​ក្រោម។','pay.s3h':'រង់​ចាំ​ការ​អនុម័ត','pay.s3b':'ក្រុមការងារ​នឹង​ផ្ទៀង​ផ្ទាត់​ក្នុង​រយៈពេល ១ ទៅ ២ ម៉ោង។','pay.upload':'បង្ហោះវិក្កយបត្រ','pay.uploadSub':'JPG · PNG · PDF · អតិបរមា 8MB','pay.submit':'បញ្ជូនការបង់ប្រាក់','pay.success':'ដាក់ស្នើដោយជោគជ័យ! រង់ចាំការអនុម័តពីអ្នកគ្រប់គ្រង។',
-    'tab.home':'ទំព័រដើម','tab.search':'ស្វែងរក','tab.pass':'កាតអាន','tab.library':'បណ្ណាល័យ','tab.account':'គណនី',
+    'tab.home':'ទំព័រដើម','tab.search':'ស្វែងរក','tab.pass':'កាតអាន','tab.library':'បណ្ណាល័យ','tab.account':'គណនី','tab.cs':'ជំនួយ',
     'acct.eyebrow':'គណនីរបស់ខ្ញុំ','acct.language':'ភាសា','acct.telegram':'ទាក់ទងតាម Telegram','acct.facebook':'ទាក់ទងតាម Facebook','acct.guest':'ចូល ឬចុះឈ្មោះ ដើម្បីអានសៀវភៅ និងរក្សាទុកបណ្ណាល័យរបស់អ្នក។','acct.member':'សមាជិក',
     'ir.mode':'របៀបអាន','ir.flip':'បើកទំព័រ','ir.scroll':'រំកិលចុះ','ir.theme':'ពណ៌','ir.light':'ភ្លឺ','ir.sepia':'សេពីយ៉ា','ir.dark':'ងងឹត','ir.brightness':'ពន្លឺ','ir.zoomReset':'កំណត់ពង្រីកឡើងវិញ','ir.fullscreen':'ពេញអេក្រង់','ir.exitFullscreen':'ចាកចេញពេញអេក្រង់','ir.zoomHint':'ចុចពីរដងដើម្បីពង្រីក',
     'reader.loading':'កំពុងផ្ទុក PDF…','reader.failed':'មិនអាចផ្ទុក PDF បានទេ','reader.licensed':'ផ្តល់សិទ្ធិឱ្យ','reader.tracked':'ការថត និងការថតវីដេអូត្រូវបានតាមដាន',
@@ -1785,7 +1795,7 @@ const I18N = {
     'auth.user':'Username','auth.email':'Email','auth.pass':'Password',
     'pay.eyebrow':'Secure payment · ABA / KHQR','pay.title':'Complete your purchase','pay.crumb':'Payment','pay.step1':'Step 1 · Scan QR','pay.scan':'Scan the code below','pay.amount':'Amount',
     'pay.acc':'Account Name','pay.num':'Account Number','pay.s1h':'Scan QR and pay','pay.s1b':'Open ABA Mobile and scan the QR or transfer directly to the account.','pay.s2h':'Then upload the receipt','pay.s2b':'Take a screenshot of your payment and upload in the box below.','pay.s3h':'Wait for approval','pay.s3b':'Our team verifies within 1-2 hours. You can read immediately after.','pay.upload':'Upload receipt','pay.uploadSub':'JPG · PNG · PDF · max 8MB','pay.submit':'Submit payment','pay.success':'Submitted! Waiting for admin approval.',
-    'tab.home':'Home','tab.search':'Search','tab.pass':'Pass','tab.library':'Library','tab.account':'Account',
+    'tab.home':'Home','tab.search':'Search','tab.pass':'Pass','tab.library':'Library','tab.account':'Account','tab.cs':'Support',
     'acct.eyebrow':'My account','acct.language':'Language','acct.telegram':'Chat on Telegram','acct.facebook':'Chat on Facebook','acct.guest':'Log in or register to read books and keep your library.','acct.member':'Member',
     'ir.mode':'Reading mode','ir.flip':'Flip','ir.scroll':'Scroll','ir.theme':'Theme','ir.light':'Light','ir.sepia':'Sepia','ir.dark':'Dark','ir.brightness':'Brightness','ir.zoomReset':'Reset zoom','ir.fullscreen':'Fullscreen','ir.exitFullscreen':'Exit fullscreen','ir.zoomHint':'Double-tap to zoom',
     'reader.loading':'Loading PDF…','reader.failed':'Failed to load PDF','reader.licensed':'Licensed to','reader.tracked':'Screenshots and recordings are tracked',
@@ -1929,11 +1939,11 @@ function renderAuthNav(){
     const passChip = hasActiveSub()
       ? `<a class="pass-chip active" href="#/subscribe" title="${esc(fmtDateTime(state.sub.ends))}">🎫 ${esc(passTimeLeft(state.sub.ends))}</a>`
       : (state.sub ? `<a class="pass-chip expired" href="#/subscribe">⏳ ${t('pass.expired')}</a>` : '');
-    el.innerHTML = `${passChip}<span class="user-chip"><span class="avatar">${esc(initial)}</span><span>${esc(name)}</span></span> <a href="#" id="logout-link" class="nav-link" data-i18n="nav.logout">ចេញ</a>`;
+    el.innerHTML = `${passChip}<a class="user-chip" href="#/account" title="${esc(name)}"><span class="avatar">${esc(initial)}</span><span>${esc(name)}</span></a> <a href="#" id="logout-link" class="nav-link" data-i18n="nav.logout">ចេញ</a>`;
     applyI18n(el);
     $('#logout-link').onclick = e=>{ e.preventDefault(); doLogout(); };
   } else {
-    el.innerHTML = `<a class="nav-link" href="#/login" data-i18n="nav.login">ចូល</a> <a class="btn btn-ghost" href="#/register" data-i18n="nav.register">ចុះឈ្មោះ</a>`;
+    el.innerHTML = `<a class="nav-link" href="#/login" data-i18n="nav.login">ចូល</a> <a class="btn btn-ghost" href="#/register" data-i18n="nav.register">ចុះឈ្មោះ</a><a class="user-chip guest-chip" href="#/login" aria-label="Login"><span class="avatar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span></a>`;
     applyI18n(el);
   }
 }
@@ -2075,12 +2085,20 @@ function route(){
   // Highlight the active nav link (underline animation in CSS) + mobile tab
   const activeHref = '#/' + (r.name==='home' ? '' : r.name);
   document.querySelectorAll('.header-nav .nav-link').forEach(a=>a.classList.toggle('active', a.getAttribute('href')===activeHref));
-  const tabName = (r.name==='' || r.name==='home') ? 'home' : (r.name==='book' ? 'home' : (r.name==='payment' || r.name==='payway-return') ? 'subscribe' : (r.name==='login' || r.name==='register') ? 'account' : r.name);
+  const tabName = (r.name==='' || r.name==='home') ? 'home' : (r.name==='book' ? 'home' : (r.name==='payment' || r.name==='payway-return') ? 'subscribe' : r.name);
   document.querySelectorAll('#tabbar .tab').forEach(a=>a.classList.toggle('active', a.dataset.tab===tabName));
   $('#tabbar').style.display = showChrome ? '' : 'none';
   Promise.resolve(h(r.id, isStale)).catch(err=>{ if(isStale()) return; console.error(err); $('#route-outlet').innerHTML=`<div class="container" style="padding:60px 0">${alertBox(err.message||String(err))}</div>`; }).finally(()=>{ if(_spinnerTimer){clearTimeout(_spinnerTimer);_spinnerTimer=null;} updateTelegramBubble(); updateFacebookBubble(); updateApplyCreatorLinks(); window.scrollTo(0,0); });
 }
 window.addEventListener('hashchange', route);
+
+// Mobile "Support" tab → opens the CS panel (Telegram / Facebook); falls back to Account page
+document.getElementById('tab-cs').addEventListener('click', e => {
+  e.preventDefault();
+  const widget = $('#cs-widget'), btn = $('#cs-bubble');
+  if(widget && widget.classList.contains('show') && btn){ btn.click(); }
+  else location.hash = '#/account';
+});
 
 // Compact glass header once the page is scrolled
 (function(){
