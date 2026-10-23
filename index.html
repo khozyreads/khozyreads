@@ -2377,7 +2377,7 @@ let _popCache = null, _popAt = 0;
 async function fetchPopularity(force){
   if(!force && _popCache && (Date.now()-_popAt) < 120_000) return _popCache;
   try{
-    const { data, error } = await sb.from('book_popularity').select('book_id,reads_30d');
+    const { data, error } = await sb.rpc('book_popularity');
     _popCache = {}; if(!error) (data||[]).forEach(r=>{ _popCache[r.book_id] = r.reads_30d; });
   }catch(_){ _popCache = {}; }
   _popAt = Date.now();
