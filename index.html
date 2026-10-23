@@ -1978,7 +1978,7 @@ function setPageMeta(title, desc, img, canonical){
   if(canonEl && canonical) canonEl.setAttribute('href', canonical);
 }
 // Crawlable, shareable book URL (served pre-rendered by functions/book/[[path]].js)
-function bookSlug(t){ return String(t||'').toLowerCase().replace(/[\s\u200b\u00a0]+/g,'-').replace(/[^\p{L}\p{N}\-]+/gu,'').replace(/-+/g,'-').replace(/^-|-$/g,'').slice(0,80); }
+function bookSlug(t){ return String(t||'').toLowerCase().replace(/[\s\u200b\u00a0]+/g,'-').replace(/[^\p{L}\p{M}\p{N}\-]+/gu,'').replace(/-+/g,'-').replace(/^-|-$/g,'').slice(0,80); }
 function bookUrl(b){ const sl = bookSlug(b.title); return `https://khozyreads.com/book/${b.id}${sl?'/'+encodeURIComponent(sl):''}`; }
 function resetPageMeta(){ setPageMeta(DEFAULT_TITLE, DEFAULT_DESC, DEFAULT_OG_IMG, 'https://khozyreads.com/'); removeBookJsonLd(); }
 

@@ -32,7 +32,7 @@ export function slugify(s) {
   return String(s || '')
     .toLowerCase()
     .replace(/[\s​ ]+/g, '-')               // spaces / zero-width → dash
-    .replace(/[^\p{L}\p{N}\-]+/gu, '')                 // keep letters (Latin + Khmer) and digits
+    .replace(/[^\p{L}\p{M}\p{N}\-]+/gu, '')           // keep letters + combining marks (Khmer vowels/subscripts) + digits
     .replace(/-+/g, '-').replace(/^-|-$/g, '')
     .slice(0, 80);
 }
